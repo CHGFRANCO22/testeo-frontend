@@ -28,29 +28,33 @@
     .nav-link {
       color: #000 !important;
       font-weight: 500;
-      /* Eliminar outline y box-shadow al foco */
-      outline: none !important;
-      box-shadow: none !important;
-      transition: background-color 0.3s ease;
-    }
-
-    .nav-link:focus,
-    .nav-link:hover,
-    .nav-link.btn:focus,
-    .nav-link.btn:hover {
-      /* Cambiar fondo o color si querés, sin outline ni sombra */
-      background-color: #e0e0e0;
-      color: #000 !important;
-      outline: none !important;
-      box-shadow: none !important;
-      text-decoration: none;
     }
 
     .nav-link.btn {
       margin-left: 10px;
-      /* Quitar outline y sombra también para botones */
-      outline: none !important;
-      box-shadow: none !important;
+    }
+
+    .hero-section {
+      padding: 100px 20px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-section h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .hero-section p {
+      font-size: 1.25rem;
+      margin-top: 20px;
+    }
+
+    .content-section {
+      padding: 50px 20px;
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #000;
     }
 
     .btn-turno {
@@ -58,18 +62,6 @@
       color: white;
       font-weight: bold;
       margin-top: 20px;
-      border: none;
-      outline: none !important;
-      box-shadow: none !important;
-      transition: background-color 0.3s ease;
-    }
-
-    .btn-turno:hover,
-    .btn-turno:focus {
-      background-color: #218838;
-      outline: none !important;
-      box-shadow: none !important;
-      color: white;
     }
 
     footer {
