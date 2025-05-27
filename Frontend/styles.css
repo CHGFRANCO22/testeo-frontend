@@ -1,0 +1,74 @@
+/* Fuente base */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa; /* gris claro */
+  color: #212529;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #007bff !important; /* azul */
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand {
+  color: white !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .navbar-brand:hover {
+  color: #e2e6ea !important;
+}
+
+.navbar .btn-outline-primary,
+.navbar .btn-outline-secondary {
+  margin-left: 10px;
+  color: white;
+  border-color: white;
+}
+
+.navbar .btn-outline-primary:hover,
+.navbar .btn-outline-secondary:hover {
+  background-color: white;
+  color: #007bff;
+}
+
+/* Secciones de contenido */
+.content-section,
+.doctores-section {
+  padding: 50px 20px;
+  background-color: white;
+  margin: 20px auto;
+  border-radius: 10px;
+  max-width: 900px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Tarjetas de doctores */
+.doctor-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f1f3f5;
+  transition: transform 0.2s;
+}
+
+.doctor-card:hover {
+  transform: scale(1.02);
+}
+
+.doctor-card h4 {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* Footer */
+footer {
+  background-color: #343a40;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
