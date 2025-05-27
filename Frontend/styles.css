@@ -72,3 +72,45 @@ footer {
   padding: 20px;
   text-align: center;
 }
+/* Página de login */
+.login-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+}
+
+.login-box {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.register-link {
+  display: block;
+  margin-bottom: 15px;
+  text-align: left;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+/* Footer para login */
+footer {
+  background-color: #f1f1f1;
+  padding: 20px;
+  text-align: center;
+}
