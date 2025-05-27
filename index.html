@@ -10,39 +10,27 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      /* Eliminado background y color */
     }
 
     .navbar {
-      background-color: transparent; /* Sin fondo */
+      background: linear-gradient(90deg, #007BFF, #0056b3);
     }
 
-    .navbar-brand {
-      font-weight: bold;
-      color: inherit; /* color por defecto */
-    }
-
-    .nav-link {
-      color: inherit !important;
-      font-weight: 500;
-      background: none !important;
-      border: none !important;
-      box-shadow: none !important;
+    .navbar-brand, .nav-link {
+      color: #fff !important;
     }
 
     .nav-link.btn {
       margin-left: 10px;
-      background: none !important;
-      border: none !important;
-      box-shadow: none !important;
-      color: inherit !important;
+      color: #fff !important;
+      border-color: #fff !important;
     }
 
     .hero-section {
       padding: 100px 20px;
       text-align: center;
-      background-color: transparent !important; /* Sin fondo */
-      color: inherit; /* sin color personalizado */
+      background-color: transparent !important;
+      color: inherit;
     }
 
     .hero-section h1 {
@@ -59,12 +47,12 @@
 
     .content-section {
       padding: 50px 20px;
-      background-color: transparent !important; /* sin fondo */
+      background-color: transparent !important;
       color: inherit;
     }
 
     .btn-turno {
-      background-color: transparent !important; /* sin fondo */
+      background-color: transparent !important;
       color: inherit !important;
       font-weight: bold;
       margin-top: 20px;
@@ -73,37 +61,33 @@
     }
 
     footer {
-      background-color: transparent !important; /* sin fondo */
+      background-color: transparent !important;
       color: inherit;
       padding: 20px;
     }
 
     .doctores-section {
       padding: 50px 20px;
-      background-color: transparent !important;
-      color: inherit;
     }
 
-    .doctor-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
 
-    .doctor-card h4 {
-      margin-top: 0;
+    .card h4 {
       font-weight: bold;
     }
 
-    .doctor-card p {
-      margin: 5px 0;
+    .card p {
+      margin-bottom: 5px;
     }
   </style>
 </head>
 <body>
   <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-light px-4">
+  <nav class="navbar navbar-expand-lg navbar-dark px-4">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Salud Total</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -117,10 +101,10 @@
           <li class="nav-item"><a class="nav-link" href="#especialidades">Especialidades</a></li>
           <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
           <li class="nav-item">
-            <a class="btn btn-outline-primary nav-link" href="login.html">Iniciar Sesión</a>
+            <a class="btn btn-outline-light nav-link" href="login.html">Iniciar Sesión</a>
           </li>
           <li class="nav-item">
-            <a class="btn btn-outline-secondary nav-link" href="register.html">Registrarse</a>
+            <a class="btn btn-outline-light nav-link" href="register.html">Registrarse</a>
           </li>
         </ul>
       </div>
@@ -154,34 +138,45 @@
 
   <!-- Sección Doctores -->
   <div class="doctores-section container">
-    <h2>Conocé a Nuestro Equipo Médico</h2>
+    <h2 class="text-center mb-5">Conocé a Nuestro Equipo Médico</h2>
+    <div class="row g-4">
 
-    <div class="doctor-card">
-      <h4>Dra. Ana Gómez</h4>
-      <p><strong>Especialidad:</strong> Pediatría</p>
-      <p><strong>Días:</strong> Lunes y Miércoles</p>
-      <p><strong>Horario:</strong> 08:00 a 12:00 hs</p>
-    </div>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Dra. Ana Gómez</h4>
+          <p><strong>Especialidad:</strong> Pediatría</p>
+          <p><strong>Días:</strong> Lunes y Miércoles</p>
+          <p><strong>Horario:</strong> 08:00 a 12:00 hs</p>
+        </div>
+      </div>
 
-    <div class="doctor-card">
-      <h4>Dr. Juan Pérez</h4>
-      <p><strong>Especialidad:</strong> Cardiología</p>
-      <p><strong>Días:</strong> Martes y Jueves</p>
-      <p><strong>Horario:</strong> 14:00 a 18:00 hs</p>
-    </div>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Dr. Juan Pérez</h4>
+          <p><strong>Especialidad:</strong> Cardiología</p>
+          <p><strong>Días:</strong> Martes y Jueves</p>
+          <p><strong>Horario:</strong> 14:00 a 18:00 hs</p>
+        </div>
+      </div>
 
-    <div class="doctor-card">
-      <h4>Dra. Laura Sánchez</h4>
-      <p><strong>Especialidad:</strong> Ginecología</p>
-      <p><strong>Días:</strong> Viernes</p>
-      <p><strong>Horario:</strong> 10:00 a 16:00 hs</p>
-    </div>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Dra. Laura Sánchez</h4>
+          <p><strong>Especialidad:</strong> Ginecología</p>
+          <p><strong>Días:</strong> Viernes</p>
+          <p><strong>Horario:</strong> 10:00 a 16:00 hs</p>
+        </div>
+      </div>
 
-    <div class="doctor-card">
-      <h4>Dr. Martín Ruiz</h4>
-      <p><strong>Especialidad:</strong> Clínica General</p>
-      <p><strong>Días:</strong> Lunes a Viernes</p>
-      <p><strong>Horario:</strong> 08:00 a 12:00 hs y 16:00 a 20:00 hs</p>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Dr. Martín Ruiz</h4>
+          <p><strong>Especialidad:</strong> Clínica General</p>
+          <p><strong>Días:</strong> Lunes a Viernes</p>
+          <p><strong>Horario:</strong> 08:00 a 12:00 hs y 16:00 a 20:00 hs</p>
+        </div>
+      </div>
+
     </div>
   </div>
 
