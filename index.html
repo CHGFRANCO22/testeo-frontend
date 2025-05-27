@@ -10,15 +10,16 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
+      /* Eliminado background y color */
     }
 
     .navbar {
-      background-color: transparent;
+      background-color: transparent; /* Sin fondo */
     }
 
     .navbar-brand {
       font-weight: bold;
-      color: inherit;
+      color: inherit; /* color por defecto */
     }
 
     .nav-link {
@@ -31,46 +32,72 @@
 
     .nav-link.btn {
       margin-left: 10px;
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: inherit !important;
     }
 
     .hero-section {
-      padding: 0px 20px 20px;
-      background-color: transparent !important;
+      padding: 100px 20px;
+      text-align: center;
+      background-color: transparent !important; /* Sin fondo */
+      color: inherit; /* sin color personalizado */
+    }
+
+    .hero-section h1 {
+      font-size: 3rem;
+      font-weight: bold;
       color: inherit;
     }
 
-    .quienes-somos {
-      background-color: #e0f0ff;
-      padding: 30px 20px;
-      margin-top: 40px;
+    .hero-section p {
+      font-size: 1.25rem;
+      margin-top: 20px;
+      color: inherit;
     }
 
-    .quienes-somos h2 {
-      text-align: left;
+    .content-section {
+      padding: 50px 20px;
+      background-color: transparent !important; /* sin fondo */
+      color: inherit;
+    }
+
+    .btn-turno {
+      background-color: transparent !important; /* sin fondo */
+      color: inherit !important;
       font-weight: bold;
-    }
-
-    .quienes-somos p {
-      text-align: left;
-      margin-top: 10px;
-      margin-bottom: 0;
-    }
-
-    .btn-turno-verde {
-      display: inline-block;
-      margin: 20px 0 0 20px;
-      background-color: #28a745;
-      color: white;
-      padding: 10px 20px;
-      font-weight: bold;
-      border-radius: 5px;
-      text-decoration: none;
+      margin-top: 20px;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     footer {
-      background-color: transparent !important;
+      background-color: transparent !important; /* sin fondo */
       color: inherit;
       padding: 20px;
+    }
+
+    .doctores-section {
+      padding: 50px 20px;
+      background-color: transparent !important;
+      color: inherit;
+    }
+
+    .doctor-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .doctor-card h4 {
+      margin-top: 0;
+      font-weight: bold;
+    }
+
+    .doctor-card p {
+      margin: 5px 0;
     }
   </style>
 </head>
@@ -86,6 +113,9 @@
       
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="#tratamientos">Tratamientos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#especialidades">Especialidades</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
           <li class="nav-item">
             <a class="btn btn-outline-primary nav-link" href="login.html">Iniciar Sesión</a>
           </li>
@@ -97,13 +127,62 @@
     </div>
   </nav>
 
-  <!-- Sección ¿Quiénes somos? + Botón Pedir Turno -->
+  <!-- Hero -->
   <div class="hero-section">
-    <div class="quienes-somos">
-      <h2>¿Quiénes somos?</h2>
-      <p>Somos una clínica comprometida con el bienestar de nuestros pacientes, ofreciendo atención médica integral con un enfoque humano, profesional y cercano.</p>
+    <h1>Bienvenidos a Salud Total</h1>
+    <p>Atención médica de calidad, personalizada y con calidez humana.</p>
+    <a href="turno.html" class="btn btn-turno btn-lg">Pedir Turno</a>
+  </div>
+
+  <!-- Contenido -->
+  <div class="content-section container">
+    <h2 id="tratamientos">Nuestros Servicios</h2>
+    <p>
+      En Salud Total ofrecemos atención en Clínica General, Pediatría, Cardiología y Ginecología. Nuestro equipo médico trabaja con compromiso y profesionalismo para brindarte la mejor atención.
+    </p>
+
+    <h3 id="especialidades">¿Por qué elegirnos?</h3>
+    <ul>
+      <li>Profesionales altamente calificados</li>
+      <li>Instalaciones modernas</li>
+      <li>Turnos online y resultados digitales</li>
+    </ul>
+
+    <h3 id="contacto">Contacto</h3>
+    <p>📍 Dirección: Goya, Corrientes - 📞 Tel: (123) 456-7890 - ✉️ Email: info@saludtotal.com</p>
+  </div>
+
+  <!-- Sección Doctores -->
+  <div class="doctores-section container">
+    <h2>Conocé a Nuestro Equipo Médico</h2>
+
+    <div class="doctor-card">
+      <h4>Dra. Ana Gómez</h4>
+      <p><strong>Especialidad:</strong> Pediatría</p>
+      <p><strong>Días:</strong> Lunes y Miércoles</p>
+      <p><strong>Horario:</strong> 08:00 a 12:00 hs</p>
     </div>
-    <a href="turno.html" class="btn-turno-verde">Pedir turno</a>
+
+    <div class="doctor-card">
+      <h4>Dr. Juan Pérez</h4>
+      <p><strong>Especialidad:</strong> Cardiología</p>
+      <p><strong>Días:</strong> Martes y Jueves</p>
+      <p><strong>Horario:</strong> 14:00 a 18:00 hs</p>
+    </div>
+
+    <div class="doctor-card">
+      <h4>Dra. Laura Sánchez</h4>
+      <p><strong>Especialidad:</strong> Ginecología</p>
+      <p><strong>Días:</strong> Viernes</p>
+      <p><strong>Horario:</strong> 10:00 a 16:00 hs</p>
+    </div>
+
+    <div class="doctor-card">
+      <h4>Dr. Martín Ruiz</h4>
+      <p><strong>Especialidad:</strong> Clínica General</p>
+      <p><strong>Días:</strong> Lunes a Viernes</p>
+      <p><strong>Horario:</strong> 08:00 a 12:00 hs y 16:00 a 20:00 hs</p>
+    </div>
   </div>
 
   <!-- Pie -->
