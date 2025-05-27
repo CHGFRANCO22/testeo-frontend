@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Salud Total - Página Inicial</title>
-  <!-- styles.css está en la raíz junto a index.html -->
+  <title>Salud Total - Página Principal</title>
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -13,10 +12,6 @@
       font-family: 'Roboto', sans-serif;
       background-color: #f9f9f9;
       color: #333;
-    }
-
-    .navbar-brand {
-      margin: auto;
     }
 
     .hero-section {
@@ -41,41 +36,64 @@
       padding: 50px 20px;
     }
 
-    .btn-login {
-      margin-left: auto;
+    footer {
+      background-color: #f1f1f1;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .navbar-nav .nav-link {
+      margin-left: 15px;
     }
   </style>
 </head>
 <body>
+  <!-- Barra de navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
-    <a class="navbar-brand mx-auto" href="#">Salud Total</a>
-    <div class="d-flex">
-      <!-- Aquí el link apunta a frontend/login.html porque está dentro de la carpeta frontend -->
-      <a href="frontend/login.html" class="btn btn-outline-primary me-2">Iniciar Sesión</a>
+    <a class="navbar-brand" href="#">Salud Total</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="#tratamientos">Tratamientos</a></li>
+        <li class="nav-item"><a class="nav-link" href="#especialidades">Especialidades</a></li>
+        <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+        <li class="nav-item"><a class="nav-link" href="frontend/login.html">Iniciar Sesión</a></li>
+        <li class="nav-item"><a class="nav-link" href="frontend/register.html">Registrarse</a></li>
+      </ul>
     </div>
   </nav>
 
+  <!-- Sección principal -->
   <div class="hero-section">
     <h1>Bienvenidos a Salud Total</h1>
     <p>Atención médica de calidad, personalizada y con calidez humana.</p>
   </div>
 
+  <!-- Contenido -->
   <div class="content-section container">
-    <h2>Nuestros Servicios</h2>
-    <p>
-      En Salud Total ofrecemos atención en Clínica General, Pediatría, Cardiología y Ginecología. Nuestro equipo médico trabaja con compromiso y profesionalismo para brindarte la mejor atención.
-    </p>
+    <h2 id="tratamientos">Nuestros Tratamientos</h2>
+    <p>Ofrecemos servicios médicos profesionales y personalizados para mejorar tu salud y bienestar.</p>
 
-    <h3>¿Por qué elegirnos?</h3>
+    <h2 id="especialidades">Especialidades</h2>
     <ul>
-      <li>Profesionales altamente calificados</li>
-      <li>Instalaciones modernas</li>
-      <li>Turnos online y resultados digitales</li>
+      <li>Clínica General</li>
+      <li>Pediatría</li>
+      <li>Cardiología</li>
+      <li>Ginecología</li>
     </ul>
+
+    <h2 id="contacto">Contacto</h2>
+    <p>Podés llamarnos al (123) 456-7890 o escribirnos a <a href="mailto:contacto@saludtotal.com">contacto@saludtotal.com</a>.</p>
   </div>
 
-  <footer class="text-center p-4 bg-light">
+  <!-- Pie de página -->
+  <footer>
     <p>&copy; 2025 Salud Total. Todos los derechos reservados.</p>
   </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
