@@ -10,63 +10,71 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background-image: url('clinica.jpg');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      color: #fff;
+      /* Eliminado background y color */
     }
 
     .navbar {
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: transparent; /* Sin fondo */
     }
 
     .navbar-brand {
       font-weight: bold;
+      color: inherit; /* color por defecto */
     }
 
     .nav-link {
-      color: #000 !important;
+      color: inherit !important;
       font-weight: 500;
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     .nav-link.btn {
       margin-left: 10px;
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: inherit !important;
     }
 
     .hero-section {
       padding: 100px 20px;
       text-align: center;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: transparent !important; /* Sin fondo */
+      color: inherit; /* sin color personalizado */
     }
 
     .hero-section h1 {
       font-size: 3rem;
       font-weight: bold;
-      color: #fff;
+      color: inherit;
     }
 
     .hero-section p {
       font-size: 1.25rem;
       margin-top: 20px;
+      color: inherit;
     }
 
     .content-section {
       padding: 50px 20px;
-      background-color: rgba(255, 255, 255, 0.95);
-      color: #000;
+      background-color: transparent !important; /* sin fondo */
+      color: inherit;
     }
 
     .btn-turno {
-      background-color: #28a745;
-      color: white;
+      background-color: transparent !important; /* sin fondo */
+      color: inherit !important;
       font-weight: bold;
       margin-top: 20px;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     footer {
-      background-color: rgba(255, 255, 255, 0.9);
-      color: #000;
+      background-color: transparent !important; /* sin fondo */
+      color: inherit;
       padding: 20px;
     }
   </style>
