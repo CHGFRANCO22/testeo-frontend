@@ -1,113 +1,71 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reservar Turno - Salud Total</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
-<body>
-  <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-dark px-4">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Salud Total</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+<!-- (NO SE MODIFICAN ENCABEZADO, FORMULARIO NI CSS) -->
 
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="btn btn-outline-light nav-link" href="Frontend/login.html">Iniciar Sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-light nav-link" href="Frontend/register.html">Registrarse</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+<!-- CAMBIO 1: Área sin dermatología -->
+<div class="mb-3">
+  <label for="area" class="form-label">Área médica</label>
+  <select class="form-select" id="area" required>
+    <option value="" selected disabled>Seleccionar área</option>
+    <option value="clínica">Clínica Médica</option>
+    <option value="pediatría">Pediatría</option>
+    <option value="odontología">Odontología</option>
+    <option value="cardiología">Cardiología</option>
+  </select>
+</div>
 
-  <!-- Turnos -->
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">Reservá tu turno</h2>
-    <form id="formTurno" class="text-center">
-      <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre completo</label>
-        <input type="text" class="form-control" id="nombre" required>
-      </div>
+<!-- (SIN CAMBIOS EN EL FORMULARIO HASTA EL SCRIPT) -->
 
-      <div class="mb-3">
-        <label for="area" class="form-label">Área médica</label>
-        <select class="form-select" id="area" required>
-          <option value="" selected disabled>Seleccionar área</option>
-          <option value="clínica">Clínica Médica</option>
-          <option value="pediatría">Pediatría</option>
-          <option value="odontología">Odontología</option>
-          <option value="cardiología">Cardiología</option>
-          <option value="dermatología">Dermatología</option>
-        </select>
-      </div>
+<script>
+  const selectHora = document.getElementById("hora");
+  const selectArea = document.getElementById("area");
+  const mensaje = document.getElementById("mensajeConfirmacion");
 
-      <div class="mb-3">
-        <label for="hora" class="form-label">Elegí un horario</label>
-        <select class="form-select" id="hora" required>
-          <!-- Opciones generadas dinámicamente -->
-        </select>
-      </div>
+  // Guardamos turnos ocupados por área
+  const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
 
-      <button type="submit" class="btn btn-primary">Reservar turno</button>
-    </form>
+  // Horarios permitidos por área
+  const horariosPorArea = {
+    "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
+    "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
+    "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
+    "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
+  };
 
-    <div id="mensajeConfirmacion" class="text-success mt-4"></div>
-  </div>
+  function generarHorarios(areaSeleccionada) {
+    selectHora.innerHTML = "";
+    if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
 
-  <footer class="text-center mt-5">
-    <p>&copy; 2025 Salud Total. Todos los derechos reservados.</p>
-  </footer>
+    const horariosDisponibles = horariosPorArea[areaSeleccionada];
+    const ocupados = turnosReservados[areaSeleccionada] || [];
 
-  <script>
-    const selectHora = document.getElementById("hora");
-    const mensaje = document.getElementById("mensajeConfirmacion");
-    const horariosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || [];
-
-    function generarHorarios() {
-      selectHora.innerHTML = "";
-      for (let hora = 8; hora <= 20; hora++) {
-        for (let minuto of [0, 30]) {
-          let h = hora.toString().padStart(2, "0");
-          let m = minuto.toString().padStart(2, "0");
-          let horario = `${h}:${m}`;
-          if (!horariosReservados.includes(horario)) {
-            let option = document.createElement("option");
-            option.value = horario;
-            option.textContent = horario;
-            selectHora.appendChild(option);
-          }
-        }
+    horariosDisponibles.forEach(horario => {
+      if (!ocupados.includes(horario)) {
+        const option = document.createElement("option");
+        option.value = horario;
+        option.textContent = horario;
+        selectHora.appendChild(option);
       }
-    }
-
-    generarHorarios();
-
-    document.getElementById("formTurno").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const nombre = document.getElementById("nombre").value;
-      const area = document.getElementById("area").value;
-      const horaSeleccionada = selectHora.value;
-
-      horariosReservados.push(horaSeleccionada);
-      localStorage.setItem("turnosReservados", JSON.stringify(horariosReservados));
-
-      mensaje.textContent = `¡Turno reservado para ${nombre} en ${area} a las ${horaSeleccionada}!`;
-
-      generarHorarios();
-      e.target.reset();
     });
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  }
 
+  // Cuando cambia el área, se actualizan horarios
+  selectArea.addEventListener("change", function() {
+    generarHorarios(this.value);
+  });
+
+  document.getElementById("formTurno").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const nombre = document.getElementById("nombre").value;
+    const area = selectArea.value;
+    const horaSeleccionada = selectHora.value;
+
+    // Guardar turno en localStorage por área
+    if (!turnosReservados[area]) turnosReservados[area] = [];
+    turnosReservados[area].push(horaSeleccionada);
+    localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
+
+    mensaje.textContent = `¡Turno reservado para ${nombre} en ${area} a las ${horaSeleccionada}!`;
+
+    generarHorarios(area);
+    e.target.reset();
+  });
+</script>
