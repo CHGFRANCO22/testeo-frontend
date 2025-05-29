@@ -39,74 +39,94 @@
         <input type="text" class="form-control" id="nombre" required>
       </div>
 
-      <!-- (NO SE MODIFICAN ENCABEZADO, FORMULARIO NI CSS) -->
+      <!-- Área sin dermatología -->
+      <div class="mb-3">
+        <label for="area" class="form-label">Área médica</label>
+        <select class="form-select" id="area" required>
+          <option value="" selected disabled>Seleccionar área</option>
+          <option value="clínica">Clínica Médica</option>
+          <option value="pediatría">Pediatría</option>
+          <option value="odontología">Odontología</option>
+          <option value="cardiología">Cardiología</option>
+        </select>
+      </div>
 
-<!-- CAMBIO 1: Área sin dermatología -->
-<div class="mb-3">
-  <label for="area" class="form-label">Área médica</label>
-  <select class="form-select" id="area" required>
-    <option value="" selected disabled>Seleccionar área</option>
-    <option value="clínica">Clínica Médica</option>
-    <option value="pediatría">Pediatría</option>
-    <option value="odontología">Odontología</option>
-    <option value="cardiología">Cardiología</option>
-  </select>
-</div>
+      <!-- Select para la hora -->
+      <div class="mb-3">
+        <label for="hora" class="form-label">Hora</label>
+        <select class="form-select" id="hora" required>
+          <option value="" selected disabled>Seleccione una hora</option>
+        </select>
+      </div>
 
-<!-- (SIN CAMBIOS EN EL FORMULARIO HASTA EL SCRIPT) -->
+      <button type="submit" class="btn btn-primary">Reservar turno</button>
+    </form>
 
-<script>
-  const selectHora = document.getElementById("hora");
-  const selectArea = document.getElementById("area");
-  const mensaje = document.getElementById("mensajeConfirmacion");
+    <!-- Mensaje de confirmación -->
+    <div id="mensajeConfirmacion" class="alert alert-success mt-3" style="display:none;"></div>
+  </div>
 
-  // Guardamos turnos ocupados por área
-  const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
+  <script>
+    const selectHora = document.getElementById("hora");
+    const selectArea = document.getElementById("area");
+    const mensaje = document.getElementById("mensajeConfirmacion");
 
-  // Horarios permitidos por área
-  const horariosPorArea = {
-    "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
-    "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
-    "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
-    "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
-  };
+    // Guardamos turnos ocupados por área
+    const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
 
-  function generarHorarios(areaSeleccionada) {
-    selectHora.innerHTML = "";
-    if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
+    // Horarios permitidos por área
+    const horariosPorArea = {
+      "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
+      "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
+      "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
+      "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
+    };
 
-    const horariosDisponibles = horariosPorArea[areaSeleccionada];
-    const ocupados = turnosReservados[areaSeleccionada] || [];
+    function generarHorarios(areaSeleccionada) {
+      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+      if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
 
-    horariosDisponibles.forEach(horario => {
-      if (!ocupados.includes(horario)) {
-        const option = document.createElement("option");
-        option.value = horario;
-        option.textContent = horario;
-        selectHora.appendChild(option);
-      }
+      const horariosDisponibles = horariosPorArea[areaSeleccionada];
+      const ocupados = turnosReservados[areaSeleccionada] || [];
+
+      horariosDisponibles.forEach(horario => {
+        if (!ocupados.includes(horario)) {
+          const option = document.createElement("option");
+          option.value = horario;
+          option.textContent = horario;
+          selectHora.appendChild(option);
+        }
+      });
+    }
+
+    // Cuando cambia el área, se actualizan horarios
+    selectArea.addEventListener("change", function() {
+      generarHorarios(this.value);
+      mensaje.style.display = "none"; // ocultar mensaje cuando se cambia área
     });
-  }
 
-  // Cuando cambia el área, se actualizan horarios
-  selectArea.addEventListener("change", function() {
-    generarHorarios(this.value);
-  });
+    // Manejo de envío de formulario
+    document.getElementById("formTurno").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById("nombre").value.trim();
+      const area = selectArea.value;
+      const horaSeleccionada = selectHora.value;
 
-  document.getElementById("formTurno").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const nombre = document.getElementById("nombre").value;
-    const area = selectArea.value;
-    const horaSeleccionada = selectHora.value;
+      if (!horaSeleccionada) {
+        alert("Por favor, seleccione una hora disponible.");
+        return;
+      }
 
-    // Guardar turno en localStorage por área
-    if (!turnosReservados[area]) turnosReservados[area] = [];
-    turnosReservados[area].push(horaSeleccionada);
-    localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
+      if (!turnosReservados[area]) turnosReservados[area] = [];
+      turnosReservados[area].push(horaSeleccionada);
+      localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
 
-    mensaje.textContent = `¡Turno reservado para ${nombre} en ${area} a las ${horaSeleccionada}!`;
+      mensaje.textContent = `¡Turno reservado para ${nombre} en ${area} a las ${horaSeleccionada}!`;
+      mensaje.style.display = "block";
 
-    generarHorarios(area);
-    e.target.reset();
-  });
-</script>
+      generarHorarios(area);
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
