@@ -38,14 +38,29 @@
         <label for="nombre" class="form-label">Nombre completo</label>
         <input type="text" class="form-control" id="nombre" required>
       </div>
+
+      <div class="mb-3">
+        <label for="area" class="form-label">Área médica</label>
+        <select class="form-select" id="area" required>
+          <option value="" selected disabled>Seleccionar área</option>
+          <option value="clínica">Clínica Médica</option>
+          <option value="pediatría">Pediatría</option>
+          <option value="odontología">Odontología</option>
+          <option value="cardiología">Cardiología</option>
+          <option value="dermatología">Dermatología</option>
+        </select>
+      </div>
+
       <div class="mb-3">
         <label for="hora" class="form-label">Elegí un horario</label>
         <select class="form-select" id="hora" required>
-          <!-- Opciones generadas con JavaScript -->
+          <!-- Opciones generadas dinámicamente -->
         </select>
       </div>
-      <button type="submit" class="btn btn-primary">Reservar</button>
+
+      <button type="submit" class="btn btn-primary">Reservar turno</button>
     </form>
+
     <div id="mensajeConfirmacion" class="text-success mt-4"></div>
   </div>
 
@@ -58,7 +73,6 @@
     const mensaje = document.getElementById("mensajeConfirmacion");
     const horariosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || [];
 
-    // Generar horarios cada 30 minutos entre 08:00 y 20:00
     function generarHorarios() {
       selectHora.innerHTML = "";
       for (let hora = 8; hora <= 20; hora++) {
@@ -81,17 +95,19 @@
     document.getElementById("formTurno").addEventListener("submit", function(e) {
       e.preventDefault();
       const nombre = document.getElementById("nombre").value;
+      const area = document.getElementById("area").value;
       const horaSeleccionada = selectHora.value;
 
       horariosReservados.push(horaSeleccionada);
       localStorage.setItem("turnosReservados", JSON.stringify(horariosReservados));
 
-      mensaje.textContent = `¡Turno reservado exitosamente para ${nombre} a las ${horaSeleccionada}!`;
+      mensaje.textContent = `¡Turno reservado para ${nombre} en ${area} a las ${horaSeleccionada}!`;
 
-      generarHorarios(); // Refrescar la lista sin el turno reservado
+      generarHorarios();
       e.target.reset();
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
