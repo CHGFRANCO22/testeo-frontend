@@ -164,3 +164,14 @@ footer {
   padding: 20px;
   text-align: center;
 }
+.navbar {
+  background: linear-gradient(90deg, #007BFF, #0056b3);
+}
+
+.navbar-brand, .nav-link {
+  color: #fff !important;
+}
+
+.btn {
+  font-weight: bold;
+}
