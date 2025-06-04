@@ -9,7 +9,7 @@
 </head>
 <body>
   <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-dark px-4">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Salud Total</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -39,7 +39,6 @@
         <input type="text" class="form-control" id="nombre" required>
       </div>
 
-      <!-- Área sin dermatología -->
       <div class="mb-3">
         <label for="area" class="form-label">Área médica</label>
         <select class="form-select" id="area" required>
@@ -49,15 +48,14 @@
           <option value="odontología">Odontología</option>
           <option value="cardiología">Cardiología</option>
         </select>
-      </div>  
-<!-- Campo de fecha -->
- <div class="mb-3">
-  <label for="fecha" class="form-label">Fecha</label>
-  <input type="date" class="form-control" id="fecha" required>
-</div>
+      </div>
 
+      <!-- Campo de fecha -->
+      <div class="mb-3">
+        <label for="fecha" class="form-label">Fecha</label>
+        <input type="date" class="form-control" id="fecha" required>
+      </div>
 
-      <!-- Select para la hora -->
       <div class="mb-3">
         <label for="hora" class="form-label">Hora</label>
         <select class="form-select" id="hora" required>
@@ -68,83 +66,60 @@
       <button type="submit" class="btn btn-primary">Reservar turno</button>
     </form>
 
-    <!-- Mensaje de confirmación -->
     <div id="mensajeConfirmacion" class="alert alert-success mt-3" style="display:none;"></div>
   </div>
 
   <script>
-  const form = document.getElementById("formTurno");
-  const selectHora = document.getElementById("hora");
-  const selectArea = document.getElementById("area");
-  const mensaje = document.getElementById("mensajeConfirmacion");
+    const selectHora = document.getElementById("hora");
+    const selectArea = document.getElementById("area");
+    const mensaje = document.getElementById("mensajeConfirmacion");
 
-  // Horarios disponibles por área médica
-  const horariosPorArea = {
-    "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
-    "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
-    "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
-    "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
-  };
+    const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
 
-  // Obtener turnos guardados del almacenamiento local
-  const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
+    const horariosPorArea = {
+      "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
+      "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
+      "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
+      "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
+    };
 
-  // Cargar horarios disponibles cuando cambia el área
-  selectArea.addEventListener("change", () => {
-    generarHorarios(selectArea.value);
-  });
-
-  // Generar opciones de horarios no reservados
-  function generarHorarios(areaSeleccionada) {
-    selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
-    if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
-
-    const horariosDisponibles = horariosPorArea[areaSeleccionada];
-    const fechaSeleccionada = document.getElementById("fecha").value;
-    const clave = `${areaSeleccionada}-${fechaSeleccionada}`;
-    const ocupados = turnosReservados[clave] || [];
-
-    horariosDisponibles.forEach(hora => {
-      if (!ocupados.includes(hora)) {
-        const option = document.createElement("option");
-        option.value = hora;
-        option.textContent = hora;
-        selectHora.appendChild(option);
-      }
+    selectArea.addEventListener("change", () => {
+      const area = selectArea.value;
+      generarHorarios(area);
     });
-  }
 
-  // Evento al cambiar fecha: actualiza horarios
-  document.getElementById("fecha").addEventListener("change", () => {
-    generarHorarios(selectArea.value);
-  });
+    function generarHorarios(areaSeleccionada) {
+      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+      if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
 
-  // Enviar formulario
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
+      const horariosDisponibles = horariosPorArea[areaSeleccionada];
+      const ocupados = turnosReservados[areaSeleccionada] || [];
 
-    const nombre = document.getElementById("nombre").value.trim();
-    const area = selectArea.value;
-    const fecha = document.getElementById("fecha").value;
-    const hora = selectHora.value;
-
-    if (!fecha || new Date(fecha) < new Date().setHours(0,0,0,0)) {
-      alert("Por favor seleccioná una fecha válida.");
-      return;
+      horariosDisponibles.forEach(hora => {
+        if (!ocupados.includes(hora)) {
+          const option = document.createElement("option");
+          option.value = hora;
+          option.textContent = hora;
+          selectHora.appendChild(option);
+        }
+      });
     }
 
-    const clave = `${area}-${fecha}`;
-    if (!turnosReservados[clave]) {
-      turnosReservados[clave] = [];
-    }
+    document.getElementById("formTurno").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById("nombre").value;
+      const area = selectArea.value;
+      const hora = selectHora.value;
+      const fecha = document.getElementById("fecha").value;
 
-    turnosReservados[clave].push(hora);
-    localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
+      if (!turnosReservados[area]) turnosReservados[area] = [];
+      turnosReservados[area].push(hora);
+      localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
 
-    mensaje.style.display = "block";
-    mensaje.textContent = `✅ ¡Turno reservado para ${nombre} en ${area}, el día ${fecha} a las ${hora} hs!`;
-
-    this.reset();
-    selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
-  });
-</script>
+      mensaje.style.display = "block";
+      mensaje.textContent = `Turno reservado para ${nombre} en ${area} el ${fecha} a las ${hora}.`;
+      document.getElementById("formTurno").reset();
+    });
+  </script>
+</body>
+</html>
