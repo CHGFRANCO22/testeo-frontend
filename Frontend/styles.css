@@ -1,177 +1,82 @@
-/* Fuente base */
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f8f9fa; /* gris claro */
-  color: #212529;
+  background-color: #f4f4f4;
 }
 
-/* Navbar */
 .navbar {
-  background-color: #007bff !important; /* azul */
-}
-
-.navbar .nav-link,
-.navbar .navbar-brand {
-  color: white !important;
-}
-
-.navbar .nav-link:hover,
-.navbar .navbar-brand:hover {
-  color: #e2e6ea !important;
-}
-
-.navbar .btn-outline-primary,
-.navbar .btn-outline-secondary {
-  margin-left: 10px;
-  color: white;
-  border-color: white;
-}
-
-.navbar .btn-outline-primary:hover,
-.navbar .btn-outline-secondary:hover {
-  background-color: white;
-  color: #007bff;
-}
-
-/* Secciones de contenido */
-.content-section,
-.doctores-section {
-  padding: 50px 20px;
-  background-color: white;
-  margin: 20px auto;
-  border-radius: 10px;
-  max-width: 900px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-}
-
-/* Tarjetas de doctores */
-.doctor-card {
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: #f1f3f5;
-  transition: transform 0.2s;
-}
-
-.doctor-card:hover {
-  transform: scale(1.02);
-}
-
-.doctor-card h4 {
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-/* Footer */
-footer {
-  background-color: #343a40;
-  color: white;
-  padding: 20px;
+  background-color: #007bff;
+  padding: 1em;
   text-align: center;
 }
-/* Página de login */
-.login-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 20px;
-}
 
-.login-box {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
-.login-box h2 {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.register-link {
-  display: block;
-  margin-bottom: 15px;
-  text-align: left;
-  color: #007bff;
+.navbar a {
+  color: white;
   text-decoration: none;
-  font-size: 0.85rem;
+  margin: 0 1em;
 }
 
-.register-link:hover {
-  text-decoration: underline;
+.container {
+  max-width: 600px;
+  margin: 2em auto;
+  background-color: white;
+  padding: 2em;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Footer para login */
-footer {
-  background-color: #f1f1f1;
-  padding: 20px;
+h2 {
   text-align: center;
 }
-body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f9f9f9;
+
+form {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
-.navbar {
-  background: linear-gradient(90deg, #007BFF, #0056b3);
+label {
+  margin-top: 1em;
 }
 
-.navbar-brand,
-.nav-link {
-  color: #fff !important;
+input, select {
+  padding: 0.5em;
+  font-size: 1em;
 }
 
-.nav-link.btn {
-  margin-left: 10px;
-  color: #fff !important;
-  border-color: #fff !important;
+button {
+  margin-top: 1.5em;
+  padding: 0.75em;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
 }
 
-.login-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 20px;
-}
-
-.login-box {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
-.login-box h2 {
-  text-align: center;
-  margin-bottom: 30px;
+button:hover {
+  background-color: #0056b3;
 }
 
 footer {
-  background-color: #f1f1f1;
-  padding: 20px;
+  background-color: #007bff;
+  color: white;
   text-align: center;
-}
-.navbar {
-  background: linear-gradient(90deg, #007BFF, #0056b3);
-}
-
-.navbar-brand, .nav-link {
-  color: #fff !important;
+  padding: 1em 0;
+  margin-top: 2em;
 }
 
-.btn {
-  font-weight: bold;
+.alert {
+  margin-top: 1em;
+  padding: 1em;
+  border-radius: 5px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
 }
