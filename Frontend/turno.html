@@ -49,7 +49,13 @@
           <option value="odontología">Odontología</option>
           <option value="cardiología">Cardiología</option>
         </select>
-      </div>
+      </div>  
+<!-- Campo de fecha -->
+ <div class="mb-3">
+  <label for="fecha" class="form-label">Fecha</label>
+  <input type="date" class="form-control" id="fecha" required>
+</div>
+
 
       <!-- Select para la hora -->
       <div class="mb-3">
@@ -67,66 +73,78 @@
   </div>
 
   <script>
-    const selectHora = document.getElementById("hora");
-    const selectArea = document.getElementById("area");
-    const mensaje = document.getElementById("mensajeConfirmacion");
+  const form = document.getElementById("formTurno");
+  const selectHora = document.getElementById("hora");
+  const selectArea = document.getElementById("area");
+  const mensaje = document.getElementById("mensajeConfirmacion");
 
-    // Guardamos turnos ocupados por área
-    const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
+  // Horarios disponibles por área médica
+  const horariosPorArea = {
+    "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
+    "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
+    "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
+    "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
+  };
 
-    // Horarios permitidos por área
-    const horariosPorArea = {
-      "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
-      "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
-      "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
-      "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
-    };
+  // Obtener turnos guardados del almacenamiento local
+  const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
 
-    function generarHorarios(areaSeleccionada) {
-      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
-      if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
+  // Cargar horarios disponibles cuando cambia el área
+  selectArea.addEventListener("change", () => {
+    generarHorarios(selectArea.value);
+  });
 
-      const horariosDisponibles = horariosPorArea[areaSeleccionada];
-      const ocupados = turnosReservados[areaSeleccionada] || [];
+  // Generar opciones de horarios no reservados
+  function generarHorarios(areaSeleccionada) {
+    selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+    if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
 
-      horariosDisponibles.forEach(horario => {
-        if (!ocupados.includes(horario)) {
-          const option = document.createElement("option");
-          option.value = horario;
-          option.textContent = horario;
-          selectHora.appendChild(option);
-        }
-      });
+    const horariosDisponibles = horariosPorArea[areaSeleccionada];
+    const fechaSeleccionada = document.getElementById("fecha").value;
+    const clave = `${areaSeleccionada}-${fechaSeleccionada}`;
+    const ocupados = turnosReservados[clave] || [];
+
+    horariosDisponibles.forEach(hora => {
+      if (!ocupados.includes(hora)) {
+        const option = document.createElement("option");
+        option.value = hora;
+        option.textContent = hora;
+        selectHora.appendChild(option);
+      }
+    });
+  }
+
+  // Evento al cambiar fecha: actualiza horarios
+  document.getElementById("fecha").addEventListener("change", () => {
+    generarHorarios(selectArea.value);
+  });
+
+  // Enviar formulario
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const area = selectArea.value;
+    const fecha = document.getElementById("fecha").value;
+    const hora = selectHora.value;
+
+    if (!fecha || new Date(fecha) < new Date().setHours(0,0,0,0)) {
+      alert("Por favor seleccioná una fecha válida.");
+      return;
     }
 
-    // Cuando cambia el área, se actualizan horarios
-    selectArea.addEventListener("change", function() {
-      generarHorarios(this.value);
-      mensaje.style.display = "none"; // ocultar mensaje cuando se cambia área
-    });
+    const clave = `${area}-${fecha}`;
+    if (!turnosReservados[clave]) {
+      turnosReservados[clave] = [];
+    }
 
-    // Manejo de envío de formulario
-    document.getElementById("formTurno").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const nombre = document.getElementById("nombre").value.trim();
-      const area = selectArea.value;
-      const horaSeleccionada = selectHora.value;
+    turnosReservados[clave].push(hora);
+    localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
 
-      if (!horaSeleccionada) {
-        alert("Por favor, seleccione una hora disponible.");
-        return;
-      }
+    mensaje.style.display = "block";
+    mensaje.textContent = `✅ ¡Turno reservado para ${nombre} en ${area}, el día ${fecha} a las ${hora} hs!`;
 
-      if (!turnosReservados[area]) turnosReservados[area] = [];
-      turnosReservados[area].push(horaSeleccionada);
-      localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
-
-      mensaje.textContent = `¡Turno reservado para ${nombre} en ${area} a las ${horaSeleccionada}!`;
-      mensaje.style.display = "block";
-
-      generarHorarios(area);
-      e.target.reset();
-    });
-  </script>
-</body>
-</html>
+    this.reset();
+    selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+  });
+</script>
