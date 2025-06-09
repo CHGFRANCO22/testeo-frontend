@@ -44,5 +44,7 @@ const obtenerTurnosPorPaciente = (req, res) => {
 };
 
 module.exports = {
-    obtenerTurnosPorPaciente
+  crearTurno,
+  obtenerTurnosPorPaciente
 };
+

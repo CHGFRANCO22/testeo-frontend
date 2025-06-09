@@ -1,13 +1,20 @@
 const express = require('express');
-const router = express.Router();
+const cors = require('cors');
+require('dotenv').config();
 
-const { crearTurno, obtenerTurnosPorPaciente } = require('../controllers/turnosController');
-const verifyToken = require('../middleware/authMiddleware');
+const authRoutes = require('./routes/auth');
+const turnosRoutes = require('./routes/turnos');
 
-// Crear nuevo turno (POST)
-router.post('/crear', crearTurno);
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Obtener turnos de un paciente con token (GET)
-router.get('/mis-turnos', verifyToken, obtenerTurnosPorPaciente);
+app.use(cors());
+app.use(express.json());
 
-module.exports = router;
+// Rutas
+app.use('/api/auth', authRoutes);
+app.use('/api/turnos', turnosRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});

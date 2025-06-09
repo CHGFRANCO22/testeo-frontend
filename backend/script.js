@@ -1,4 +1,3 @@
-
 async function obtenerTurnos() {
     const token = localStorage.getItem('token');
 
