@@ -18,3 +18,11 @@ app.use('/api/turnos', turnosRoutes);
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Ruta raíz
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
