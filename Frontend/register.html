@@ -14,16 +14,13 @@
       flex-direction: column;
       min-height: 100vh;
     }
-
     .navbar {
       background-color: #007BFF;
     }
-
     .navbar .navbar-brand {
       color: white;
       font-weight: bold;
     }
-
     .login-container {
       flex: 1;
       display: flex;
@@ -31,7 +28,6 @@
       justify-content: center;
       padding: 50px 20px;
     }
-
     .login-box {
       background-color: #ffffff;
       padding: 40px;
@@ -40,12 +36,10 @@
       width: 100%;
       max-width: 400px;
     }
-
     .login-box h2 {
       text-align: center;
       margin-bottom: 30px;
     }
-
     footer {
       background-color: #f1f1f1;
       padding: 20px;
@@ -65,8 +59,21 @@
       <h2>Registrarse</h2>
       <form id="registerForm">
         <div class="mb-3">
-          <label for="username" class="form-label">Nombre de Usuario</label>
-          <input type="text" class="form-control" id="username" name="username" required />
+          <label for="nombre_completo" class="form-label">Nombre Completo</label>
+          <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" required />
+        </div>
+        <div class="mb-3">
+          <label for="dni" class="form-label">DNI</label>
+          <input type="text" class="form-control" id="dni" name="dni" required />
+        </div>
+        <div class="mb-3">
+          <label for="sexo" class="form-label">Sexo</label>
+          <select class="form-select" id="sexo" name="sexo" required>
+            <option value="">Seleccionar</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="Otro">Otro</option>
+          </select>
         </div>
         <div class="mb-3">
           <label for="email" class="form-label">Correo Electrónico</label>
@@ -75,6 +82,10 @@
         <div class="mb-3">
           <label for="password" class="form-label">Contraseña</label>
           <input type="password" class="form-control" id="password" name="password" required />
+        </div>
+        <div class="mb-3">
+          <label for="passwordConfirm" class="form-label">Repetir Contraseña</label>
+          <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required />
         </div>
         <button type="submit" class="btn btn-primary w-100">Registrarse</button>
       </form>
@@ -87,49 +98,56 @@
   </footer>
 
   <script>
-    document.getElementById('registerForm').addEventListener('submit', function (event) {
+    document.getElementById('registerForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
-      const username = document.getElementById('username').value;
-      const email = document.getElementById('email').value;
+      const nombre_completo = document.getElementById('nombre_completo').value.trim();
+      const dni = document.getElementById('dni').value.trim();
+      const sexo = document.getElementById('sexo').value;
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const passwordConfirm = document.getElementById('passwordConfirm').value;
 
-      // Simulación de registro (puede reemplazarse con un POST a backend real)
-      localStorage.setItem('usuario', JSON.stringify({ username, email, password }));
+      const mensajeRegistro = document.getElementById('mensajeRegistro');
 
-      document.getElementById('mensajeRegistro').textContent = '¡Registro exitoso! Ahora podés iniciar sesión.';
-      document.getElementById('mensajeRegistro').classList.add('text-success');
-      document.getElementById('registerForm').reset();
+      // Validar contraseñas
+      if (password !== passwordConfirm) {
+        mensajeRegistro.textContent = 'Las contraseñas no coinciden.';
+        mensajeRegistro.classList.remove('text-success');
+        mensajeRegistro.classList.add('text-danger');
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre_completo, dni, sexo, email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 201) {
+          mensajeRegistro.textContent = '¡Registro exitoso! Ahora podés iniciar sesión.';
+          mensajeRegistro.classList.remove('text-danger');
+          mensajeRegistro.classList.add('text-success');
+          this.reset();
+
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+        } else {
+          mensajeRegistro.textContent = data.mensaje || 'Error al registrar usuario.';
+          mensajeRegistro.classList.remove('text-success');
+          mensajeRegistro.classList.add('text-danger');
+        }
+      } catch (err) {
+        console.error('Error al registrar:', err);
+        mensajeRegistro.textContent = 'Error al registrar usuario.';
+        mensajeRegistro.classList.remove('text-success');
+        mensajeRegistro.classList.add('text-danger');
+      }
     });
   </script>
 </body>
 </html>
-<script>
-  document.querySelector('form').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const nombre_completo = document.getElementById('nombre').value;
-    const dni = document.getElementById('dni').value;
-    const sexo = document.getElementById('sexo').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    try {
-      const res = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre_completo, dni, sexo, email, password })
-      });
-
-      const data = await res.json();
-      alert(data.mensaje);
-
-      if (res.status === 201) {
-        window.location.href = 'login.html';
-      }
-    } catch (err) {
-      console.error('Error al registrar:', err);
-      alert('Error al registrar usuario.');
-    }
-  });
-</script>
