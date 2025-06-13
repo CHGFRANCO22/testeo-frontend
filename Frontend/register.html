@@ -14,13 +14,16 @@
       flex-direction: column;
       min-height: 100vh;
     }
+
     .navbar {
       background-color: #007BFF;
     }
+
     .navbar .navbar-brand {
       color: white;
       font-weight: bold;
     }
+
     .login-container {
       flex: 1;
       display: flex;
@@ -28,18 +31,21 @@
       justify-content: center;
       padding: 50px 20px;
     }
+
     .login-box {
       background-color: #ffffff;
       padding: 40px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
     }
+
     .login-box h2 {
       text-align: center;
       margin-bottom: 30px;
     }
+
     footer {
       background-color: #f1f1f1;
       padding: 20px;
@@ -59,20 +65,20 @@
       <h2>Registrarse</h2>
       <form id="registerForm">
         <div class="mb-3">
-          <label for="nombre_completo" class="form-label">Nombre Completo</label>
-          <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" required />
+          <label for="nombre" class="form-label">Nombre Completo</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" required />
         </div>
         <div class="mb-3">
           <label for="dni" class="form-label">DNI</label>
-          <input type="text" class="form-control" id="dni" name="dni" required />
+          <input type="text" class="form-control" id="dni" name="dni" pattern="\d{8}" maxlength="8" required />
         </div>
         <div class="mb-3">
           <label for="sexo" class="form-label">Sexo</label>
-          <select class="form-select" id="sexo" name="sexo" required>
-            <option value="">Seleccionar</option>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
-            <option value="Otro">Otro</option>
+          <select class="form-control" id="sexo" name="sexo" required>
+            <option value="">Seleccione</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="X">Otro</option>
           </select>
         </div>
         <div class="mb-3">
@@ -81,11 +87,12 @@
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Contraseña</label>
-          <input type="password" class="form-control" id="password" name="password" required />
+          <input type="password" class="form-control" id="password" name="password" pattern="(?=.*[A-Z])(?=.*\d).{6,}" required />
+          <div class="form-text">Debe contener al menos 1 mayúscula, 1 número y mínimo 6 caracteres.</div>
         </div>
         <div class="mb-3">
-          <label for="passwordConfirm" class="form-label">Repetir Contraseña</label>
-          <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required />
+          <label for="confirmPassword" class="form-label">Repetir Contraseña</label>
+          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
         </div>
         <button type="submit" class="btn btn-primary w-100">Registrarse</button>
       </form>
@@ -98,23 +105,36 @@
   </footer>
 
   <script>
-    document.getElementById('registerForm').addEventListener('submit', async function (event) {
-      event.preventDefault();
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-      const nombre_completo = document.getElementById('nombre_completo').value.trim();
+      const nombre_completo = document.getElementById('nombre').value.trim();
       const dni = document.getElementById('dni').value.trim();
       const sexo = document.getElementById('sexo').value;
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const passwordConfirm = document.getElementById('passwordConfirm').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
 
-      const mensajeRegistro = document.getElementById('mensajeRegistro');
+      const mensajeDiv = document.getElementById('mensajeRegistro');
+      mensajeDiv.textContent = '';
+      mensajeDiv.classList.remove('text-success', 'text-danger');
 
-      // Validar contraseñas
-      if (password !== passwordConfirm) {
-        mensajeRegistro.textContent = 'Las contraseñas no coinciden.';
-        mensajeRegistro.classList.remove('text-success');
-        mensajeRegistro.classList.add('text-danger');
+      if (dni.length !== 8 || isNaN(dni)) {
+        mensajeDiv.textContent = 'El DNI debe contener exactamente 8 dígitos.';
+        mensajeDiv.classList.add('text-danger');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        mensajeDiv.textContent = 'Las contraseñas no coinciden.';
+        mensajeDiv.classList.add('text-danger');
+        return;
+      }
+
+      const passwordPattern = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
+      if (!passwordPattern.test(password)) {
+        mensajeDiv.textContent = 'La contraseña debe tener al menos una mayúscula, un número y 6 caracteres.';
+        mensajeDiv.classList.add('text-danger');
         return;
       }
 
@@ -128,24 +148,20 @@
         const data = await res.json();
 
         if (res.status === 201) {
-          mensajeRegistro.textContent = '¡Registro exitoso! Ahora podés iniciar sesión.';
-          mensajeRegistro.classList.remove('text-danger');
-          mensajeRegistro.classList.add('text-success');
-          this.reset();
-
+          mensajeDiv.textContent = '¡Registro exitoso! Ahora podés iniciar sesión.';
+          mensajeDiv.classList.add('text-success');
+          document.getElementById('registerForm').reset();
           setTimeout(() => {
             window.location.href = 'login.html';
           }, 2000);
         } else {
-          mensajeRegistro.textContent = data.mensaje || 'Error al registrar usuario.';
-          mensajeRegistro.classList.remove('text-success');
-          mensajeRegistro.classList.add('text-danger');
+          mensajeDiv.textContent = data.mensaje || 'Error al registrar usuario.';
+          mensajeDiv.classList.add('text-danger');
         }
       } catch (err) {
         console.error('Error al registrar:', err);
-        mensajeRegistro.textContent = 'Error al registrar usuario.';
-        mensajeRegistro.classList.remove('text-success');
-        mensajeRegistro.classList.add('text-danger');
+        mensajeDiv.textContent = 'Error al registrar usuario.';
+        mensajeDiv.classList.add('text-danger');
       }
     });
   </script>
