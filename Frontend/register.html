@@ -65,35 +65,54 @@
       <h2>Registrarse</h2>
       <form id="registerForm">
         <div class="mb-3">
-          <label for="nombre" class="form-label">Nombre Completo</label>
-          <input type="text" class="form-control" id="nombre" name="nombre" required />
+          <label for="nombre" class="form-label">Nombre completo</label>
+          <input type="text" class="form-control" id="nombre" required />
         </div>
         <div class="mb-3">
           <label for="dni" class="form-label">DNI</label>
-          <input type="text" class="form-control" id="dni" name="dni" pattern="\d{8}" maxlength="8" required />
+          <input type="text" class="form-control" id="dni" required maxlength="8" pattern="\d{8}" />
         </div>
         <div class="mb-3">
           <label for="sexo" class="form-label">Sexo</label>
-          <select class="form-control" id="sexo" name="sexo" required>
-            <option value="">Seleccione</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
-            <option value="X">Otro</option>
+          <select class="form-control" id="sexo" required>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
           </select>
         </div>
         <div class="mb-3">
           <label for="email" class="form-label">Correo Electrónico</label>
-          <input type="email" class="form-control" id="email" name="email" required />
+          <input type="email" class="form-control" id="email" required />
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Contraseña</label>
-          <input type="password" class="form-control" id="password" name="password" pattern="(?=.*[A-Z])(?=.*\d).{6,}" required />
-          <div class="form-text">Debe contener al menos 1 mayúscula, 1 número y mínimo 6 caracteres.</div>
+          <input type="password" class="form-control" id="password" required />
         </div>
         <div class="mb-3">
-          <label for="confirmPassword" class="form-label">Repetir Contraseña</label>
-          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+          <label for="repetirPassword" class="form-label">Repetir Contraseña</label>
+          <input type="password" class="form-control" id="repetirPassword" required />
         </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="esMenor" />
+          <label class="form-check-label" for="esMenor">Soy menor de edad</label>
+        </div>
+
+        <div id="titularFields" style="display: none;">
+          <h5>Datos del titular</h5>
+          <div class="mb-3">
+            <label for="titularNombre" class="form-label">Nombre del titular</label>
+            <input type="text" class="form-control" id="titularNombre" />
+          </div>
+          <div class="mb-3">
+            <label for="titularDni" class="form-label">DNI del titular</label>
+            <input type="text" class="form-control" id="titularDni" maxlength="8" pattern="\d{8}" />
+          </div>
+          <div class="mb-3">
+            <label for="titularEmail" class="form-label">Email del titular</label>
+            <input type="email" class="form-control" id="titularEmail" />
+          </div>
+        </div>
+
         <button type="submit" class="btn btn-primary w-100">Registrarse</button>
       </form>
       <div id="mensajeRegistro" class="mt-3 text-center"></div>
@@ -105,63 +124,62 @@
   </footer>
 
   <script>
+    document.getElementById('esMenor').addEventListener('change', function () {
+      document.getElementById('titularFields').style.display = this.checked ? 'block' : 'none';
+    });
+
     document.getElementById('registerForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const nombre_completo = document.getElementById('nombre').value.trim();
-      const dni = document.getElementById('dni').value.trim();
+      const nombre_completo = document.getElementById('nombre').value;
+      const dni = document.getElementById('dni').value;
       const sexo = document.getElementById('sexo').value;
-      const email = document.getElementById('email').value.trim();
+      const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
+      const repetirPassword = document.getElementById('repetirPassword').value;
+      const esMenor = document.getElementById('esMenor').checked;
 
-      const mensajeDiv = document.getElementById('mensajeRegistro');
-      mensajeDiv.textContent = '';
-      mensajeDiv.classList.remove('text-success', 'text-danger');
-
-      if (dni.length !== 8 || isNaN(dni)) {
-        mensajeDiv.textContent = 'El DNI debe contener exactamente 8 dígitos.';
-        mensajeDiv.classList.add('text-danger');
+      if (!/^\d{8}$/.test(dni)) {
+        alert('El DNI debe tener exactamente 8 dígitos.');
         return;
       }
 
-      if (password !== confirmPassword) {
-        mensajeDiv.textContent = 'Las contraseñas no coinciden.';
-        mensajeDiv.classList.add('text-danger');
+      if (!/(?=.*[A-Z])(?=.*\d)/.test(password)) {
+        alert('La contraseña debe contener al menos una letra mayúscula y un número.');
         return;
       }
 
-      const passwordPattern = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
-      if (!passwordPattern.test(password)) {
-        mensajeDiv.textContent = 'La contraseña debe tener al menos una mayúscula, un número y 6 caracteres.';
-        mensajeDiv.classList.add('text-danger');
+      if (password !== repetirPassword) {
+        alert('Las contraseñas no coinciden.');
         return;
+      }
+
+      const payload = { nombre_completo, dni, sexo, email, password };
+
+      if (esMenor) {
+        payload.titular = {
+          nombre: document.getElementById('titularNombre').value,
+          dni: document.getElementById('titularDni').value,
+          email: document.getElementById('titularEmail').value
+        };
       }
 
       try {
         const res = await fetch('http://localhost:3000/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre_completo, dni, sexo, email, password })
+          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
+        alert(data.mensaje);
 
         if (res.status === 201) {
-          mensajeDiv.textContent = '¡Registro exitoso! Ahora podés iniciar sesión.';
-          mensajeDiv.classList.add('text-success');
-          document.getElementById('registerForm').reset();
-          setTimeout(() => {
-            window.location.href = 'login.html';
-          }, 2000);
-        } else {
-          mensajeDiv.textContent = data.mensaje || 'Error al registrar usuario.';
-          mensajeDiv.classList.add('text-danger');
+          window.location.href = 'login.html';
         }
       } catch (err) {
         console.error('Error al registrar:', err);
-        mensajeDiv.textContent = 'Error al registrar usuario.';
-        mensajeDiv.classList.add('text-danger');
+        alert('Error al registrar usuario.');
       }
     });
   </script>
