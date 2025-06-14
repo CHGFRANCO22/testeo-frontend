@@ -1,80 +1,83 @@
+// controllers/authController.js
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
 exports.register = async (req, res) => {
-  console.log('Datos recibidos:', req.body);
-
-  const { nombre_completo, dni, sexo, email, password, titular } = req.body;
-
-  // Validaciones básicas manuales para ver qué falla
-  if (!nombre_completo || !dni || !sexo || !email || !password) {
-    return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
-  }
-
-  if (dni.length !== 8 || !/^\d{8}$/.test(dni)) {
-    return res.status(400).json({ mensaje: 'El DNI debe tener 8 dígitos numéricos.' });
-  }
+  const {
+    nombre_completo,
+    dni,
+    sexo,
+    edad,               // <-- agregado
+    email,
+    password,
+    nombre_titular,
+    dni_titular,
+    email_titular,
+  } = req.body;
 
   try {
-    const conn = await pool.getConnection();
+    const connection = await pool.getConnection();
 
-    // Verificar email paciente
-    const [emailCheck] = await conn.query('SELECT * FROM pacientes WHERE email = ?', [email]);
-    if (emailCheck.length > 0) {
-      conn.release();
-      return res.status(400).json({ mensaje: 'El correo ya está registrado.' });
-    }
-
-    if (titular) {
-      if (!titular.nombre || !titular.email) {
-        conn.release();
-        return res.status(400).json({ mensaje: 'Datos incompletos del titular.' });
-      }
-      const [titularCheck] = await conn.query('SELECT * FROM pacientes WHERE email = ?', [titular.email]);
-      if (titularCheck.length > 0) {
-        conn.release();
-        return res.status(400).json({ mensaje: 'El email del titular ya está registrado.' });
-      }
-    }
-
-    // Insert persona paciente
-    const [personaResult] = await conn.query(
-      'INSERT INTO persona (nombre_completo, dni, sexo) VALUES (?, ?, ?)',
-      [nombre_completo, dni, sexo]
+    // Validar si dni ya existe
+    const [existingPersona] = await connection.query(
+      'SELECT id_persona FROM persona WHERE dni = ?',
+      [dni]
     );
+    if (existingPersona.length > 0) {
+      connection.release();
+      return res.status(400).json({ mensaje: 'El DNI ya está registrado.' });
+    }
+
+    // Insertar persona con edad
+    const [personaResult] = await connection.query(
+      'INSERT INTO persona (nombre_completo, dni, sexo, edad) VALUES (?, ?, ?, ?)',
+      [nombre_completo, dni, sexo, edad]
+    );
+
     const id_persona = personaResult.insertId;
 
-    let id_titular = null;
-    if (titular) {
-      const [personaTitularResult] = await conn.query(
-        'INSERT INTO persona (nombre_completo, dni, sexo) VALUES (?, ?, ?)',
-        [titular.nombre, titular.dni || null, 'No especificado']
-      );
-      const id_persona_titular = personaTitularResult.insertId;
-
-      const hashedTitularPass = await bcrypt.hash('Titular123', 10);
-
-      await conn.query(
-        'INSERT INTO pacientes (id_persona, email, password) VALUES (?, ?, ?)',
-        [id_persona_titular, titular.email, hashedTitularPass]
-      );
-
-      id_titular = id_persona_titular;
-    }
-
+    // Encriptar password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await conn.query(
-      'INSERT INTO pacientes (id_persona, email, password, id_titular) VALUES (?, ?, ?, ?)',
-      [id_persona, email, hashedPassword, id_titular]
+    // Insertar paciente
+    await connection.query(
+      'INSERT INTO pacientes (id_persona, email, password) VALUES (?, ?, ?)',
+      [id_persona, email, hashedPassword]
     );
 
-    conn.release();
-    return res.status(201).json({ mensaje: 'Usuario registrado con éxito.' });
-  } catch (error) {
-    console.error('ERROR en register:', error);
+    // Si se envió datos de titular (por ser menor), insertar titular
+    if (nombre_titular && dni_titular && email_titular) {
+      // Aquí tendrías que insertar el titular en persona y relacionarlo si usas otra tabla
+      // O guardar esa info en la tabla que corresponda
+      // Por ejemplo:
+      const [titularResult] = await connection.query(
+        'INSERT INTO persona (nombre_completo, dni) VALUES (?, ?)',
+        [nombre_titular, dni_titular]
+      );
+      const id_titular = titularResult.insertId;
 
-    // Enviar detalles del error (solo para desarrollo)
-    return res.status(500).json({ 
-      mensaje: 'Error al registrar usuario.',
-      detalle: error.message || error
-    });
+      // Supongamos que hay una tabla paciente_titular que relaciona paciente con titular
+      await connection.query(
+        'INSERT INTO paciente_titular (id_paciente, id_titular, email) VALUES (?, ?, ?)',
+        [id_persona, id_titular, email_titular]
+      );
+    }
+
+    connection.release();
+    return res.status(201).json({ mensaje: 'Registro exitoso' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor' });
   }
 };
