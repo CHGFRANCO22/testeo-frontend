@@ -77,6 +77,42 @@
           </select>
         </div>
 
+        <!-- Botón para desplegar edad y datos titular -->
+        <div class="mb-3">
+          <button 
+            class="btn btn-outline-secondary w-100" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#collapseEdadTitular" 
+            aria-expanded="false" 
+            aria-controls="collapseEdadTitular"
+          >
+            Agregar edad y datos del titular (si sos menor)
+          </button>
+        </div>
+
+        <div class="collapse" id="collapseEdadTitular">
+          <div class="mb-3">
+            <label for="edad" class="form-label">Edad</label>
+            <input type="number" class="form-control" id="edad" name="edad" min="0" max="120" />
+          </div>
+
+          <div class="mb-3">
+            <label for="nombreTitular" class="form-label">Nombre del titular</label>
+            <input type="text" class="form-control" id="nombreTitular" name="nombre_titular" />
+          </div>
+
+          <div class="mb-3">
+            <label for="dniTitular" class="form-label">DNI del titular</label>
+            <input type="text" class="form-control" id="dniTitular" name="dni_titular" maxlength="8" />
+          </div>
+
+          <div class="mb-3">
+            <label for="emailTitular" class="form-label">Email del titular</label>
+            <input type="email" class="form-control" id="emailTitular" name="email_titular" />
+          </div>
+        </div>
+
         <div class="mb-3">
           <label for="email" class="form-label">Correo electrónico</label>
           <input type="email" class="form-control" id="email" name="email" required />
@@ -92,22 +128,6 @@
           <input type="password" class="form-control" id="repetirPassword" required />
         </div>
 
-        <!-- Datos de titular (opcional) -->
-        <div class="mb-3">
-          <label for="nombreTitular" class="form-label">Nombre del titular (si sos menor)</label>
-          <input type="text" class="form-control" id="nombreTitular" />
-        </div>
-
-        <div class="mb-3">
-          <label for="dniTitular" class="form-label">DNI del titular</label>
-          <input type="text" class="form-control" id="dniTitular" maxlength="8" />
-        </div>
-
-        <div class="mb-3">
-          <label for="emailTitular" class="form-label">Email del titular</label>
-          <input type="email" class="form-control" id="emailTitular" />
-        </div>
-
         <button type="submit" class="btn btn-primary w-100">Registrarse</button>
       </form>
       <div id="mensajeRegistro" class="mt-3 text-center"></div>
@@ -118,6 +138,8 @@
     <p>&copy; 2025 Salud Total. Todos los derechos reservados.</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
     document.getElementById('registerForm').addEventListener('submit', async function (event) {
       event.preventDefault();
@@ -125,6 +147,8 @@
       const nombre_completo = document.getElementById('nombre').value.trim();
       const dni = document.getElementById('dni').value.trim();
       const sexo = document.getElementById('sexo').value;
+      const edadInput = document.getElementById('edad');
+      const edad = edadInput ? edadInput.value : null;
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const repetirPassword = document.getElementById('repetirPassword').value;
@@ -142,6 +166,14 @@
         mensajeRegistro.textContent = 'El DNI debe tener exactamente 8 dígitos.';
         mensajeRegistro.classList.add('text-danger');
         return;
+      }
+
+      if (edad) {
+        if (isNaN(edad) || edad < 0 || edad > 120) {
+          mensajeRegistro.textContent = 'Por favor, ingrese una edad válida.';
+          mensajeRegistro.classList.add('text-danger');
+          return;
+        }
       }
 
       const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
@@ -165,6 +197,7 @@
             nombre_completo,
             dni,
             sexo,
+            edad,
             email,
             password,
             nombre_titular,
