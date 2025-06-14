@@ -20,7 +20,7 @@ exports.register = async (req, res) => {
     sexo,
     edad,
     email,
-    password,
+    contrasena,
     nombre_titular,
     dni_titular,
     email_titular,
