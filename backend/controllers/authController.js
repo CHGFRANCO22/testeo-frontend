@@ -105,7 +105,7 @@ exports.register = async (req, res) => {
     const id_persona = personaResult.insertId;
 
     // Encriptar password paciente
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     // Insertar paciente con posible id_titular
     await connection.query(
