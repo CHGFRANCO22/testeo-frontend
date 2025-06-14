@@ -1,21 +1,32 @@
-const pool = require('../db');
-const bcrypt = require('bcrypt');
-
 exports.register = async (req, res) => {
+  console.log('Datos recibidos:', req.body);
+
   const { nombre_completo, dni, sexo, email, password, titular } = req.body;
+
+  // Validaciones básicas manuales para ver qué falla
+  if (!nombre_completo || !dni || !sexo || !email || !password) {
+    return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
+  }
+
+  if (dni.length !== 8 || !/^\d{8}$/.test(dni)) {
+    return res.status(400).json({ mensaje: 'El DNI debe tener 8 dígitos numéricos.' });
+  }
 
   try {
     const conn = await pool.getConnection();
 
-    // Verificar si el email ya existe (en pacientes)
+    // Verificar email paciente
     const [emailCheck] = await conn.query('SELECT * FROM pacientes WHERE email = ?', [email]);
     if (emailCheck.length > 0) {
       conn.release();
       return res.status(400).json({ mensaje: 'El correo ya está registrado.' });
     }
 
-    // Si es menor y tiene titular, validar que titular email no exista
-    if (titular && titular.email) {
+    if (titular) {
+      if (!titular.nombre || !titular.email) {
+        conn.release();
+        return res.status(400).json({ mensaje: 'Datos incompletos del titular.' });
+      }
       const [titularCheck] = await conn.query('SELECT * FROM pacientes WHERE email = ?', [titular.email]);
       if (titularCheck.length > 0) {
         conn.release();
@@ -23,24 +34,21 @@ exports.register = async (req, res) => {
       }
     }
 
-    // Insertar persona paciente
+    // Insert persona paciente
     const [personaResult] = await conn.query(
       'INSERT INTO persona (nombre_completo, dni, sexo) VALUES (?, ?, ?)',
       [nombre_completo, dni, sexo]
     );
     const id_persona = personaResult.insertId;
 
-    // Si hay titular, insertarlo primero y obtener id_titular
     let id_titular = null;
     if (titular) {
       const [personaTitularResult] = await conn.query(
         'INSERT INTO persona (nombre_completo, dni, sexo) VALUES (?, ?, ?)',
-        [titular.nombre, titular.dni || null, 'No especificado'] // Si no pasas sexo del titular, usar 'No especificado'
+        [titular.nombre, titular.dni || null, 'No especificado']
       );
       const id_persona_titular = personaTitularResult.insertId;
 
-      // Hashear la contraseña del titular con un password default o generar uno aleatorio
-      // En este ejemplo, asignamos password genérica "Titular123"
       const hashedTitularPass = await bcrypt.hash('Titular123', 10);
 
       await conn.query(
@@ -51,19 +59,22 @@ exports.register = async (req, res) => {
       id_titular = id_persona_titular;
     }
 
-    // Hashear contraseña paciente
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insertar paciente con id_titular (puede ser null)
     await conn.query(
       'INSERT INTO pacientes (id_persona, email, password, id_titular) VALUES (?, ?, ?, ?)',
       [id_persona, email, hashedPassword, id_titular]
     );
 
     conn.release();
-    res.status(201).json({ mensaje: 'Usuario registrado con éxito.' });
+    return res.status(201).json({ mensaje: 'Usuario registrado con éxito.' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: 'Error al registrar usuario.' });
+    console.error('ERROR en register:', error);
+
+    // Enviar detalles del error (solo para desarrollo)
+    return res.status(500).json({ 
+      mensaje: 'Error al registrar usuario.',
+      detalle: error.message || error
+    });
   }
 };
