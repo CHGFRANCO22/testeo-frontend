@@ -91,7 +91,7 @@ exports.register = async (req, res) => {
 
       // Insertar paciente titular (sin titular, porque es titular)
       const [titularPacienteResult] = await connection.query(
-        'INSERT INTO pacientes (id_persona, email, password, id_titular) VALUES (?, ?, ?, NULL)',
+        'INSERT INTO pacientes (id_persona, email, contrasena, id_titular) VALUES (?, ?, ?, NULL)',
         [id_persona_titular, email_titular, hashedTitularPass]
       );
       id_titular_paciente = titularPacienteResult.insertId;
@@ -109,7 +109,7 @@ exports.register = async (req, res) => {
 
     // Insertar paciente con posible id_titular
     await connection.query(
-      'INSERT INTO pacientes (id_persona, email, password, id_titular) VALUES (?, ?, ?, ?)',
+      'INSERT INTO pacientes (id_persona, email, contrasena, id_titular) VALUES (?, ?, ?, ?)',
       [id_persona, email, hashedPassword, id_titular_paciente]
     );
 
