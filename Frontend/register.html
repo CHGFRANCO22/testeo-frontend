@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registrarse - Salud Total</title>
-  <link rel="stylesheet" href="styles.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     body {
@@ -14,16 +13,13 @@
       flex-direction: column;
       min-height: 100vh;
     }
-
     .navbar {
       background-color: #007BFF;
     }
-
     .navbar .navbar-brand {
       color: white;
       font-weight: bold;
     }
-
     .login-container {
       flex: 1;
       display: flex;
@@ -31,21 +27,18 @@
       justify-content: center;
       padding: 50px 20px;
     }
-
     .login-box {
-      background-color: #ffffff;
+      background-color: #fff;
       padding: 40px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 500px;
     }
-
     .login-box h2 {
       text-align: center;
       margin-bottom: 30px;
     }
-
     footer {
       background-color: #f1f1f1;
       padding: 20px;
@@ -91,12 +84,10 @@
           <label for="repetirPassword" class="form-label">Repetir Contraseña</label>
           <input type="password" class="form-control" id="repetirPassword" required />
         </div>
-
         <div class="mb-3 form-check">
           <input type="checkbox" class="form-check-input" id="esMenor" />
           <label class="form-check-label" for="esMenor">Soy menor de edad</label>
         </div>
-
         <div id="titularFields" style="display: none;">
           <h5>Datos del titular</h5>
           <div class="mb-3">
@@ -112,7 +103,6 @@
             <input type="email" class="form-control" id="titularEmail" />
           </div>
         </div>
-
         <button type="submit" class="btn btn-primary w-100">Registrarse</button>
       </form>
       <div id="mensajeRegistro" class="mt-3 text-center"></div>
@@ -131,10 +121,10 @@
     document.getElementById('registerForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const nombre_completo = document.getElementById('nombre').value;
-      const dni = document.getElementById('dni').value;
+      const nombre_completo = document.getElementById('nombre').value.trim();
+      const dni = document.getElementById('dni').value.trim();
       const sexo = document.getElementById('sexo').value;
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const repetirPassword = document.getElementById('repetirPassword').value;
       const esMenor = document.getElementById('esMenor').checked;
@@ -157,10 +147,23 @@
       const payload = { nombre_completo, dni, sexo, email, password };
 
       if (esMenor) {
+        const titularNombre = document.getElementById('titularNombre').value.trim();
+        const titularDni = document.getElementById('titularDni').value.trim();
+        const titularEmail = document.getElementById('titularEmail').value.trim();
+
+        if (!titularNombre || !titularDni || !titularEmail) {
+          alert('Debe completar todos los datos del titular.');
+          return;
+        }
+        if (!/^\d{8}$/.test(titularDni)) {
+          alert('El DNI del titular debe tener exactamente 8 dígitos.');
+          return;
+        }
+
         payload.titular = {
-          nombre: document.getElementById('titularNombre').value,
-          dni: document.getElementById('titularDni').value,
-          email: document.getElementById('titularEmail').value
+          nombre: titularNombre,
+          dni: titularDni,
+          email: titularEmail
         };
       }
 
@@ -172,10 +175,12 @@
         });
 
         const data = await res.json();
-        alert(data.mensaje);
 
-        if (res.status === 201) {
+        if (res.ok) {
+          alert(data.mensaje);
           window.location.href = 'login.html';
+        } else {
+          alert(data.mensaje || 'Error al registrar usuario');
         }
       } catch (err) {
         console.error('Error al registrar:', err);
