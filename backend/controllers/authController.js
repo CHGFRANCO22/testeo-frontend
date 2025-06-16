@@ -32,7 +32,7 @@ exports.register = async (req, res) => {
 
     // Validar si dni ya existe en persona (para paciente)
     const [existingPersona] = await connection.query(
-      'SELECT id_persona FROM persona WHERE dni = ?',
+      'SELECT id FROM persona WHERE dni = ?',
       [dni]
     );
     if (existingPersona.length > 0) {
@@ -58,7 +58,7 @@ exports.register = async (req, res) => {
     if (nombre_titular && dni_titular && email_titular) {
       // Validar si dni del titular existe
       const [existingTitularDNI] = await connection.query(
-        'SELECT id_persona FROM persona WHERE dni = ?',
+        'SELECT id FROM persona WHERE dni = ?',
         [dni_titular]
       );
       if (existingTitularDNI.length > 0) {
@@ -124,6 +124,7 @@ exports.register = async (req, res) => {
     return res.status(500).json({ mensaje: 'Error interno del servidor' });
   }
 };
+
 exports.login = async (req, res) => {
   const { email, contrasena } = req.body;
 
