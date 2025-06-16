@@ -77,40 +77,10 @@
           </select>
         </div>
 
-        <!-- Botón para desplegar edad y datos titular -->
+        <!-- Edad siempre visible -->
         <div class="mb-3">
-          <button 
-            class="btn btn-outline-secondary w-100" 
-            type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#collapseEdadTitular" 
-            aria-expanded="false" 
-            aria-controls="collapseEdadTitular"
-          >
-            Agregar edad y datos del titular (si sos menor)
-          </button>
-        </div>
-
-        <div class="collapse" id="collapseEdadTitular">
-          <div class="mb-3">
-            <label for="edad" class="form-label">Edad</label>
-            <input type="number" class="form-control" id="edad" name="edad" min="0" max="120" />
-          </div>
-
-          <div class="mb-3">
-            <label for="nombreTitular" class="form-label">Nombre del titular</label>
-            <input type="text" class="form-control" id="nombreTitular" name="nombre_titular" />
-          </div>
-
-          <div class="mb-3">
-            <label for="dniTitular" class="form-label">DNI del titular</label>
-            <input type="text" class="form-control" id="dniTitular" name="dni_titular" maxlength="8" />
-          </div>
-
-          <div class="mb-3">
-            <label for="emailTitular" class="form-label">Email del titular</label>
-            <input type="email" class="form-control" id="emailTitular" name="email_titular" />
-          </div>
+          <label for="edad" class="form-label">Edad</label>
+          <input type="number" class="form-control" id="edad" name="edad" min="0" max="120" required />
         </div>
 
         <div class="mb-3">
@@ -126,6 +96,37 @@
         <div class="mb-3">
           <label for="repetirPassword" class="form-label">Repetir contraseña</label>
           <input type="password" class="form-control" id="repetirPassword" required />
+        </div>
+
+        <!-- Botón para mostrar datos del titular (opcional) -->
+        <div class="mb-3">
+          <button 
+            class="btn btn-outline-secondary w-100" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#datosTitular" 
+            aria-expanded="false" 
+            aria-controls="datosTitular"
+          >
+            Agregar datos del titular (si sos menor)
+          </button>
+        </div>
+
+        <div class="collapse" id="datosTitular">
+          <div class="mb-3">
+            <label for="nombreTitular" class="form-label">Nombre del titular</label>
+            <input type="text" class="form-control" id="nombreTitular" name="nombre_titular" />
+          </div>
+
+          <div class="mb-3">
+            <label for="dniTitular" class="form-label">DNI del titular</label>
+            <input type="text" class="form-control" id="dniTitular" name="dni_titular" maxlength="8" />
+          </div>
+
+          <div class="mb-3">
+            <label for="emailTitular" class="form-label">Email del titular</label>
+            <input type="email" class="form-control" id="emailTitular" name="email_titular" />
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Registrarse</button>
@@ -147,8 +148,7 @@
       const nombre_completo = document.getElementById('nombre').value.trim();
       const dni = document.getElementById('dni').value.trim();
       const sexo = document.getElementById('sexo').value;
-      const edadInput = document.getElementById('edad');
-      const edad = edadInput ? edadInput.value : null;
+      const edad = parseInt(document.getElementById('edad').value, 10);
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const repetirPassword = document.getElementById('repetirPassword').value;
@@ -161,21 +161,39 @@
       mensajeRegistro.textContent = '';
       mensajeRegistro.className = '';
 
-      // Validaciones
+      // Validaciones básicas
       if (dni.length !== 8 || isNaN(dni)) {
         mensajeRegistro.textContent = 'El DNI debe tener exactamente 8 dígitos.';
         mensajeRegistro.classList.add('text-danger');
         return;
       }
 
-      if (edad) {
-        if (isNaN(edad) || edad < 0 || edad > 120) {
-          mensajeRegistro.textContent = 'Por favor, ingrese una edad válida.';
+      if (isNaN(edad) || edad < 0 || edad > 120) {
+        mensajeRegistro.textContent = 'Por favor, ingrese una edad válida.';
+        mensajeRegistro.classList.add('text-danger');
+        return;
+      }
+
+      // Si es menor de 18, datos del titular obligatorios
+      if (edad < 18) {
+        if (!nombre_titular) {
+          mensajeRegistro.textContent = 'Por ser menor, debe completar el nombre del titular.';
+          mensajeRegistro.classList.add('text-danger');
+          return;
+        }
+        if (dni_titular.length !== 8 || isNaN(dni_titular)) {
+          mensajeRegistro.textContent = 'Por ser menor, el DNI del titular debe tener exactamente 8 dígitos.';
+          mensajeRegistro.classList.add('text-danger');
+          return;
+        }
+        if (!email_titular) {
+          mensajeRegistro.textContent = 'Por ser menor, debe completar el email del titular.';
           mensajeRegistro.classList.add('text-danger');
           return;
         }
       }
 
+      // Validación contraseña
       const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
       if (!passwordRegex.test(password)) {
         mensajeRegistro.textContent = 'La contraseña debe tener al menos una mayúscula y un número.';
