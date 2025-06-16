@@ -20,25 +20,19 @@ exports.register = async (req, res) => {
     sexo,
     edad,
     email,
-    password,           // Recibimos "password" porque en frontend se llama así
+    contrasena,           // Recibimos "contrasena" para que coincida con la base de datos
     nombre_titular,
     dni_titular,
     email_titular,
   } = req.body;
 
-  if (
-    !nombre_completo ||
-    !dni ||
-    !sexo ||
-    !email ||
-    !password
-  ) {
+  // Validaciones básicas
+  if (!nombre_completo || !dni || !sexo || !email || !contrasena) {
     return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
   }
 
-  // Validaciones básicas
   if (dni.length !== 8 || isNaN(dni)) {
-    return res.status(400).json({ mensaje: 'El DNI debe tener exactamente 8 dígitos.' });
+    return res.status(400).json({ mensaje: 'El DNI debe tener 8 dígitos numéricos.' });
   }
 
   if (edad !== undefined && edad !== null && edad !== '') {
@@ -49,27 +43,30 @@ exports.register = async (req, res) => {
   }
 
   // Validación de contraseña
-  const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
-  if (!passwordRegex.test(password)) {
-    return res.status(400).json({ mensaje: 'La contraseña debe tener al menos una mayúscula y un número.' });
+  const pwdRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
+  if (!pwdRegex.test(contrasena)) {
+    return res.status(400).json({
+      mensaje: 'La contraseña debe tener al menos una mayúscula y un número.',
+    });
   }
 
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
-    // Validar si dni ya existe en persona (para paciente)
+    // 🚫 Antes: SELECT id_persona FROM persona
     const [existingPersona] = await connection.query(
-      'SELECT id_persona FROM persona WHERE dni = ?',
+      'SELECT id FROM persona WHERE dni = ?',
       [dni]
     );
     if (existingPersona.length > 0) {
       await connection.rollback();
       connection.release();
-      return res.status(400).json({ mensaje: 'El DNI del paciente ya está registrado.' });
+      return res.status(400).json({
+        mensaje: 'El DNI del paciente ya está registrado.',
+      });
     }
 
-    // Validar si email ya existe en pacientes
     const [existingEmail] = await connection.query(
       'SELECT id_paciente FROM pacientes WHERE email = ?',
       [email]
@@ -82,20 +79,19 @@ exports.register = async (req, res) => {
 
     let id_titular_paciente = null;
 
-    // Si hay datos del titular, registrarlo primero (titular también es paciente)
     if (nombre_titular && dni_titular && email_titular) {
-      // Validar si dni del titular existe
       const [existingTitularDNI] = await connection.query(
-        'SELECT id_persona FROM persona WHERE dni = ?',
+        'SELECT id FROM persona WHERE dni = ?',
         [dni_titular]
       );
       if (existingTitularDNI.length > 0) {
         await connection.rollback();
         connection.release();
-        return res.status(400).json({ mensaje: 'El DNI del titular ya está registrado.' });
+        return res.status(400).json({
+          mensaje: 'El DNI del titular ya está registrado.',
+        });
       }
 
-      // Validar si email titular existe
       const [existingTitularEmail] = await connection.query(
         'SELECT id_paciente FROM pacientes WHERE email = ?',
         [email_titular]
@@ -103,21 +99,20 @@ exports.register = async (req, res) => {
       if (existingTitularEmail.length > 0) {
         await connection.rollback();
         connection.release();
-        return res.status(400).json({ mensaje: 'El email del titular ya está registrado.' });
+        return res.status(400).json({
+          mensaje: 'El email del titular ya está registrado.',
+        });
       }
 
-      // Insertar persona titular (sin sexo ni edad porque no vienen del form)
       const [titularPersonaResult] = await connection.query(
         'INSERT INTO persona (nombre_completo, dni) VALUES (?, ?)',
         [nombre_titular, dni_titular]
       );
       const id_persona_titular = titularPersonaResult.insertId;
 
-      // Crear password aleatorio para titular o usar contraseña genérica (puede ajustarse)
-      const defaultTitularPassword = 'Titular123'; // Podés cambiar
+      const defaultTitularPassword = 'Titular123';
       const hashedTitularPass = await bcrypt.hash(defaultTitularPassword, 10);
 
-      // Insertar paciente titular (sin titular, porque es titular)
       const [titularPacienteResult] = await connection.query(
         'INSERT INTO pacientes (id_persona, email, contrasena, id_titular) VALUES (?, ?, ?, NULL)',
         [id_persona_titular, email_titular, hashedTitularPass]
@@ -125,17 +120,14 @@ exports.register = async (req, res) => {
       id_titular_paciente = titularPacienteResult.insertId;
     }
 
-    // Insertar persona paciente
     const [personaResult] = await connection.query(
       'INSERT INTO persona (nombre_completo, dni, sexo, edad) VALUES (?, ?, ?, ?)',
       [nombre_completo, dni, sexo, edad || null]
     );
     const id_persona = personaResult.insertId;
 
-    // Encriptar password paciente
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-    // Insertar paciente con posible id_titular
     await connection.query(
       'INSERT INTO pacientes (id_persona, email, contrasena, id_titular) VALUES (?, ?, ?, ?)',
       [id_persona, email, hashedPassword, id_titular_paciente]
@@ -144,42 +136,51 @@ exports.register = async (req, res) => {
     await connection.commit();
     connection.release();
 
-    return res.status(201).json({ mensaje: 'Registro exitoso' });
+    return res.status(201).json({ mensaje: 'Registro exitoso.' });
   } catch (error) {
     await connection.rollback();
     connection.release();
-    console.error(error);
-    return res.status(500).json({ mensaje: 'Error interno del servidor' });
+    console.error('Error en register:', error);
+    return res.status(500).json({
+      mensaje: 'Error interno del servidor.',
+    });
   }
 };
 
 exports.login = async (req, res) => {
   const { email, contrasena } = req.body;
 
+  if (!email || !contrasena) {
+    return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
+  }
+
   try {
     const connection = await pool.getConnection();
 
     const [rows] = await connection.query(
-      'SELECT pacientes.contrasena FROM pacientes WHERE email = ?',
+      'SELECT id_paciente, contrasena FROM pacientes WHERE email = ?',
       [email]
     );
-
     connection.release();
 
     if (rows.length === 0) {
-      return res.status(400).json({ mensaje: 'Email no encontrado' });
+      return res.status(401).json({ mensaje: 'Email o contraseña incorrectos.' });
     }
 
-    const contraseñaCorrecta = await bcrypt.compare(contrasena, rows[0].contrasena);
-
-    if (!contraseñaCorrecta) {
-      return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+    const valid = await bcrypt.compare(contrasena, rows[0].contrasena);
+    if (!valid) {
+      return res.status(401).json({ mensaje: 'Email o contraseña incorrectos.' });
     }
 
-    // Si querés agregar JWT, podés hacerlo acá
-    return res.status(200).json({ mensaje: 'Login exitoso' });
+    // Ejemplo: generar token y devolver datos mínimos
+    // const token = generateJWT({ id: rows[0].id_paciente });
+    return res.status(200).json({
+      mensaje: 'Login exitoso.',
+      // token,
+      usuario: { id: rows[0].id_paciente, email }
+    });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ mensaje: 'Error interno del servidor' });
+    console.error('Error en login:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor.' });
   }
 };
