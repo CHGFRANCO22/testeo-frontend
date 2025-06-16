@@ -207,6 +207,19 @@
         return;
       }
 
+      // Mostrar en consola el JSON que se enviará
+      console.log('Datos que envío:', {
+        nombre_completo,
+        dni,
+        sexo,
+        edad,
+        email,
+        password,
+        nombre_titular,
+        dni_titular,
+        email_titular
+      });
+
       try {
         const res = await fetch('http://localhost:3000/api/auth/register', {
           method: 'POST',
