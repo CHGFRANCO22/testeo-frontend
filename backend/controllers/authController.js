@@ -20,11 +20,39 @@ exports.register = async (req, res) => {
     sexo,
     edad,
     email,
-    contrasena,
+    password,           // Recibimos "password" porque en frontend se llama así
     nombre_titular,
     dni_titular,
     email_titular,
   } = req.body;
+
+  if (
+    !nombre_completo ||
+    !dni ||
+    !sexo ||
+    !email ||
+    !password
+  ) {
+    return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
+  }
+
+  // Validaciones básicas
+  if (dni.length !== 8 || isNaN(dni)) {
+    return res.status(400).json({ mensaje: 'El DNI debe tener exactamente 8 dígitos.' });
+  }
+
+  if (edad !== undefined && edad !== null && edad !== '') {
+    const edadNum = Number(edad);
+    if (isNaN(edadNum) || edadNum < 0 || edadNum > 120) {
+      return res.status(400).json({ mensaje: 'Edad inválida.' });
+    }
+  }
+
+  // Validación de contraseña
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ mensaje: 'La contraseña debe tener al menos una mayúscula y un número.' });
+  }
 
   const connection = await pool.getConnection();
   try {
@@ -32,7 +60,7 @@ exports.register = async (req, res) => {
 
     // Validar si dni ya existe en persona (para paciente)
     const [existingPersona] = await connection.query(
-      'SELECT id FROM persona WHERE dni = ?',
+      'SELECT id_persona FROM persona WHERE dni = ?',
       [dni]
     );
     if (existingPersona.length > 0) {
@@ -58,7 +86,7 @@ exports.register = async (req, res) => {
     if (nombre_titular && dni_titular && email_titular) {
       // Validar si dni del titular existe
       const [existingTitularDNI] = await connection.query(
-        'SELECT id FROM persona WHERE dni = ?',
+        'SELECT id_persona FROM persona WHERE dni = ?',
         [dni_titular]
       );
       if (existingTitularDNI.length > 0) {
@@ -105,7 +133,7 @@ exports.register = async (req, res) => {
     const id_persona = personaResult.insertId;
 
     // Encriptar password paciente
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insertar paciente con posible id_titular
     await connection.query(
