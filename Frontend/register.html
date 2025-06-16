@@ -207,14 +207,14 @@
         return;
       }
 
-      // Construir objeto para enviar solo con datos obligatorios y datos titular si es menor
+      // Construir objeto para enviar
       const bodyData = {
         nombre_completo,
         dni,
         sexo,
         edad,
         email,
-        password,
+        contrasena: password,
       };
 
       if (edad < 18) {
