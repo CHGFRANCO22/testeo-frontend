@@ -124,3 +124,33 @@ exports.register = async (req, res) => {
     return res.status(500).json({ mensaje: 'Error interno del servidor' });
   }
 };
+exports.login = async (req, res) => {
+  const { email, contrasena } = req.body;
+
+  try {
+    const connection = await pool.getConnection();
+
+    const [rows] = await connection.query(
+      'SELECT pacientes.contrasena FROM pacientes WHERE email = ?',
+      [email]
+    );
+
+    connection.release();
+
+    if (rows.length === 0) {
+      return res.status(400).json({ mensaje: 'Email no encontrado' });
+    }
+
+    const contraseñaCorrecta = await bcrypt.compare(contrasena, rows[0].contrasena);
+
+    if (!contraseñaCorrecta) {
+      return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+    }
+
+    // Si querés agregar JWT, podés hacerlo acá
+    return res.status(200).json({ mensaje: 'Login exitoso' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
+};
