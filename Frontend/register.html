@@ -207,34 +207,29 @@
         return;
       }
 
-      // Mostrar en consola el JSON que se enviará
-      console.log('Datos que envío:', {
+      // Construir objeto para enviar solo con datos obligatorios y datos titular si es menor
+      const bodyData = {
         nombre_completo,
         dni,
         sexo,
         edad,
         email,
         password,
-        nombre_titular,
-        dni_titular,
-        email_titular
-      });
+      };
+
+      if (edad < 18) {
+        bodyData.nombre_titular = nombre_titular;
+        bodyData.dni_titular = dni_titular;
+        bodyData.email_titular = email_titular;
+      }
+
+      console.log('Datos enviados:', bodyData);
 
       try {
         const res = await fetch('http://localhost:3000/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre_completo,
-            dni,
-            sexo,
-            edad,
-            email,
-            password,
-            nombre_titular,
-            dni_titular,
-            email_titular
-          })
+          body: JSON.stringify(bodyData)
         });
 
         const data = await res.json();
