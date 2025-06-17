@@ -1,10 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const pool = require('../db');
 const { buscarPorEmail } = require('../models/Paciente');
 
 exports.register = async (req, res) => {
   const { nombre_completo, dni, sexo, edad, email, contrasena } = req.body;
-  const pool = require('../db');
 
   try {
     // Verificamos si el email ya existe
@@ -13,9 +13,9 @@ exports.register = async (req, res) => {
       return res.status(400).json({ mensaje: 'El email ya está registrado' });
     }
 
-    // Insertamos en persona
+    // Insertamos en persona (4 columnas, 4 valores)
     const [personaResult] = await pool.query(
-      'INSERT INTO persona (nombre_completo, dni, sexo, edad) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO persona (nombre_completo, dni, sexo, edad) VALUES (?, ?, ?, ?)',
       [nombre_completo, dni, sexo, edad]
     );
 
@@ -25,7 +25,7 @@ exports.register = async (req, res) => {
     const hash = await bcrypt.hash(contrasena, 10);
 
     // Insertamos en pacientes
-    const [pacienteResult] = await pool.query(
+    await pool.query(
       'INSERT INTO pacientes (id_persona, email, contrasena) VALUES (?, ?, ?)',
       [id_persona, email, hash]
     );
