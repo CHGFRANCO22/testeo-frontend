@@ -2,45 +2,52 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Registro</title>
+  <title>Registro de Usuario</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      background-color: #f4f6f8;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
+
     form {
-      background: #fff;
-      padding: 30px;
+      background-color: #fff;
+      padding: 20px 30px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       width: 300px;
     }
+
     h2 {
       text-align: center;
-      margin-bottom: 20px;
     }
+
     input, select, button {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
+      margin-top: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
+
     button {
-      background-color: #4CAF50;
+      background-color: #007bff; /* azul */
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
+
     button:hover {
-      background-color: #45a049;
+      background-color: #0056b3; /* azul más oscuro */
     }
+
     #mensajeRegistro {
-      margin-top: 15px;
+      margin-top: 10px;
       text-align: center;
       font-weight: bold;
       color: red;
@@ -50,17 +57,17 @@
 <body>
   <form id="registerForm">
     <h2>Registro</h2>
-    <input type="text" id="nombre" placeholder="Nombre completo" required />
-    <input type="text" id="dni" placeholder="DNI" required />
-    <select id="sexo" required>
+    <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required autocomplete="name" />
+    <input type="text" id="dni" name="dni" placeholder="DNI" required autocomplete="off" />
+    <select id="sexo" name="sexo" required>
       <option value="">Sexo</option>
       <option value="M">Masculino</option>
       <option value="F">Femenino</option>
     </select>
-    <input type="number" id="edad" placeholder="Edad" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Contraseña" required />
-    <input type="password" id="repeatPassword" placeholder="Repetir contraseña" required />
+    <input type="number" id="edad" name="edad" placeholder="Edad" required autocomplete="off" />
+    <input type="email" id="email" name="email" placeholder="Email" required autocomplete="email" />
+    <input type="password" id="password" name="password" placeholder="Contraseña" required autocomplete="new-password" />
+    <input type="password" id="confirmarPassword" name="confirmarPassword" placeholder="Repetir contraseña" required autocomplete="new-password" />
     <button type="submit">Registrarse</button>
     <div id="mensajeRegistro"></div>
   </form>
@@ -69,30 +76,35 @@
     document.getElementById('registerForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const password = document.getElementById('password').value;
-      const repeatPassword = document.getElementById('repeatPassword').value;
+      const nombre = document.getElementById('nombre').value.trim();
+      const dni = document.getElementById('dni').value.trim();
+      const sexo = document.getElementById('sexo').value;
+      const edad = document.getElementById('edad').value;
+      const email = document.getElementById('email').value.trim();
+      const contrasena = document.getElementById('password').value;
+      const confirmar = document.getElementById('confirmarPassword').value;
+
       const mensaje = document.getElementById('mensajeRegistro');
 
-      const regexContrasena = /^(?=.*[A-Z])(?=.*\d).+$/;
+      // Validar contraseña
+      const regexContrasena = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
+      if (!regexContrasena.test(contrasena)) {
+        mensaje.innerText = "La contraseña debe tener al menos 6 caracteres, una mayúscula y un número.";
+        return;
+      }
 
-      // Validación de contraseña
-      if (password !== repeatPassword) {
+      if (contrasena !== confirmar) {
         mensaje.innerText = "Las contraseñas no coinciden.";
         return;
       }
 
-      if (!regexContrasena.test(password)) {
-        mensaje.innerText = "La contraseña debe tener al menos una mayúscula y un número.";
-        return;
-      }
-
       const body = {
-        nombre_completo: document.getElementById('nombre').value,
-        dni: document.getElementById('dni').value,
-        sexo: document.getElementById('sexo').value,
-        edad: document.getElementById('edad').value,
-        email: document.getElementById('email').value,
-        contrasena: password
+        nombre_completo: nombre,
+        dni,
+        sexo,
+        edad,
+        email,
+        contrasena
       };
 
       try {
@@ -105,15 +117,15 @@
         const data = await res.json();
 
         if (res.status === 201) {
-          mensaje.style.color = 'green';
+          mensaje.style.color = "green";
           mensaje.innerText = '¡Registro exitoso!';
         } else {
-          mensaje.style.color = 'red';
+          mensaje.style.color = "red";
           mensaje.innerText = data.mensaje || 'Error en el registro.';
         }
       } catch (error) {
         console.error('Error:', error);
-        mensaje.style.color = 'red';
+        mensaje.style.color = "red";
         mensaje.innerText = 'Error de conexión.';
       }
     });
