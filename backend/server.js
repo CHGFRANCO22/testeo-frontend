@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Carpeta de archivos estáticos (HTML, CSS, JS)
-const publicPath = path.join(__dirname, '../frontend');
+const publicPath = path.join(__dirname, '../Frontend');
 app.use(express.static(publicPath));
 
 // Rutas de API
