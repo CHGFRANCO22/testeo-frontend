@@ -15,21 +15,22 @@ app.use(cors());
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Servir archivos estáticos desde la carpeta "../frontend"
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Carpeta de archivos estáticos (HTML, CSS, JS)
+const publicPath = path.join(__dirname, '../frontend');
+app.use(express.static(publicPath));
 
-// Ruta raíz que devuelve index.html (desde una carpeta arriba)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../index.html'));
-});
-
-// Rutas API
+// Rutas de API
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 
-// Captura rutas no definidas del frontend (útil para SPA)
+// Ruta principal (por si ingresan directamente al dominio)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
+
+// Rutas no definidas: devolver index.html (útil para SPA o fallback)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../index.html'));
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // Iniciar servidor
