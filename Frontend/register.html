@@ -2,29 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Registro Básico</title>
+  <title>Registro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #mensajeRegistro {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+      color: red;
+    }
+  </style>
 </head>
 <body>
-  <h2>Registro Básico</h2>
   <form id="registerForm">
-    <input type="text" id="nombre" placeholder="Nombre completo" required /><br />
-    <input type="text" id="dni" placeholder="DNI" required /><br />
+    <h2>Registro</h2>
+    <input type="text" id="nombre" placeholder="Nombre completo" required />
+    <input type="text" id="dni" placeholder="DNI" required />
     <select id="sexo" required>
       <option value="">Sexo</option>
       <option value="M">Masculino</option>
       <option value="F">Femenino</option>
-    </select><br />
-    <input type="number" id="edad" placeholder="Edad" required /><br />
-    <input type="email" id="email" placeholder="Email" required /><br />
-    <input type="password" id="password" placeholder="Contraseña" required /><br />
+    </select>
+    <input type="number" id="edad" placeholder="Edad" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Contraseña" required />
+    <input type="password" id="repeatPassword" placeholder="Repetir contraseña" required />
     <button type="submit">Registrarse</button>
+    <div id="mensajeRegistro"></div>
   </form>
-
-  <div id="mensajeRegistro"></div>
 
   <script>
     document.getElementById('registerForm').addEventListener('submit', async function (e) {
       e.preventDefault();
+
+      const password = document.getElementById('password').value;
+      const repeatPassword = document.getElementById('repeatPassword').value;
+      const mensaje = document.getElementById('mensajeRegistro');
+
+      const regexContrasena = /^(?=.*[A-Z])(?=.*\d).+$/;
+
+      // Validación de contraseña
+      if (password !== repeatPassword) {
+        mensaje.innerText = "Las contraseñas no coinciden.";
+        return;
+      }
+
+      if (!regexContrasena.test(password)) {
+        mensaje.innerText = "La contraseña debe tener al menos una mayúscula y un número.";
+        return;
+      }
 
       const body = {
         nombre_completo: document.getElementById('nombre').value,
@@ -32,7 +92,7 @@
         sexo: document.getElementById('sexo').value,
         edad: document.getElementById('edad').value,
         email: document.getElementById('email').value,
-        contrasena: document.getElementById('password').value
+        contrasena: password
       };
 
       try {
@@ -43,15 +103,18 @@
         });
 
         const data = await res.json();
-        const mensaje = document.getElementById('mensajeRegistro');
+
         if (res.status === 201) {
+          mensaje.style.color = 'green';
           mensaje.innerText = '¡Registro exitoso!';
         } else {
+          mensaje.style.color = 'red';
           mensaje.innerText = data.mensaje || 'Error en el registro.';
         }
       } catch (error) {
         console.error('Error:', error);
-        document.getElementById('mensajeRegistro').innerText = 'Error de conexión.';
+        mensaje.style.color = 'red';
+        mensaje.innerText = 'Error de conexión.';
       }
     });
   </script>
