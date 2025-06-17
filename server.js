@@ -3,8 +3,8 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth');
-const turnosRoutes = require('./routes/turnos');
+const authRoutes = require('./backend/routes/auth');
+const turnosRoutes = require('./backend/routes/turnos');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,21 +15,21 @@ app.use(cors());
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Servir archivos estáticos del frontend
+// Servir archivos estáticos desde la carpeta "frontend"
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Ruta raíz que sirve index.html desde /frontend
+// Ruta raíz que devuelve index.html (desde la raíz del proyecto)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Rutas de la API
+// Rutas API
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 
-// Captura rutas no definidas (opcional: puede servir para evitar 404 si se refresca una página frontend)
+// Captura rutas no definidas del frontend (útil para SPA)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Iniciar servidor
