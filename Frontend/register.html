@@ -2,250 +2,56 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Registrarse - Salud Total</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    .navbar {
-      background-color: #007BFF;
-    }
-    .navbar .navbar-brand {
-      color: white;
-      font-weight: bold;
-    }
-    .login-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 50px 20px;
-    }
-    .login-box {
-      background-color: #ffffff;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-    }
-    .login-box h2 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    footer {
-      background-color: #f1f1f1;
-      padding: 20px;
-      text-align: center;
-    }
-  </style>
+  <title>Registro Básico</title>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark px-4">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="../index.html">Salud Total</a>
-    </div>
-  </nav>
+  <h2>Registro Básico</h2>
+  <form id="registerForm">
+    <input type="text" id="nombre" placeholder="Nombre completo" required /><br />
+    <input type="text" id="dni" placeholder="DNI" required /><br />
+    <select id="sexo" required>
+      <option value="">Sexo</option>
+      <option value="M">Masculino</option>
+      <option value="F">Femenino</option>
+    </select><br />
+    <input type="number" id="edad" placeholder="Edad" required /><br />
+    <input type="email" id="email" placeholder="Email" required /><br />
+    <input type="password" id="password" placeholder="Contraseña" required /><br />
+    <button type="submit">Registrarse</button>
+  </form>
 
-  <div class="login-container">
-    <div class="login-box">
-      <h2>Registrarse</h2>
-      <form id="registerForm">
-        <div class="mb-3">
-          <label for="nombre" class="form-label">Nombre completo</label>
-          <input type="text" class="form-control" id="nombre" name="nombre_completo" required />
-        </div>
-
-        <div class="mb-3">
-          <label for="dni" class="form-label">DNI</label>
-          <input type="text" class="form-control" id="dni" name="dni" required maxlength="8" />
-        </div>
-
-        <div class="mb-3">
-          <label for="sexo" class="form-label">Sexo</label>
-          <select class="form-control" id="sexo" name="sexo" required>
-            <option value="">Seleccione sexo</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
-          </select>
-        </div>
-
-        <!-- Edad siempre visible -->
-        <div class="mb-3">
-          <label for="edad" class="form-label">Edad</label>
-          <input type="number" class="form-control" id="edad" name="edad" min="0" max="120" required />
-        </div>
-
-        <div class="mb-3">
-          <label for="email" class="form-label">Correo electrónico</label>
-          <input type="email" class="form-control" id="email" name="email" required />
-        </div>
-
-        <div class="mb-3">
-          <label for="password" class="form-label">Contraseña</label>
-          <input type="password" class="form-control" id="password" name="password" required />
-        </div>
-
-        <div class="mb-3">
-          <label for="repetirPassword" class="form-label">Repetir contraseña</label>
-          <input type="password" class="form-control" id="repetirPassword" required />
-        </div>
-
-        <!-- Botón para mostrar datos del titular (opcional) -->
-        <div class="mb-3">
-          <button 
-            class="btn btn-outline-secondary w-100" 
-            type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#datosTitular" 
-            aria-expanded="false" 
-            aria-controls="datosTitular"
-          >
-            Agregar datos del titular (si sos menor)
-          </button>
-        </div>
-
-        <div class="collapse" id="datosTitular">
-          <div class="mb-3">
-            <label for="nombreTitular" class="form-label">Nombre del titular</label>
-            <input type="text" class="form-control" id="nombreTitular" name="nombre_titular" />
-          </div>
-
-          <div class="mb-3">
-            <label for="dniTitular" class="form-label">DNI del titular</label>
-            <input type="text" class="form-control" id="dniTitular" name="dni_titular" maxlength="8" />
-          </div>
-
-          <div class="mb-3">
-            <label for="emailTitular" class="form-label">Email del titular</label>
-            <input type="email" class="form-control" id="emailTitular" name="email_titular" />
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">Registrarse</button>
-      </form>
-      <div id="mensajeRegistro" class="mt-3 text-center"></div>
-    </div>
-  </div>
-
-  <footer class="text-center">
-    <p>&copy; 2025 Salud Total. Todos los derechos reservados.</p>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <div id="mensajeRegistro"></div>
 
   <script>
-    document.getElementById('registerForm').addEventListener('submit', async function (event) {
-      event.preventDefault();
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-      const nombre_completo = document.getElementById('nombre').value.trim();
-      const dni = document.getElementById('dni').value.trim();
-      const sexo = document.getElementById('sexo').value;
-      const edad = parseInt(document.getElementById('edad').value, 10);
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const repetirPassword = document.getElementById('repetirPassword').value;
-
-      const nombre_titular = document.getElementById('nombreTitular').value.trim();
-      const dni_titular = document.getElementById('dniTitular').value.trim();
-      const email_titular = document.getElementById('emailTitular').value.trim();
-
-      const mensajeRegistro = document.getElementById('mensajeRegistro');
-      mensajeRegistro.textContent = '';
-      mensajeRegistro.className = '';
-
-      // Validaciones básicas
-      if (dni.length !== 8 || isNaN(dni)) {
-        mensajeRegistro.textContent = 'El DNI debe tener exactamente 8 dígitos.';
-        mensajeRegistro.classList.add('text-danger');
-        return;
-      }
-
-      if (isNaN(edad) || edad < 0 || edad > 120) {
-        mensajeRegistro.textContent = 'Por favor, ingrese una edad válida.';
-        mensajeRegistro.classList.add('text-danger');
-        return;
-      }
-
-      // Si es menor de 18, datos del titular obligatorios
-      if (edad < 18) {
-        if (!nombre_titular) {
-          mensajeRegistro.textContent = 'Por ser menor, debe completar el nombre del titular.';
-          mensajeRegistro.classList.add('text-danger');
-          return;
-        }
-        if (dni_titular.length !== 8 || isNaN(dni_titular)) {
-          mensajeRegistro.textContent = 'Por ser menor, el DNI del titular debe tener exactamente 8 dígitos.';
-          mensajeRegistro.classList.add('text-danger');
-          return;
-        }
-        if (!email_titular) {
-          mensajeRegistro.textContent = 'Por ser menor, debe completar el email del titular.';
-          mensajeRegistro.classList.add('text-danger');
-          return;
-        }
-      }
-
-      // Validación contraseña
-      const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
-      if (!passwordRegex.test(password)) {
-        mensajeRegistro.textContent = 'La contraseña debe tener al menos una mayúscula y un número.';
-        mensajeRegistro.classList.add('text-danger');
-        return;
-      }
-
-      if (password !== repetirPassword) {
-        mensajeRegistro.textContent = 'Las contraseñas no coinciden.';
-        mensajeRegistro.classList.add('text-danger');
-        return;
-      }
-
-      // Construir objeto para enviar
-      const bodyData = {
-        nombre_completo,
-        dni,
-        sexo,
-        edad,
-        email,
-        contrasena: password,
+      const body = {
+        nombre_completo: document.getElementById('nombre').value,
+        dni: document.getElementById('dni').value,
+        sexo: document.getElementById('sexo').value,
+        edad: document.getElementById('edad').value,
+        email: document.getElementById('email').value,
+        contrasena: document.getElementById('password').value
       };
-
-      if (edad < 18) {
-        bodyData.nombre_titular = nombre_titular;
-        bodyData.dni_titular = dni_titular;
-        bodyData.email_titular = email_titular;
-      }
-
-      console.log('Datos enviados:', bodyData);
 
       try {
         const res = await fetch('http://localhost:3000/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyData)
+          body: JSON.stringify(body)
         });
 
         const data = await res.json();
+        const mensaje = document.getElementById('mensajeRegistro');
         if (res.status === 201) {
-          mensajeRegistro.textContent = '¡Registro exitoso! Ahora podés iniciar sesión.';
-          mensajeRegistro.classList.add('text-success');
-          document.getElementById('registerForm').reset();
-          setTimeout(() => window.location.href = 'login.html', 2000);
+          mensaje.innerText = '¡Registro exitoso!';
         } else {
-          mensajeRegistro.textContent = data.mensaje || 'Error al registrar.';
-          mensajeRegistro.classList.add('text-danger');
+          mensaje.innerText = data.mensaje || 'Error en el registro.';
         }
-      } catch (err) {
-        console.error('Error al registrar:', err);
-        mensajeRegistro.textContent = 'Error de conexión con el servidor.';
-        mensajeRegistro.classList.add('text-danger');
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('mensajeRegistro').innerText = 'Error de conexión.';
       }
     });
   </script>
