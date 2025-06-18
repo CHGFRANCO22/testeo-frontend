@@ -1,0 +1,107 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db');
+
+router.post('/enviar', async (req, res) => {
+  const { nombre, email, telefono, asunto, mensaje } = req.body;
+
+  if (!nombre || !email || !telefono || !asunto || !mensaje) {
+    return res.status(400).json({ mensaje: 'Todos los campos son obligatorios.' });
+  }
+
+  try {
+    await db.query(
+      `INSERT INTO contacto (nombre, email, telefono, asunto, mensaje) VALUES (?, ?, ?, ?, ?)`,
+      [nombre, email, telefono, asunto, mensaje]
+    );
+    res.status(201).json({ mensaje: 'Formulario enviado correctamente.' });
+  } catch (error) {
+    console.error('Error al guardar contacto:', error);
+    res.status(500).json({ mensaje: 'Error al enviar el formulario.' });
+  }
+});
+
+module.exports = router;
+
+
+// 3. ------------------ misTurnos.html ------------------
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Turnos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    .container {
+      margin-top: 40px;
+    }
+    .table thead th {
+      background-color: #007BFF;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="text-center mb-4">Mis Turnos Reservados</h2>
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Especialidad</th>
+          <th>Profesional</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-turnos">
+        <tr><td colspan="3">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Iniciá sesión para ver tus turnos');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/turnos/mis-turnos', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+
+        const datos = await res.json();
+        const tabla = document.getElementById('tabla-turnos');
+        tabla.innerHTML = '';
+
+        if (Array.isArray(datos) && datos.length > 0) {
+          datos.forEach(turno => {
+            const fila = `
+              <tr>
+                <td>${new Date(turno.fecha_turno).toLocaleString()}</td>
+                <td>${turno.especialidad}</td>
+                <td>${turno.profesional}</td>
+              </tr>`;
+            tabla.innerHTML += fila;
+          });
+        } else {
+          tabla.innerHTML = '<tr><td colspan="3">No tenés turnos registrados.</td></tr>';
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Error al cargar los turnos');
+      }
+    });
+  </script>
+</body>
+</html>

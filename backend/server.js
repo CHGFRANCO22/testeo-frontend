@@ -5,6 +5,8 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const turnosRoutes = require('./routes/turnos');
+const contactoRoutes = require('./routes/contacto');
+app.use('/api/contacto', contactoRoutes);
 
 const app = express();
 const PORT = process.env.PORT || 3000;

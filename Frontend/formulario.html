@@ -128,3 +128,33 @@
     </script>
 </body>
 </html>
+<script>
+    document.getElementById('contactForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const asunto = document.getElementById('asunto').value;
+        const mensaje = document.getElementById('mensaje').value.trim();
+
+        try {
+            const response = await fetch('http://localhost:3000/api/contacto/enviar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, email, telefono, asunto, mensaje })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.mensaje);
+                document.getElementById('contactForm').reset();
+            } else {
+                alert('Error: ' + data.mensaje);
+            }
+        } catch (err) {
+            alert('Error al enviar el formulario.');
+            console.error(err);
+        }
+    });
+</script>
