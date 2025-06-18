@@ -74,8 +74,8 @@
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-light">
-    <!-- Cambié el href para que suba un nivel y vaya a index.html en la raíz -->
-    <a class="navbar-brand" href="../index.html" style="color: #000; font-weight: bold;">Salud Total</a>
+    <!-- Ruta absoluta para GitHub Pages -->
+    <a class="navbar-brand" href="/testeo-frontend/index.html" style="color: #000; font-weight: bold;">Salud Total</a>
   </nav>
 
   <div class="login-container">
@@ -120,7 +120,7 @@
         const response = await fetch("http://localhost:3000/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, contrasena }) // aquí envías contrasena
+          body: JSON.stringify({ email, contrasena })
         });
 
         const data = await response.json();
@@ -129,8 +129,9 @@
           localStorage.setItem("token", data.token);
           localStorage.setItem("usuario", JSON.stringify(data.usuario));
           alert("Inicio de sesión exitoso");
-          // Cambié la ruta para subir un nivel y buscar index.html en la raíz
-          window.location.href = "../index.html";
+
+          // Ruta absoluta para GitHub Pages
+          window.location.href = "/testeo-frontend/index.html";
         } else {
           alert(data.mensaje || "Usuario o contraseña incorrectos");
         }
