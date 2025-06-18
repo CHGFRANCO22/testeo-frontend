@@ -24,6 +24,7 @@
       margin-left: 10px;
       color: #fff !important;
       border-color: #fff !important;
+      cursor: pointer;
     }
 
     .hero-section {
@@ -94,14 +95,17 @@
       
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item">
+          <li class="nav-item" id="nav-iniciar">
             <a class="btn btn-outline-light nav-link" href="Frontend/login.html">Iniciar Sesión</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-registrar">
             <a class="btn btn-outline-light nav-link" href="Frontend/register.html">Registrarse</a>
           </li>
-          <li class="nav-item d-none" id="btn-turno">
+          <li class="nav-item" id="btn-turno">
             <a class="btn btn-outline-light nav-link" href="Frontend/turno.html">Pedir Turno</a>
+          </li>
+          <li class="nav-item d-none" id="btn-logout">
+            <a class="btn btn-outline-light nav-link" href="#" id="logout-btn">Cerrar Sesión</a>
           </li>
         </ul>
       </div>
@@ -201,14 +205,45 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
-    // Mostrar botón "Pedir Turno" si el usuario está logueado
     document.addEventListener('DOMContentLoaded', function () {
-      const btnTurno = document.getElementById('btn-turno');
+      const btnTurnoLi = document.getElementById('btn-turno');
+      const btnTurnoLink = btnTurnoLi.querySelector('a');
       const token = localStorage.getItem('token');
+
+      const navIniciar = document.getElementById('nav-iniciar');
+      const navRegistrar = document.getElementById('nav-registrar');
+      const btnLogoutLi = document.getElementById('btn-logout');
+      const logoutBtn = document.getElementById('logout-btn');
+
+      // Mostrar/ocultar botones según login
       if (token) {
-        btnTurno.classList.remove('d-none');
+        navIniciar.classList.add('d-none');
+        navRegistrar.classList.add('d-none');
+        btnLogoutLi.classList.remove('d-none');
+      } else {
+        navIniciar.classList.remove('d-none');
+        navRegistrar.classList.remove('d-none');
+        btnLogoutLi.classList.add('d-none');
       }
+
+      // Al hacer click en "Pedir Turno"
+      btnTurnoLink.addEventListener('click', function (e) {
+        if (!token) {
+          e.preventDefault();
+          alert('Para pedir turno necesitás iniciar sesión.');
+        }
+      });
+
+      // Cerrar sesión
+      logoutBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        alert('Sesión cerrada correctamente.');
+        window.location.reload();
+      });
     });
   </script>
 </body>
