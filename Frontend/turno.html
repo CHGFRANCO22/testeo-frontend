@@ -11,21 +11,14 @@
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Salud Total</a>
+      <a class="navbar-brand" href="index.html">Salud Total</a> <!-- link a index.html -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="btn btn-outline-light nav-link" href="Frontend/login.html">Iniciar Sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-light nav-link" href="Frontend/register.html">Registrarse</a>
-          </li>
-        </ul>
+        <!-- Quité botones Iniciar Sesión y Registrarse -->
       </div>
     </div>
   </nav>
@@ -43,10 +36,17 @@
         <label for="area" class="form-label">Área médica</label>
         <select class="form-select" id="area" required>
           <option value="" selected disabled>Seleccionar área</option>
-          <option value="clínica">Clínica Médica</option>
           <option value="pediatría">Pediatría</option>
-          <option value="odontología">Odontología</option>
           <option value="cardiología">Cardiología</option>
+          <option value="ginecología">Ginecología</option>
+          <option value="clínica">Clínica General</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="doctor" class="form-label">Médico</label>
+        <select class="form-select" id="doctor" required>
+          <option value="" selected disabled>Seleccione un médico</option>
         </select>
       </div>
 
@@ -70,32 +70,112 @@
   </div>
 
   <script>
-    const selectHora = document.getElementById("hora");
     const selectArea = document.getElementById("area");
+    const selectDoctor = document.getElementById("doctor");
+    const selectHora = document.getElementById("hora");
     const mensaje = document.getElementById("mensajeConfirmacion");
+    const inputFecha = document.getElementById("fecha");
 
-    const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
-
-    const horariosPorArea = {
-      "clínica": ["08:00", "08:30", "09:00", "09:30", "10:00"],
-      "pediatría": ["10:00", "10:30", "11:00", "11:30", "12:00"],
-      "odontología": ["13:00", "13:30", "14:00", "14:30", "15:00"],
-      "cardiología": ["15:30", "16:00", "16:30", "17:00", "17:30"]
+    // Datos de médicos por área con días y horario
+    const medicosPorArea = {
+      "pediatría": [
+        { nombre: "Dra. Ana Gómez", dias: ["1","3"], horarioInicio: "08:00", horarioFin: "12:00" }, // Lunes=1, Miércoles=3
+        { nombre: "Dra. Marta López", dias: ["2","4"], horarioInicio: "08:00", horarioFin: "12:00" } // Ejemplo otro médico: Martes y Jueves
+      ],
+      "cardiología": [
+        { nombre: "Dr. Juan Pérez", dias: ["2","4"], horarioInicio: "14:00", horarioFin: "18:00" },
+        { nombre: "Dr. Carlos Ramírez", dias: ["1","3"], horarioInicio: "14:00", horarioFin: "18:00" }
+      ],
+      "ginecología": [
+        { nombre: "Dra. Laura Sánchez", dias: ["5"], horarioInicio: "10:00", horarioFin: "16:00" },
+        { nombre: "Dra. Patricia Fernández", dias: ["5"], horarioInicio: "10:00", horarioFin: "16:00" }
+      ],
+      "clínica": [
+        { nombre: "Dr. Martín Ruiz", dias: ["1","2","3","4","5"], horarioInicio: "08:00", horarioFin: "12:00" },
+        { nombre: "Dr. José Martínez", dias: ["1","2","3","4","5"], horarioInicio: "16:00", horarioFin: "20:00" }
+      ]
     };
 
-    selectArea.addEventListener("change", () => {
-      const area = selectArea.value;
-      generarHorarios(area);
-    });
+    // Función para generar intervalo de 30 minutos entre dos horarios (formato HH:mm)
+    function generarIntervalos(horaInicio, horaFin) {
+      const result = [];
+      let [h, m] = horaInicio.split(':').map(Number);
+      const [hf, mf] = horaFin.split(':').map(Number);
 
-    function generarHorarios(areaSeleccionada) {
+      while (h < hf || (h === hf && m < mf)) {
+        // Formatear hora en HH:mm
+        const horaFormateada = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+        result.push(horaFormateada);
+        m += 30;
+        if (m >= 60) {
+          m = 0;
+          h++;
+        }
+      }
+      return result;
+    }
+
+    // Validar que la fecha seleccionada coincida con los días disponibles del médico
+    function validarDiaMedico(fecha, diasPermitidos) {
+      // fecha.getDay(): Domingo=0, Lunes=1 ... Sabado=6
+      // Aquí usamos Lunes=1 ... Domingo=7 (ajustamos)
+      const diaSemana = fecha.getDay() === 0 ? 7 : fecha.getDay();
+      return diasPermitidos.includes(diaSemana.toString());
+    }
+
+    // Carga los doctores en select según área seleccionada
+    function cargarDoctores(area) {
+      selectDoctor.innerHTML = '<option value="" selected disabled>Seleccione un médico</option>';
+      if (!area || !medicosPorArea[area]) return;
+
+      medicosPorArea[area].forEach(medico => {
+        const option = document.createElement("option");
+        option.value = medico.nombre;
+        option.textContent = medico.nombre;
+        selectDoctor.appendChild(option);
+      });
+
+      // Vaciar horarios y fecha al cambiar doctor o área
       selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
-      if (!areaSeleccionada || !horariosPorArea[areaSeleccionada]) return;
+      inputFecha.value = "";
+    }
 
-      const horariosDisponibles = horariosPorArea[areaSeleccionada];
-      const ocupados = turnosReservados[areaSeleccionada] || [];
+    // Generar horarios disponibles según doctor y fecha seleccionada
+    function generarHorariosDisponibles(medico, fechaStr) {
+      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+      if (!medico || !fechaStr) return;
 
-      horariosDisponibles.forEach(hora => {
+      const fecha = new Date(fechaStr + "T00:00:00"); // Crear objeto Date
+
+      // Encontrar info del medico en la estructura
+      let medicoData;
+      outerLoop:
+      for (const area in medicosPorArea) {
+        for (const m of medicosPorArea[area]) {
+          if (m.nombre === medico) {
+            medicoData = m;
+            break outerLoop;
+          }
+        }
+      }
+      if (!medicoData) return;
+
+      // Validar día
+      if (!validarDiaMedico(fecha, medicoData.dias)) {
+        selectHora.innerHTML = '<option value="" disabled>El médico no atiende ese día</option>';
+        return;
+      }
+
+      // Generar todos los intervalos de 30 minutos del horario
+      const todosHorarios = generarIntervalos(medicoData.horarioInicio, medicoData.horarioFin);
+
+      // Cargar turnos ocupados de localStorage (por simplicidad: guardamos turnos por doctor y fecha)
+      const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
+      const key = `${medico}-${fechaStr}`;
+      const ocupados = turnosReservados[key] || [];
+
+      // Mostrar horarios libres
+      todosHorarios.forEach(hora => {
         if (!ocupados.includes(hora)) {
           const option = document.createElement("option");
           option.value = hora;
@@ -105,21 +185,63 @@
       });
     }
 
+    // Eventos
+    selectArea.addEventListener("change", () => {
+      cargarDoctores(selectArea.value);
+      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+      inputFecha.value = "";
+    });
+
+    selectDoctor.addEventListener("change", () => {
+      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
+      inputFecha.value = "";
+    });
+
+    inputFecha.addEventListener("change", () => {
+      generarHorariosDisponibles(selectDoctor.value, inputFecha.value);
+    });
+
+    // Guardar turno en localStorage y mostrar confirmación
     document.getElementById("formTurno").addEventListener("submit", (e) => {
       e.preventDefault();
-      const nombre = document.getElementById("nombre").value;
-      const area = selectArea.value;
-      const hora = selectHora.value;
-      const fecha = document.getElementById("fecha").value;
 
-      if (!turnosReservados[area]) turnosReservados[area] = [];
-      turnosReservados[area].push(hora);
+      const nombre = document.getElementById("nombre").value.trim();
+      const area = selectArea.value;
+      const doctor = selectDoctor.value;
+      const fecha = inputFecha.value;
+      const hora = selectHora.value;
+
+      if (!nombre || !area || !doctor || !fecha || !hora) {
+        alert("Complete todos los campos para reservar el turno.");
+        return;
+      }
+
+      const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
+
+      const key = `${doctor}-${fecha}`;
+      if (!turnosReservados[key]) turnosReservados[key] = [];
+
+      // Verificar si la hora ya está reservada para ese doctor y fecha (por si acaso)
+      if (turnosReservados[key].includes(hora)) {
+        alert("La hora ya está reservada para ese médico y fecha. Por favor, elija otro horario.");
+        return;
+      }
+
+      turnosReservados[key].push(hora);
       localStorage.setItem("turnosReservados", JSON.stringify(turnosReservados));
 
       mensaje.style.display = "block";
-      mensaje.textContent = `Turno reservado para ${nombre} en ${area} el ${fecha} a las ${hora}.`;
+      mensaje.textContent = `Turno reservado para ${nombre} con ${doctor} (${area}) el ${fecha} a las ${hora}.`;
+
+      console.log("Turno guardado:", { nombre, area, doctor, fecha, hora, turnosReservados });
+
+      // Reset form y selects
       document.getElementById("formTurno").reset();
+      selectDoctor.innerHTML = '<option value="" selected disabled>Seleccione un médico</option>';
+      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
     });
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
