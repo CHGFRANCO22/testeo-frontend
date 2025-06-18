@@ -6,9 +6,9 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const turnosRoutes = require('./routes/turnos');
 const contactoRoutes = require('./routes/contacto');
-app.use('/api/contacto', contactoRoutes);
 
-const app = express();
+const app = express(); // ← Esto tiene que ir antes
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware CORS
@@ -32,6 +32,7 @@ app.get('/', (req, res) => {
 // Rutas API
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
+app.use('/api/contacto', contactoRoutes); // ← Ahora está bien ubicada
 
 // Fallback para rutas no definidas (por ejemplo, para SPA)
 app.get('*', (req, res) => {
