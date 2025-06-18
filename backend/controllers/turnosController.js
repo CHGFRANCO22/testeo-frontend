@@ -10,7 +10,7 @@ const crearTurno = async (req, res) => {
     }
 
     // Buscar ID de especialidad
-    const [especialidad] = await db.promise().query(
+    const [especialidad] = await db.query(
       'SELECT id_espe FROM especialidades WHERE nombre = ?',
       [nombre_especialidad]
     );
@@ -19,7 +19,7 @@ const crearTurno = async (req, res) => {
     }
 
     // Buscar ID del profesional
-    const [profesional] = await db.promise().query(
+    const [profesional] = await db.query(
       `SELECT prof.id_profesional 
        FROM profesionales prof
        JOIN persona p ON prof.id_persona = p.id
@@ -31,7 +31,7 @@ const crearTurno = async (req, res) => {
     }
 
     // Insertar turno
-    await db.promise().query(
+    await db.query(
       `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
        VALUES (?, ?, ?, ?)`,
       [id_paciente, profesional[0].id_profesional, especialidad[0].id_espe, fecha_turno]
@@ -50,7 +50,7 @@ const obtenerTurnosPorPaciente = async (req, res) => {
   const idPaciente = req.user.id; // El middleware verifyToken debe establecer req.user
 
   try {
-    const [turnos] = await db.promise().query(
+    const [turnos] = await db.query(
       `SELECT t.fecha_turno, p.nombre_completo AS profesional, e.nombre AS especialidad
        FROM turnos t
        JOIN profesionales prof ON t.id_profesional = prof.id_profesional
