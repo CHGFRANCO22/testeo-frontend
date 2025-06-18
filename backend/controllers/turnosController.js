@@ -45,4 +45,30 @@ const crearTurno = async (req, res) => {
   }
 };
 
-module.exports = { crearTurno };
+// Obtener turnos por paciente autenticado
+const obtenerTurnosPorPaciente = async (req, res) => {
+  const idPaciente = req.user.id; // El middleware verifyToken debe establecer req.user
+
+  try {
+    const [turnos] = await db.promise().query(
+      `SELECT t.fecha_turno, p.nombre_completo AS profesional, e.nombre AS especialidad
+       FROM turnos t
+       JOIN profesionales prof ON t.id_profesional = prof.id_profesional
+       JOIN persona p ON prof.id_persona = p.id
+       JOIN especialidades e ON t.id_especialidad = e.id_espe
+       WHERE t.id_paciente = ?
+       ORDER BY t.fecha_turno DESC`,
+      [idPaciente]
+    );
+
+    res.status(200).json(turnos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al obtener los turnos del paciente' });
+  }
+};
+
+module.exports = {
+  crearTurno,
+  obtenerTurnosPorPaciente
+};
