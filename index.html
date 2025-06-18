@@ -77,8 +77,12 @@
       font-weight: bold;
     }
 
-    .card p {
-      margin-bottom: 5px;
+    .card ul {
+      padding-left: 1rem;
+    }
+
+    .card li {
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -116,84 +120,58 @@
       Una institución dedicada al cuidado integral de la salud, comprometida con brindar servicios médicos confiables y eficientes. Nuestro enfoque se basa en la atención personalizada, el respeto por cada paciente y la búsqueda constante de la excelencia. Contamos con un equipo de profesionales altamente capacitados y tecnología de vanguardia, lo que nos permite ofrecer diagnósticos precisos y tratamientos efectivos. En Salud Total trabajamos día a día para mejorar la calidad de vida de quienes confían en nosotros, promoviendo el bienestar físico, emocional y social.
     </p>
   </div>
-<!-- Sólo la sección doctores modificada (agregué un doctor más por área) -->
 
-<div class="doctores-section container">
-  <h2 class="text-center mb-5">Conocé a Nuestro Equipo Médico</h2>
-  <div class="row g-4">
-    <!-- Pediatría -->
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dra. Ana Gómez</h4>
-        <p><strong>Especialidad:</strong> Pediatría</p>
-        <p><strong>Días:</strong> Lunes y Miércoles</p>
-        <p><strong>Horario:</strong> 08:00 a 12:00 hs</p>
+  <!-- Sección Médicos Compacta -->
+  <div class="doctores-section container">
+    <h2 class="text-center mb-5">Conocé a Nuestro Equipo Médico</h2>
+    <div class="row g-4">
+      
+      <!-- Pediatría -->
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Pediatría</h4>
+          <ul class="mb-0">
+            <li><strong>Dra. Ana Gómez:</strong> Lunes y Miércoles, 08:00 a 12:00 hs</li>
+            <li><strong>Dra. Marta López:</strong> Martes y Jueves, 08:00 a 12:00 hs</li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dra. Marta López</h4>
-        <p><strong>Especialidad:</strong> Pediatría</p>
-        <p><strong>Días:</strong> Martes y Jueves</p>
-        <p><strong>Horario:</strong> 08:00 a 12:00 hs</p>
-      </div>
-    </div>
 
-    <!-- Cardiología -->
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dr. Juan Pérez</h4>
-        <p><strong>Especialidad:</strong> Cardiología</p>
-        <p><strong>Días:</strong> Martes y Jueves</p>
-        <p><strong>Horario:</strong> 14:00 a 18:00 hs</p>
+      <!-- Cardiología -->
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Cardiología</h4>
+          <ul class="mb-0">
+            <li><strong>Dr. Juan Pérez:</strong> Martes y Jueves, 14:00 a 18:00 hs</li>
+            <li><strong>Dr. Carlos Ramírez:</strong> Lunes y Miércoles, 14:00 a 18:00 hs</li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dr. Carlos Ramírez</h4>
-        <p><strong>Especialidad:</strong> Cardiología</p>
-        <p><strong>Días:</strong> Lunes y Miércoles</p>
-        <p><strong>Horario:</strong> 14:00 a 18:00 hs</p>
-      </div>
-    </div>
 
-    <!-- Ginecología -->
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dra. Laura Sánchez</h4>
-        <p><strong>Especialidad:</strong> Ginecología</p>
-        <p><strong>Días:</strong> Viernes</p>
-        <p><strong>Horario:</strong> 10:00 a 16:00 hs</p>
+      <!-- Ginecología -->
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Ginecología</h4>
+          <ul class="mb-0">
+            <li><strong>Dra. Laura Sánchez:</strong> Viernes, 10:00 a 16:00 hs</li>
+            <li><strong>Dra. Patricia Fernández:</strong> Viernes, 10:00 a 16:00 hs</li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dra. Patricia Fernández</h4>
-        <p><strong>Especialidad:</strong> Ginecología</p>
-        <p><strong>Días:</strong> Viernes</p>
-        <p><strong>Horario:</strong> 10:00 a 16:00 hs</p>
-      </div>
-    </div>
 
-    <!-- Clínica General -->
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dr. Martín Ruiz</h4>
-        <p><strong>Especialidad:</strong> Clínica General</p>
-        <p><strong>Días:</strong> Lunes a Viernes</p>
-        <p><strong>Horario:</strong> 08:00 a 12:00 hs y 16:00 a 20:00 hs</p>
+      <!-- Clínica General -->
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>Clínica General</h4>
+          <ul class="mb-0">
+            <li><strong>Dr. Martín Ruiz:</strong> Lunes a Viernes, 08:00-12:00 hs y 16:00-20:00 hs</li>
+            <li><strong>Dr. José Martínez:</strong> Lunes a Viernes, 08:00-12:00 hs y 16:00-20:00 hs</li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card p-4">
-        <h4>Dr. José Martínez</h4>
-        <p><strong>Especialidad:</strong> Clínica General</p>
-        <p><strong>Días:</strong> Lunes a Viernes</p>
-        <p><strong>Horario:</strong> 08:00 a 12:00 hs y 16:00 a 20:00 hs</p>
-      </div>
+
     </div>
   </div>
-</div>
 
   <!-- Pie -->
   <footer class="text-center">
@@ -211,21 +189,22 @@
       }
     });
   </script>
+
+  <div id="acciones-usuario" class="text-center mt-4"></div>
+  <script>
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    const contenedor = document.getElementById('acciones-usuario');
+
+    if (usuario) {
+      contenedor.innerHTML = `
+        <h2>Bienvenido, ${usuario.nombre}</h2>
+        <a href="turnos.html" class="btn btn-primary">Pedir Turno</a>
+      `;
+    } else {
+      contenedor.innerHTML = `
+        <a href="login.html" class="btn btn-secondary">Iniciar Sesión</a>
+      `;
+    }
+  </script>
 </body>
 </html>
-<div id="acciones-usuario" class="text-center mt-4"></div>
-<script>
-  const usuario = JSON.parse(localStorage.getItem('usuario'));
-  const contenedor = document.getElementById('acciones-usuario');
-
-  if (usuario) {
-    contenedor.innerHTML = `
-      <h2>Bienvenido, ${usuario.nombre}</h2>
-      <a href="turnos.html" class="btn btn-primary">Pedir Turno</a>
-    `;
-  } else {
-    contenedor.innerHTML = `
-      <a href="login.html" class="btn btn-secondary">Iniciar Sesión</a>
-    `;
-  }
-</script>
