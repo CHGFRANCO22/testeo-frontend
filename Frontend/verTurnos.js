@@ -1,23 +1,20 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const tabla = document.getElementById("tabla-turnos");
   const token = localStorage.getItem("token");
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-  if (!token || !usuario || !usuario.id) {
+  if (!token) {
     tabla.innerHTML = "<tr><td colspan='4'>Debe iniciar sesión para ver sus turnos.</td></tr>";
     return;
   }
 
   try {
-    const response = await fetch(`http://localhost:3000/api/turnos/mis-turnos/${usuario.id}`, {
+    const response = await fetch("http://localhost:3000/api/turnos/mis-turnos", {
       headers: {
         "Authorization": `Bearer ${token}`
       }
     });
 
-    if (!response.ok) {
-      throw new Error("Error al cargar los turnos.");
-    }
+    if (!response.ok) throw new Error("Error al cargar los turnos.");
 
     const turnos = await response.json();
     tabla.innerHTML = "";
@@ -28,12 +25,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     turnos.forEach(turno => {
+      const fecha = new Date(turno.fecha_turno);
       const fila = `
         <tr>
           <td>${turno.nombre_especialidad}</td>
           <td>${turno.nombre_profesional}</td>
-          <td>${new Date(turno.fecha_turno).toLocaleDateString()}</td>
-          <td>${new Date(turno.fecha_turno).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+          <td>${fecha.toLocaleDateString()}</td>
+          <td>${fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
         </tr>
       `;
       tabla.innerHTML += fila;

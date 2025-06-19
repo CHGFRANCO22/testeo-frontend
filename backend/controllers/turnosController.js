@@ -72,3 +72,50 @@ module.exports = {
   crearTurno,
   obtenerTurnosPorPaciente
 };
+const db = require('../db');
+
+// Crear nuevo turno
+const crearTurno = async (req, res) => {
+  const { nombre_profesional, nombre_especialidad, fecha_turno, id_paciente } = req.body;
+
+  if (!nombre_profesional || !nombre_especialidad || !fecha_turno || !id_paciente) {
+    return res.status(400).json({ mensaje: 'Todos los campos son obligatorios.' });
+  }
+
+  try {
+    await db.query(
+      `INSERT INTO turnos (nombre_profesional, nombre_especialidad, fecha_turno, id_paciente)
+       VALUES (?, ?, ?, ?)`,
+      [nombre_profesional, nombre_especialidad, fecha_turno, id_paciente]
+    );
+    res.status(201).json({ mensaje: 'Turno creado con éxito.' });
+  } catch (error) {
+    console.error('Error al crear turno:', error);
+    res.status(500).json({ mensaje: 'Error al crear el turno.' });
+  }
+};
+
+// Obtener turnos del paciente autenticado
+const obtenerTurnosPorPaciente = async (req, res) => {
+  const idPaciente = req.user.id;
+
+  try {
+    const [result] = await db.query(
+      `SELECT nombre_profesional, nombre_especialidad, fecha_turno
+       FROM turnos
+       WHERE id_paciente = ?
+       ORDER BY fecha_turno DESC`,
+      [idPaciente]
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error al obtener turnos:', error);
+    res.status(500).json({ mensaje: 'Error al obtener los turnos.' });
+  }
+};
+
+module.exports = {
+  crearTurno,
+  obtenerTurnosPorPaciente
+};

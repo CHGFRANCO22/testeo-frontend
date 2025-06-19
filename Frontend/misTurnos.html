@@ -24,56 +24,18 @@
     <table class="table table-bordered table-striped">
       <thead>
         <tr>
-          <th>Fecha</th>
           <th>Especialidad</th>
           <th>Profesional</th>
+          <th>Fecha</th>
+          <th>Hora</th>
         </tr>
       </thead>
       <tbody id="tabla-turnos">
-        <tr><td colspan="3">Cargando...</td></tr>
+        <tr><td colspan="4">Cargando...</td></tr>
       </tbody>
     </table>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Iniciá sesión para ver tus turnos');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      try {
-        const res = await fetch('http://localhost:3000/api/turnos/mis-turnos', {
-          headers: {
-            'Authorization': 'Bearer ' + token
-          }
-        });
-
-        const datos = await res.json();
-        const tabla = document.getElementById('tabla-turnos');
-        tabla.innerHTML = '';
-
-        if (Array.isArray(datos) && datos.length > 0) {
-          datos.forEach(turno => {
-            const fila = `
-              <tr>
-                <td>${new Date(turno.fecha_turno).toLocaleString()}</td>
-                <td>${turno.especialidad}</td>
-                <td>${turno.profesional}</td>
-              </tr>`;
-            tabla.innerHTML += fila;
-          });
-        } else {
-          tabla.innerHTML = '<tr><td colspan="3">No tenés turnos registrados.</td></tr>';
-        }
-
-      } catch (err) {
-        console.error(err);
-        alert('Error al cargar los turnos');
-      }
-    });
-  </script>
+  <script src="verTurnos.js"></script>
 </body>
 </html>
