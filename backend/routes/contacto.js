@@ -21,14 +21,25 @@ router.post('/enviar', async (req, res) => {
   }
 });
 
-module.exports = router;
-
 router.get('/listar', async (req, res) => {
+  const email = req.query.email;
+
   try {
-    const [result] = await db.query('SELECT * FROM contacto ORDER BY id DESC');
+    let result;
+
+    if (email) {
+      // Filtrar por email si se proporciona
+      [result] = await db.query('SELECT * FROM contacto WHERE email = ? ORDER BY id DESC', [email]);
+    } else {
+      // Mostrar todos los mensajes (opcional)
+      [result] = await db.query('SELECT * FROM contacto ORDER BY id DESC');
+    }
+
     res.json(result);
   } catch (error) {
     console.error('Error al obtener mensajes:', error);
     res.status(500).json({ mensaje: 'Error al obtener los mensajes.' });
   }
 });
+
+module.exports = router;
