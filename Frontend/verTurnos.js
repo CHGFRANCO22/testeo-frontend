@@ -28,8 +28,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const fecha = new Date(turno.fecha_turno);
       const fila = `
         <tr>
-          <td>${turno.nombre_especialidad}</td>
-          <td>${turno.nombre_profesional}</td>
+          <td>${turno.especialidad}</td>
+          <td>${turno.profesional}</td>
           <td>${fecha.toLocaleDateString()}</td>
           <td>${fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
         </tr>
