@@ -73,7 +73,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark px-4" style="background: linear-gradient(90deg, #007BFF, #0056b3);">
   <div class="container-fluid">
-    <a class="navbar-brand" href="index.html">Salud Total</a>
+    <a class="btn btn-outline-light me-3" href="/testeo-frontend/index.html">Salud Total</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -99,36 +99,36 @@
   </div>
 </nav>
 
-    <div class="container">
-        <h2>Formulario de Contacto</h2>
-        <form id="contactForm" action="#" method="post" onsubmit="return validarFormulario()">
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" placeholder="Ingresa tu nombre" required>
+<div class="container">
+    <h2>Formulario de Contacto</h2>
+    <form id="contactForm" action="#" method="post" onsubmit="return validarFormulario()">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ingresa tu nombre" required>
 
-            <label for="email">Correo electrónico:</label>
-            <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
 
-            <label for="telefono">Teléfono:</label>
-            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 3794112233" pattern="[0-9]{10}" required>
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" name="telefono" placeholder="Ej: 3794112233" pattern="[0-9]{10}" required>
 
-            <label for="asunto">Asunto:</label>
-            <select id="asunto" name="asunto" required>
-                <option value="">-- Selecciona un asunto --</option>
-                <option value="consulta">Consulta</option>
-                <option value="reclamo">Reclamo</option>
-                <option value="sugerencia">Sugerencia</option>
-                <option value="otro">Otro</option>
-            </select>
+        <label for="asunto">Asunto:</label>
+        <select id="asunto" name="asunto" required>
+            <option value="">-- Selecciona un asunto --</option>
+            <option value="consulta">Consulta</option>
+            <option value="reclamo">Reclamo</option>
+            <option value="sugerencia">Sugerencia</option>
+            <option value="otro">Otro</option>
+        </select>
 
-            <label for="mensaje">Mensaje:</label>
-            <textarea id="mensaje" name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
+        <label for="mensaje">Mensaje:</label>
+        <textarea id="mensaje" name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
 
-            <div class="botones">
-                <button type="submit">Enviar</button>
-                <button type="button" class="volver-btn" onclick="volverAlInicio()">Volver al Inicio</button>
-            </div>
-        </form>
-    </div>
+        <div class="botones">
+            <button type="submit">Enviar</button>
+            <button type="button" class="volver-btn" onclick="volverAlInicio()">Volver al Inicio</button>
+        </div>
+    </form>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -154,7 +154,7 @@
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');
             alert('Sesión cerrada correctamente.');
-            window.location.href = 'index.html';
+            window.location.href = '/testeo-frontend/index.html';
         });
     });
 
@@ -179,7 +179,7 @@
     }
 
     function volverAlInicio() {
-        window.location.href = "index.html";
+        window.location.href = "/testeo-frontend/index.html";
     }
 
     document.getElementById('contactForm').addEventListener('submit', async function (e) {
