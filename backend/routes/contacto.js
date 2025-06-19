@@ -22,3 +22,13 @@ router.post('/enviar', async (req, res) => {
 });
 
 module.exports = router;
+
+router.get('/listar', async (req, res) => {
+  try {
+    const [result] = await db.query('SELECT * FROM contacto ORDER BY id DESC');
+    res.json(result);
+  } catch (error) {
+    console.error('Error al obtener mensajes:', error);
+    res.status(500).json({ mensaje: 'Error al obtener los mensajes.' });
+  }
+});
