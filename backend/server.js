@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: 'http://localhost:3000', // Cambia esta URL al dominio/puerto de tu frontend
+  origin: ['http://localhost:3000', 'http://localhost:3000'], // Cambia esta URL al dominio/puerto de tu frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
