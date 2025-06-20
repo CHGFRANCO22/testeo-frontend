@@ -14,7 +14,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'login.html'));
+  mainWindow.loadFile(path.join(__dirname, 'Escritorio','login.html'));
 }
 
 app.whenReady().then(createWindow);
