@@ -2,11 +2,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
 
+// LOGIN para pacientes, profesionales, usuarios
 exports.login = async (req, res) => {
   const { email, contrasena } = req.body;
 
   try {
-    // Intentar encontrar usuario en 'pacientes'
+    // Buscar en pacientes
     const [pacienteRows] = await pool.query(`
       SELECT p.id_paciente AS id, p.email, p.contrasena, 'paciente' AS rol
       FROM pacientes p
@@ -22,7 +23,7 @@ exports.login = async (req, res) => {
       return res.json({ message: 'Login exitoso', token, usuario: { id: paciente.id, email, rol: paciente.rol } });
     }
 
-    // Intentar encontrar usuario en 'profesionales'
+    // Buscar en profesionales
     const [profesionalRows] = await pool.query(`
       SELECT pr.id_profesional AS id, pr.email, pr.contrasena, pr.rol
       FROM profesionales pr
@@ -38,7 +39,7 @@ exports.login = async (req, res) => {
       return res.json({ message: 'Login exitoso', token, usuario: { id: profesional.id, email, rol: profesional.rol } });
     }
 
-    // Intentar encontrar usuario en 'usuarios' (admin/secretaria)
+    // Buscar en usuarios (admin y secretaria)
     const [usuarioRows] = await pool.query(`
       SELECT u.id AS id, u.email, u.contrasena, u.rol
       FROM usuarios u
@@ -54,11 +55,40 @@ exports.login = async (req, res) => {
       return res.json({ message: 'Login exitoso', token, usuario: { id: usuario.id, email, rol: usuario.rol } });
     }
 
-    // Si no se encontró en ninguna tabla
     return res.status(401).json({ mensaje: 'Usuario no encontrado' });
 
   } catch (error) {
     console.error('Error en login:', error);
     res.status(500).json({ mensaje: 'Error al iniciar sesión' });
+  }
+};
+
+// REGISTER solo para pacientes (web)
+exports.register = async (req, res) => {
+  const { nombre_completo, dni, sexo, edad, email, contrasena } = req.body;
+
+  try {
+    const [existing] = await pool.query('SELECT * FROM pacientes WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ mensaje: 'El email ya está registrado' });
+    }
+
+    const [personaResult] = await pool.query(
+      'INSERT INTO persona (nombre_completo, dni, sexo, edad) VALUES (?, ?, ?, ?)',
+      [nombre_completo, dni, sexo, edad]
+    );
+    const id_persona = personaResult.insertId;
+
+    const hash = await bcrypt.hash(contrasena, 10);
+
+    await pool.query(
+      'INSERT INTO pacientes (id_persona, email, contrasena) VALUES (?, ?, ?)',
+      [id_persona, email, hash]
+    );
+
+    res.status(201).json({ message: 'Usuario registrado correctamente', email });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error en el registro' });
   }
 };
