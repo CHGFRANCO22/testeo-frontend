@@ -10,7 +10,7 @@ function createWindow() {
     }
   });
 
-  win.loadFile('login.html');
+  mainWindow.loadFile(path.join(__dirname, 'escritorio', 'login.html'));
 }
 
 app.whenReady().then(createWindow);
