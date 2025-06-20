@@ -1,68 +1,64 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
-const { buscarPorEmail } = require('../models/Paciente');
-
-exports.register = async (req, res) => {
-  const { nombre_completo, dni, sexo, edad, email, contrasena } = req.body;
-
-  try {
-    // Verificamos si el email ya existe
-    const [existing] = await pool.query('SELECT * FROM pacientes WHERE email = ?', [email]);
-    if (existing.length > 0) {
-      return res.status(400).json({ mensaje: 'El email ya está registrado' });
-    }
-
-    // Insertamos en persona (4 columnas, 4 valores)
-    const [personaResult] = await pool.query(
-      'INSERT INTO persona (nombre_completo, dni, sexo, edad) VALUES (?, ?, ?, ?)',
-      [nombre_completo, dni, sexo, edad]
-    );
-
-    const id_persona = personaResult.insertId;
-
-    // Encriptamos la contraseña
-    const hash = await bcrypt.hash(contrasena, 10);
-
-    // Insertamos en pacientes
-    await pool.query(
-      'INSERT INTO pacientes (id_persona, email, contrasena) VALUES (?, ?, ?)',
-      [id_persona, email, hash]
-    );
-
-    res.status(201).json({ message: 'Usuario registrado correctamente', email });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: 'Error en el registro' });
-  }
-};
 
 exports.login = async (req, res) => {
   const { email, contrasena } = req.body;
 
   try {
-    const usuario = await buscarPorEmail(email);
-    if (!usuario) {
-      return res.status(401).json({ mensaje: 'Usuario no encontrado' });
+    // Intentar encontrar usuario en 'pacientes'
+    const [pacienteRows] = await pool.query(`
+      SELECT p.id_paciente AS id, p.email, p.contrasena, 'paciente' AS rol
+      FROM pacientes p
+      WHERE p.email = ?
+    `, [email]);
+
+    if (pacienteRows.length > 0) {
+      const paciente = pacienteRows[0];
+      const coincide = await bcrypt.compare(contrasena, paciente.contrasena);
+      if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+
+      const token = jwt.sign({ id: paciente.id, rol: paciente.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.json({ message: 'Login exitoso', token, usuario: { id: paciente.id, email, rol: paciente.rol } });
     }
 
-    const coincide = await bcrypt.compare(contrasena, usuario.contrasena);
-    if (!coincide) {
-      return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+    // Intentar encontrar usuario en 'profesionales'
+    const [profesionalRows] = await pool.query(`
+      SELECT pr.id_profesional AS id, pr.email, pr.contrasena, pr.rol
+      FROM profesionales pr
+      WHERE pr.email = ?
+    `, [email]);
+
+    if (profesionalRows.length > 0) {
+      const profesional = profesionalRows[0];
+      const coincide = await bcrypt.compare(contrasena, profesional.contrasena);
+      if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+
+      const token = jwt.sign({ id: profesional.id, rol: profesional.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.json({ message: 'Login exitoso', token, usuario: { id: profesional.id, email, rol: profesional.rol } });
     }
 
-    const token = jwt.sign({ id: usuario.id_paciente }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Intentar encontrar usuario en 'usuarios' (admin/secretaria)
+    const [usuarioRows] = await pool.query(`
+      SELECT u.id AS id, u.email, u.contrasena, u.rol
+      FROM usuarios u
+      WHERE u.email = ?
+    `, [email]);
 
-    res.json({
-      message: 'Login exitoso',
-      token,
-      usuario: {
-        id: usuario.id_paciente,
-        email: usuario.email
-      }
-    });
+    if (usuarioRows.length > 0) {
+      const usuario = usuarioRows[0];
+      const coincide = await bcrypt.compare(contrasena, usuario.contrasena);
+      if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
+
+      const token = jwt.sign({ id: usuario.id, rol: usuario.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.json({ message: 'Login exitoso', token, usuario: { id: usuario.id, email, rol: usuario.rol } });
+    }
+
+    // Si no se encontró en ninguna tabla
+    return res.status(401).json({ mensaje: 'Usuario no encontrado' });
+
   } catch (error) {
-    console.error(error);
+    console.error('Error en login:', error);
     res.status(500).json({ mensaje: 'Error al iniciar sesión' });
   }
 };
