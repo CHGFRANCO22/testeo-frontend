@@ -68,7 +68,6 @@
 <div id="content">
   <div id="pacientes" class="section">  
     <h2>Gestión de Pacientes</h2>
-    <!-- Aquí iría la tabla o formulario para pacientes -->
   </div>
   <div id="turnos" class="section" style="display:none">
     <h2>Turnos</h2>
@@ -82,6 +81,12 @@
 </div>
 
 <script>
+  // Proteger el acceso: redirigir si no hay token
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = '/testeo-frontend/escritorio/login.html'; // ajustá si tu login está en otro path
+  }
+
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggle-btn');
   const sections = document.querySelectorAll('.section');
@@ -95,11 +100,13 @@
       s.style.display = s.id === sectionId ? 'block' : 'none';
     });
   }
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('token');
-  window.location.href = '/testeo-frontend/escritorio/login.html'; // Ajustá si tu login está en otra carpeta
-});
 
+  // Cerrar sesión
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    window.location.href = '/testeo-frontend/escritorio/login.html'; // ruta de login
+  });
 </script>
 
 </body>
