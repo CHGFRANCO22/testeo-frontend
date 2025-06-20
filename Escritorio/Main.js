@@ -10,8 +10,17 @@ function createWindow() {
     }
   });
 
-  win.loadFile('index.html');
+  win.loadFile('login.html');
 }
 
 app.whenReady().then(createWindow);
 
+// preload.js
+const { contextBridge } = require('electron');
+
+contextBridge.exposeInMainWorld('api', {
+  fetchData: async (url, options) => {
+    const res = await fetch(url, options);
+    return await res.json();
+  }
+});
