@@ -1,6 +1,6 @@
-// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
+// Middleware para verificar el token
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     console.log('Authorization header:', authHeader);
@@ -16,10 +16,21 @@ const verifyToken = (req, res, next) => {
             return res.status(403).json({ message: 'Token inválido' });
         }
 
-        req.user = decoded; // Puedes acceder a req.user.id luego
+        req.user = decoded;
         console.log('Token decodificado:', decoded);
         next();
     });
 };
 
-module.exports = verifyToken;
+// Middleware para autorizar roles específicos
+const authorizeRoles = (...rolesPermitidos) => {
+    return (req, res, next) => {
+        if (!rolesPermitidos.includes(req.user.rol)) {
+            return res.status(403).json({ message: 'Acceso denegado: rol no autorizado' });
+        }
+        next();
+    };
+};
+
+// Exportar ambas funciones
+module.exports = { verifyToken, authorizeRoles };
