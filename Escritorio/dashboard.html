@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Dashboard Salud Total</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+  }
+  #sidebar {
+    width: 220px;
+    background: #2c3e50;
+    color: white;
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    padding-top: 60px;
+    transition: transform 0.3s ease;
+  }
+  #sidebar.hide {
+    transform: translateX(-220px);
+  }
+  #sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  #sidebar ul li {
+    padding: 15px 20px;
+    cursor: pointer;
+  }
+  #sidebar ul li:hover {
+    background: #34495e;
+  }
+  #content {
+    margin-left: 220px;
+    padding: 20px;
+    flex-grow: 1;
+  }
+  #toggle-btn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+</style>
+</head>
+<body>
+
+<button id="toggle-btn">☰</button>
+
+<div id="sidebar">
+<ul>
+  <li onclick="showSection('pacientes')">Pacientes</li>
+  <li onclick="showSection('turnos')">Turnos</li>
+  <li onclick="showSection('agenda')">Agenda</li>
+  <li onclick="showSection('perfil')">Perfil</li>
+</ul>
+<button id="logoutBtn" style="margin: 20px;">Cerrar sesión</button>
+</div>
+
+<div id="content">
+  <div id="pacientes" class="section">  
+    <h2>Gestión de Pacientes</h2>
+    <!-- Aquí iría la tabla o formulario para pacientes -->
+  </div>
+  <div id="turnos" class="section" style="display:none">
+    <h2>Turnos</h2>
+  </div>
+  <div id="agenda" class="section" style="display:none">
+    <h2>Agenda Médica</h2>
+  </div>
+  <div id="perfil" class="section" style="display:none">
+    <h2>Perfil de Usuario</h2>
+  </div>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggle-btn');
+  const sections = document.querySelectorAll('.section');
+
+  toggleBtn.onclick = () => {
+    sidebar.classList.toggle('hide');
+  };
+
+  function showSection(sectionId) {
+    sections.forEach(s => {
+      s.style.display = s.id === sectionId ? 'block' : 'none';
+    });
+  }
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  window.location.href = '/testeo-frontend/escritorio/login.html'; // Ajustá si tu login está en otra carpeta
+});
+
+</script>
+
+</body>
+</html>

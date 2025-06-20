@@ -20,6 +20,7 @@ app.use(express.json());
 
 const publicPath = path.join(__dirname, '../Frontend');
 app.use(express.static(publicPath));
+app.use('/Escritorio', express.static(path.join(__dirname, 'Escritorio')));
 
 const rootPath = path.join(__dirname, '..');
 
