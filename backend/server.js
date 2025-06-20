@@ -9,32 +9,28 @@ const contactoRoutes = require('./routes/contacto');
 const pacientesRoutes = require('./routes/pacientes');
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-
 app.use(express.json());
 
+const frontendPath = path.join(__dirname, '..', 'Frontend');
+const escritorioPath = path.join(__dirname, '..', 'Escritorio');
 
-
-const publicPath = path.join(__dirname, '../Frontend');
-app.use(express.static(publicPath));
-app.use('/Escritorio', express.static(path.join(__dirname, 'Escritorio')));
-
-const rootPath = path.join(__dirname, '..');
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(rootPath, 'index.html'));
-});
+app.use(express.static(frontendPath));
+app.use('/Escritorio', express.static(escritorioPath));
 
 app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
 app.get('*', (req, res) => {
-  res.sendFile(path.join(rootPath, 'index.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
