@@ -7,6 +7,8 @@ exports.login = async (req, res) => {
   const { email, contrasena } = req.body;
 
   try {
+    console.log(`Intentando login con email: ${email}`);
+
     // Buscar en pacientes
     const [pacienteRows] = await pool.query(`
       SELECT p.id_paciente AS id, p.email, p.contrasena, 'paciente' AS rol
@@ -16,7 +18,9 @@ exports.login = async (req, res) => {
 
     if (pacienteRows.length > 0) {
       const paciente = pacienteRows[0];
+      console.log("Usuario encontrado en 'pacientes':", paciente);
       const coincide = await bcrypt.compare(contrasena, paciente.contrasena);
+      console.log("Resultado comparación contraseña pacientes:", coincide);
       if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
 
       const token = jwt.sign({ id: paciente.id, rol: paciente.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -32,7 +36,9 @@ exports.login = async (req, res) => {
 
     if (profesionalRows.length > 0) {
       const profesional = profesionalRows[0];
+      console.log("Usuario encontrado en 'profesionales':", profesional);
       const coincide = await bcrypt.compare(contrasena, profesional.contrasena);
+      console.log("Resultado comparación contraseña profesionales:", coincide);
       if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
 
       const token = jwt.sign({ id: profesional.id, rol: profesional.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -48,13 +54,16 @@ exports.login = async (req, res) => {
 
     if (usuarioRows.length > 0) {
       const usuario = usuarioRows[0];
+      console.log("Usuario encontrado en 'usuarios':", usuario);
       const coincide = await bcrypt.compare(contrasena, usuario.contrasena);
+      console.log("Resultado comparación contraseña usuarios:", coincide);
       if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
 
       const token = jwt.sign({ id: usuario.id, rol: usuario.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
       return res.json({ message: 'Login exitoso', token, usuario: { id: usuario.id, email, rol: usuario.rol } });
     }
 
+    console.log('Usuario no encontrado en ninguna tabla');
     return res.status(401).json({ mensaje: 'Usuario no encontrado' });
 
   } catch (error) {
