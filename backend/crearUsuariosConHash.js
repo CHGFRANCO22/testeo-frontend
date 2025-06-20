@@ -14,22 +14,20 @@ async function crearUsuarios() {
     `);
 
     await pool.query(`
-      INSERT INTO usuarios (id_persona, email, contrasena, rol)
-      VALUES
-      (
-        (SELECT id FROM persona WHERE nombre_completo = 'Administrador General'),
+        INSERT INTO usuarios (id_persona, email, contrasena, rol)
+        VALUES
+        (
+        (SELECT id FROM persona WHERE nombre_completo = 'Administrador General' LIMIT 1),
         'admin@saludtotal.com',
         ?,
         'admin'
-      ),
-      (
-        (SELECT id FROM persona WHERE nombre_completo = 'Secretaria Principal'),
+        ),
+        (
+        (SELECT id FROM persona WHERE nombre_completo = 'Secretaria Principal' LIMIT 1),
         'secretaria@saludtotal.com',
-        ?,
-        'secretaria'
-      )
+        ?,'secretaria'
+        )
     `, [contrasenaAdmin, contrasenaSecretaria]);
-
     console.log('Usuarios insertados con contraseña encriptada');
     process.exit(0);
   } catch (err) {
