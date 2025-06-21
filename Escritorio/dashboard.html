@@ -226,8 +226,18 @@
     window.electronAPI.logout();
   });
 
+  let pacientesVisibles = false;
+
   function toggleFormulario() {
     const form = document.getElementById("formularioPaciente");
+    const listado = document.getElementById("pacientesResultado");
+
+    // Oculta el listado si está visible
+    if (pacientesVisibles) {
+      listado.innerHTML = '';
+      pacientesVisibles = false;
+    }
+
     form.style.display = form.style.display === "none" ? "block" : "none";
   }
 
@@ -279,15 +289,26 @@
   }
 
   async function listarPacientes() {
+    const container = document.getElementById("pacientesResultado");
+    const formulario = document.getElementById("formularioPaciente");
+
+    // Si ya está visible, ocultar
+    if (pacientesVisibles) {
+      container.innerHTML = '';
+      pacientesVisibles = false;
+      return;
+    }
+
+    // Cerrar el formulario si está abierto
+    formulario.style.display = "none";
+
     try {
       const res = await fetch("http://localhost:3000/api/pacientes", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const pacientes = await res.json();
 
-      const container = document.getElementById("pacientesResultado");
       container.innerHTML = '';
-
       pacientes.forEach(p => {
         const pacienteDiv = document.createElement('div');
         pacienteDiv.className = 'paciente-box';
@@ -305,6 +326,8 @@
 
         container.appendChild(pacienteDiv);
       });
+
+      pacientesVisibles = true;
 
       document.querySelectorAll('.btn-historial').forEach(btn => {
         btn.addEventListener('click', async (e) => {
