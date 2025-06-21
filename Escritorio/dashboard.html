@@ -10,40 +10,42 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      display: flex;
       background-color: #f4f6f9;
       color: #333;
-      height: 100vh;
-      overflow: hidden;
     }
+
     #sidebar {
       width: 240px;
       background: #2c3e50;
       color: white;
-      height: 100%;
+      height: 100vh;
       position: fixed;
       top: 0;
       left: 0;
       padding-top: 60px;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
       transition: transform 0.3s ease;
-      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
+
     #sidebar.hide {
       transform: translateX(-100%);
     }
+
     #sidebar ul {
       list-style: none;
       padding: 0;
     }
+
     #sidebar ul li {
       padding: 15px 25px;
       cursor: pointer;
       transition: background 0.3s;
     }
+
     #sidebar ul li:hover {
       background: #1abc9c;
     }
+
     #logoutBtn {
       background: #e74c3c;
       border: none;
@@ -54,35 +56,48 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     #logoutBtn:hover {
       background: #c0392b;
     }
+
+    #topbar {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
     #toggle-btn {
-      position: fixed;
-      top: 10px;
-      left: 10px;
       background: #3498db;
       color: white;
       border: none;
       padding: 10px 15px;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 1100;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      font-size: 18px;
+      margin-right: 20px;
       transition: transform 0.3s ease;
     }
-    #toggle-btn.active {
+
+    #toggle-btn.rotated {
       transform: rotate(90deg);
     }
+
     #content {
-      margin-left: 240px;
-      padding: 40px;
-      width: 100%;
-      transition: margin-left 0.3s ease;
+      padding: 20px;
+      padding-left: 260px;
+      transition: padding-left 0.3s ease;
     }
+
     .sidebar-hidden #content {
-      margin-left: 0;
+      padding-left: 20px;
     }
+
     .section {
       background: white;
       padding: 30px;
@@ -90,12 +105,15 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       margin-bottom: 30px;
     }
+
     h2 {
-      margin-top: 0;
+      margin: 0;
+      font-size: 24px;
       color: #2c3e50;
     }
+
     button {
-      margin-right: 10px;
+      margin: 10px 10px 10px 0;
       padding: 10px 20px;
       border: none;
       background-color: #3498db;
@@ -104,9 +122,11 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     button:hover {
       background-color: #2980b9;
     }
+
     @media (max-width: 768px) {
       #sidebar {
         transform: translateX(-100%);
@@ -115,15 +135,12 @@
         transform: translateX(0);
       }
       #content {
-        margin-left: 0;
-        padding: 20px;
+        padding-left: 20px !important;
       }
     }
   </style>
 </head>
 <body>
-
-<button id="toggle-btn">☰</button>
 
 <div id="sidebar">
   <ul id="menuList">
@@ -133,6 +150,11 @@
     <li onclick="showSection('perfil')">Perfil</li>
   </ul>
   <button id="logoutBtn">Cerrar sesión</button>
+</div>
+
+<div id="topbar">
+  <button id="toggle-btn">☰</button>
+  <h2 id="page-title">Dashboard Salud Total</h2>
 </div>
 
 <div id="content">
@@ -173,12 +195,13 @@
 
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggle-btn');
+  const body = document.body;
   const sections = document.querySelectorAll('.section');
 
   toggleBtn.onclick = () => {
     sidebar.classList.toggle('hide');
-    document.body.classList.toggle('sidebar-hidden');
-    toggleBtn.classList.toggle('active');
+    body.classList.toggle('sidebar-hidden');
+    toggleBtn.classList.toggle('rotated');
   };
 
   function showSection(sectionId) {
@@ -197,10 +220,13 @@
       const res = await fetch("http://localhost:3000/api/pacientes", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const pacientes = await res.json();
+
       const resultado = pacientes.map(p =>
         `<p>${p.nombre_completo} - DNI: ${p.dni}</p>`
       ).join("");
+
       document.getElementById("pacientesResultado").innerHTML = resultado;
     } catch (err) {
       console.error("Error al listar pacientes:", err);
