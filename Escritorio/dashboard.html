@@ -72,6 +72,11 @@
       z-index: 1100;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       user-select: none;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    #toggle-btn:hover {
+      transform: scale(1.05);
+      background-color: #2980b9;
     }
     #content {
       margin-left: 240px;
@@ -270,6 +275,98 @@
     } catch (err) {
       console.error("Error:", err);
       alert("Ocurrió un error al registrar el paciente.");
+    }
+  }
+
+  async function listarPacientes() {
+    try {
+      const res = await fetch("http://localhost:3000/api/pacientes", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const pacientes = await res.json();
+
+      const container = document.getElementById("pacientesResultado");
+      container.innerHTML = '';
+
+      pacientes.forEach(p => {
+        const pacienteDiv = document.createElement('div');
+        pacienteDiv.className = 'paciente-box';
+        pacienteDiv.dataset.id = p.id_paciente;
+
+        pacienteDiv.innerHTML = `
+          <strong>${p.nombre_completo}</strong> - DNI: ${p.dni} - Edad: ${p.edad}
+          <br><small>Email: ${p.email}</small>
+          <div class="acciones">
+            <button class="btn-historial">Historial</button>
+            <button class="btn-eliminar" style="background:#e74c3c;">Eliminar</button>
+          </div>
+          <div class="historial-turnos"></div>
+        `;
+
+        container.appendChild(pacienteDiv);
+      });
+
+      document.querySelectorAll('.btn-historial').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const pacienteDiv = e.target.closest('.paciente-box');
+          const historialDiv = pacienteDiv.querySelector('.historial-turnos');
+
+          if (historialDiv.style.display === 'block') {
+            historialDiv.style.display = 'none';
+            historialDiv.innerHTML = '';
+            return;
+          }
+
+          const idPaciente = pacienteDiv.dataset.id;
+
+          try {
+            const res = await fetch(`http://localhost:3000/api/turnos/paciente/${idPaciente}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const turnos = await res.json();
+
+            historialDiv.innerHTML = turnos.length > 0
+              ? turnos.map(t =>
+                  `<p>🗓️ <strong>${t.fecha_turno}</strong> - ${t.especialidad} con ${t.profesional}</p>`
+                ).join('')
+              : '<p>No hay turnos registrados para este paciente.</p>';
+
+            historialDiv.style.display = 'block';
+          } catch (err) {
+            historialDiv.innerHTML = '<p>Error al cargar historial.</p>';
+            historialDiv.style.display = 'block';
+          }
+        });
+      });
+
+      document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const pacienteDiv = e.target.closest('.paciente-box');
+          const idPaciente = pacienteDiv.dataset.id;
+
+          const confirmDelete = confirm('¿Estás seguro que quieres eliminar este paciente?');
+          if (!confirmDelete) return;
+
+          try {
+            const res = await fetch(`http://localhost:3000/api/pacientes/${idPaciente}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+              pacienteDiv.remove();
+            } else {
+              alert('Error al eliminar paciente');
+            }
+          } catch (err) {
+            alert('Error al eliminar paciente');
+            console.error(err);
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error("Error al listar pacientes:", err);
     }
   }
 </script>
