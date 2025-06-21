@@ -4,39 +4,51 @@
   <meta charset="UTF-8" />
   <title>Dashboard Salud Total</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       display: flex;
+      background-color: #f4f6f9;
+      color: #333;
     }
     #sidebar {
-      width: 220px;
+      width: 240px;
       background: #2c3e50;
       color: white;
       height: 100vh;
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       padding-top: 60px;
-      transition: transform 0.3s ease;
-    }
-    #sidebar.hide {
-      transform: translateX(-220px);
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
     #sidebar ul {
       list-style: none;
       padding: 0;
     }
     #sidebar ul li {
-      padding: 15px 20px;
+      padding: 15px 25px;
       cursor: pointer;
+      transition: background 0.3s;
     }
     #sidebar ul li:hover {
-      background: #34495e;
+      background: #1abc9c;
     }
-    #content {
-      margin-left: 220px;
-      padding: 20px;
-      flex-grow: 1;
+    #logoutBtn {
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      margin: 30px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #logoutBtn:hover {
+      background: #c0392b;
     }
     #toggle-btn {
       position: fixed;
@@ -45,9 +57,40 @@
       background: #3498db;
       color: white;
       border: none;
-      padding: 10px;
+      padding: 10px 15px;
+      border-radius: 4px;
       cursor: pointer;
       z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #content {
+      margin-left: 240px;
+      padding: 40px;
+      width: 100%;
+    }
+    .section {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
     }
   </style>
 </head>
@@ -62,7 +105,7 @@
     <li onclick="showSection('agenda')">Agenda</li>
     <li onclick="showSection('perfil')">Perfil</li>
   </ul>
-  <button id="logoutBtn" style="margin: 20px;">Cerrar sesión</button>
+  <button id="logoutBtn">Cerrar sesión</button>
 </div>
 
 <div id="content">
@@ -70,7 +113,7 @@
     <h2>Gestión de Pacientes</h2>
     <button onclick="listarPacientes()">Listar Pacientes</button>
     <button onclick="crearPaciente()">Registrar Paciente</button>
-    <div id="pacientesResultado"></div>
+    <div id="pacientesResultado" style="margin-top: 20px;"></div>
   </div>
 
   <div id="turnos" class="section" style="display:none">
@@ -93,9 +136,7 @@
     window.location.href = "login.html";
   }
 
-  if (usuario.rol === "admin") {
-    // Ver todo
-  } else if (usuario.rol === "secretaria") {
+  if (usuario.rol === "secretaria") {
     document.getElementById("pacientes")?.remove();
     document.getElementById("perfil")?.remove();
     const menu = document.getElementById("menuList");
@@ -147,4 +188,3 @@
 
 </body>
 </html>
-<
