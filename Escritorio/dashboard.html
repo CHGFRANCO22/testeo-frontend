@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard Salud Total</title>
+  <title>Gestor Clínico - Escritorio</title>
   <style>
     * {
       box-sizing: border-box;
@@ -25,6 +25,7 @@
       padding-top: 60px;
       transition: transform 0.3s ease;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      z-index: 100;
     }
 
     #sidebar.hide {
@@ -67,9 +68,12 @@
       padding: 15px 20px;
       background-color: white;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 999;
+      height: 60px;
     }
 
     #toggle-btn {
@@ -90,6 +94,7 @@
 
     #content {
       padding: 20px;
+      padding-top: 80px; /* evita que el navbar lo tape */
       padding-left: 260px;
       transition: padding-left 0.3s ease;
     }
@@ -107,7 +112,7 @@
     }
 
     h2 {
-      margin: 0;
+      margin-top: 0;
       font-size: 24px;
       color: #2c3e50;
     }
@@ -154,7 +159,7 @@
 
 <div id="topbar">
   <button id="toggle-btn">☰</button>
-  <h2 id="page-title">Dashboard Salud Total</h2>
+  <h2 style="margin: 0;">Gestor Clínico - Escritorio</h2>
 </div>
 
 <div id="content">
