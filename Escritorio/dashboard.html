@@ -4,12 +4,11 @@
   <meta charset="UTF-8" />
   <title>Salud Total - Dashboard</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
+      display: flex;
       background-color: #f4f6f9;
       color: #333;
     }
@@ -22,24 +21,15 @@
       top: 0;
       left: 0;
       padding-top: 60px;
-      transition: transform 0.3s ease;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
-    #sidebar.hide {
-      transform: translateX(-100%);
-    }
-    #sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
+    #sidebar ul { list-style: none; padding: 0; }
     #sidebar ul li {
       padding: 15px 25px;
       cursor: pointer;
       transition: background 0.3s;
     }
-    #sidebar ul li:hover {
-      background: #1abc9c;
-    }
+    #sidebar ul li:hover { background: #1abc9c; }
     #logoutBtn {
       background: #e74c3c;
       border: none;
@@ -50,34 +40,24 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    #logoutBtn:hover {
-      background: #c0392b;
-    }
+    #logoutBtn:hover { background: #c0392b; }
     #toggle-btn {
       position: fixed;
-      top: 15px;
-      left: 15px;
+      top: 10px;
+      left: 10px;
       background: #3498db;
       color: white;
       border: none;
-      padding: 12px 16px;
+      padding: 10px 15px;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 1001;
+      z-index: 1000;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      font-size: 20px;
-      transition: transform 0.3s ease;
-    }
-    #toggle-btn.active {
-      transform: rotate(90deg);
     }
     #content {
       margin-left: 240px;
       padding: 40px;
-      transition: margin-left 0.3s ease;
-    }
-    #sidebar.hide ~ #content {
-      margin-left: 0;
+      width: 100%;
     }
     .section {
       background: white;
@@ -100,26 +80,11 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    button:hover {
-      background-color: #2980b9;
-    }
+    button:hover { background-color: #2980b9; }
     .paciente-box {
       margin-bottom: 10px;
       border-bottom: 1px solid #ccc;
       padding: 10px 0;
-    }
-    @media (max-width: 768px) {
-      #toggle-btn {
-        top: 10px;
-        left: 10px;
-      }
-      #sidebar {
-        position: fixed;
-        z-index: 1000;
-      }
-      #content {
-        padding: 20px;
-      }
     }
   </style>
 </head>
@@ -161,9 +126,7 @@
 <script>
   const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-  if (!token || !usuario) {
-    window.location.href = "login.html";
-  }
+  if (!token || !usuario) window.location.href = "login.html";
 
   if (usuario.rol === "secretaria") {
     document.getElementById("pacientes")?.remove();
@@ -175,12 +138,11 @@
 
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggle-btn');
-  const content = document.getElementById('content');
   const sections = document.querySelectorAll('.section');
 
   toggleBtn.onclick = () => {
     sidebar.classList.toggle('hide');
-    toggleBtn.classList.toggle('active');
+    document.getElementById('content').style.marginLeft = sidebar.classList.contains('hide') ? '0' : '240px';
   };
 
   function showSection(sectionId) {
@@ -203,9 +165,11 @@
 
       const resultado = pacientes.map(p =>
         `<div class="paciente-box">
-          <strong>${p.nombre_completo}</strong> - DNI: ${p.dni} - Edad: ${p.edad}
-          <br><small>Email: ${p.email}</small><br>
+          <strong>${p.nombre_completo}</strong> - DNI: ${p.dni} - Edad: ${p.edad}<br>
+          <small>Email: ${p.email}</small><br>
           <button onclick="verHistorialTurnos(${p.id_paciente})">Ver Historial</button>
+          <button onclick="editarPaciente(${p.id_paciente})">Editar</button>
+          <button onclick="eliminarPaciente(${p.id_paciente})">Eliminar</button>
         </div>`
       ).join("");
 
@@ -231,14 +195,27 @@
         `<p>🗓️ <strong>${t.fecha_turno}</strong> - ${t.especialidad} con ${t.profesional}</p>`
       ).join("");
 
-      document.getElementById("pacientesResultado").innerHTML +=
-        `<div style="margin-top:10px; background:#eef; padding:10px; border-radius:8px;">
-          <h4>Historial de Turnos</h4>
-          ${lista}
-        </div>`;
+      alert(`Historial de Turnos:\n${lista.replace(/<[^>]+>/g, '')}`);
     } catch (err) {
       console.error("Error al obtener historial:", err);
     }
+  }
+
+  async function eliminarPaciente(id) {
+    if (!confirm('¿Estás seguro de eliminar este paciente?')) return;
+    try {
+      await fetch(`http://localhost:3000/api/pacientes/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      listarPacientes();
+    } catch (err) {
+      console.error("Error al eliminar paciente:", err);
+    }
+  }
+
+  function editarPaciente(id) {
+    alert("Funcionalidad de edición pendiente de implementación para ID: " + id);
   }
 
   function crearPaciente() {
