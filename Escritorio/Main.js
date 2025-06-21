@@ -1,30 +1,33 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
-let mainWindow; // 🔧 Declarar mainWindow en ámbito global
+let mainWindow;
 
-function createWindow() {
+function createWindow(file = 'login.html') {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: true,
+      nodeIntegration: false
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname,'login.html'));
+  mainWindow.loadFile(path.join(__dirname, 'Escritorio', file));
 }
 
-app.whenReady().then(createWindow);
-
-// Mac: volver a abrir ventana si se cierra
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+// Evento para cerrar sesión desde renderer
+ipcMain.on('cerrar-sesion', () => {
+  if (mainWindow) {
+    mainWindow.close();
+    mainWindow = null;
+  }
+  createWindow('login.html');
 });
 
-// Cerrar en Windows/Linux
+app.whenReady().then(() => createWindow());
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });

@@ -87,26 +87,22 @@
 </div>
 
 <script>
-  // Verificar token y redirigir si no hay sesión
   const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   if (!token || !usuario) {
     window.location.href = "login.html";
   }
 
-  // Mostrar/ocultar secciones según el rol
   if (usuario.rol === "admin") {
-    // Mostrar todo
+    // Ver todo
   } else if (usuario.rol === "secretaria") {
     document.getElementById("pacientes")?.remove();
     document.getElementById("perfil")?.remove();
-
     const menu = document.getElementById("menuList");
     menu.querySelector("li[onclick=\"showSection('pacientes')\"]")?.remove();
     menu.querySelector("li[onclick=\"showSection('perfil')\"]")?.remove();
   }
 
-  // Toggle sidebar
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggle-btn');
   const sections = document.querySelectorAll('.section');
@@ -121,14 +117,11 @@
     });
   }
 
-  // Cerrar sesión
   document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("usuario");
-    window.location.href = "login.html";
+    localStorage.clear();
+    window.electronAPI.logout();
   });
 
-  // Función para listar pacientes (solo admin)
   async function listarPacientes() {
     try {
       const res = await fetch("http://localhost:3000/api/pacientes", {
@@ -147,7 +140,6 @@
     }
   }
 
-  // Próxima implementación
   function crearPaciente() {
     alert("Formulario para registrar paciente (próximamente)");
   }
@@ -155,3 +147,4 @@
 
 </body>
 </html>
+<
