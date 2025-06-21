@@ -14,7 +14,7 @@ function createWindow(file = 'login.html') {
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'Escritorio', file));
+  mainWindow.loadFile(path.join(__dirname, 'login.html', file));
 }
 
 // Evento para cerrar sesión desde renderer
