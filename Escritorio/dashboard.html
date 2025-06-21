@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Gestor Clínico - Escritorio</title>
+  <title>Salud Total - Dashboard</title>
   <style>
     * {
       box-sizing: border-box;
@@ -10,10 +10,10 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
+      display: flex;
       background-color: #f4f6f9;
       color: #333;
     }
-
     #sidebar {
       width: 240px;
       background: #2c3e50;
@@ -23,30 +23,20 @@
       top: 0;
       left: 0;
       padding-top: 60px;
-      transition: transform 0.3s ease;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-      z-index: 100;
     }
-
-    #sidebar.hide {
-      transform: translateX(-100%);
-    }
-
     #sidebar ul {
       list-style: none;
       padding: 0;
     }
-
     #sidebar ul li {
       padding: 15px 25px;
       cursor: pointer;
       transition: background 0.3s;
     }
-
     #sidebar ul li:hover {
       background: #1abc9c;
     }
-
     #logoutBtn {
       background: #e74c3c;
       border: none;
@@ -57,52 +47,27 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
     #logoutBtn:hover {
       background: #c0392b;
     }
-
-    #topbar {
-      display: flex;
-      align-items: center;
-      padding: 15px 20px;
-      background-color: white;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 999;
-      height: 60px;
-    }
-
     #toggle-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
       background: #3498db;
       color: white;
       border: none;
       padding: 10px 15px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 18px;
-      margin-right: 20px;
-      transition: transform 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-
-    #toggle-btn.rotated {
-      transform: rotate(90deg);
-    }
-
     #content {
-      padding: 20px;
-      padding-top: 80px; /* evita que el navbar lo tape */
-      padding-left: 260px;
-      transition: padding-left 0.3s ease;
+      margin-left: 240px;
+      padding: 40px;
+      width: 100%;
     }
-
-    .sidebar-hidden #content {
-      padding-left: 20px;
-    }
-
     .section {
       background: white;
       padding: 30px;
@@ -110,15 +75,12 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       margin-bottom: 30px;
     }
-
     h2 {
       margin-top: 0;
-      font-size: 24px;
       color: #2c3e50;
     }
-
     button {
-      margin: 10px 10px 10px 0;
+      margin-right: 10px;
       padding: 10px 20px;
       border: none;
       background-color: #3498db;
@@ -127,25 +89,19 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
     button:hover {
       background-color: #2980b9;
     }
-
-    @media (max-width: 768px) {
-      #sidebar {
-        transform: translateX(-100%);
-      }
-      #sidebar.show {
-        transform: translateX(0);
-      }
-      #content {
-        padding-left: 20px !important;
-      }
+    .paciente-box {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
     }
   </style>
 </head>
 <body>
+
+<button id="toggle-btn">☰</button>
 
 <div id="sidebar">
   <ul id="menuList">
@@ -155,11 +111,6 @@
     <li onclick="showSection('perfil')">Perfil</li>
   </ul>
   <button id="logoutBtn">Cerrar sesión</button>
-</div>
-
-<div id="topbar">
-  <button id="toggle-btn">☰</button>
-  <h2 style="margin: 0;">Gestor Clínico - Escritorio</h2>
 </div>
 
 <div id="content">
@@ -200,13 +151,11 @@
 
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggle-btn');
-  const body = document.body;
   const sections = document.querySelectorAll('.section');
 
   toggleBtn.onclick = () => {
     sidebar.classList.toggle('hide');
-    body.classList.toggle('sidebar-hidden');
-    toggleBtn.classList.toggle('rotated');
+    document.getElementById('content').style.marginLeft = sidebar.classList.contains('hide') ? '0' : '240px';
   };
 
   function showSection(sectionId) {
@@ -223,18 +172,47 @@
   async function listarPacientes() {
     try {
       const res = await fetch("http://localhost:3000/api/pacientes", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       const pacientes = await res.json();
 
       const resultado = pacientes.map(p =>
-        `<p>${p.nombre_completo} - DNI: ${p.dni}</p>`
+        `<div class="paciente-box">
+          <strong>${p.nombre_completo}</strong> - DNI: ${p.dni} - Edad: ${p.edad}
+          <br><small>Email: ${p.email}</small><br>
+          <button onclick="verHistorialTurnos(${p.id_paciente})">Ver Historial</button>
+        </div>`
       ).join("");
 
       document.getElementById("pacientesResultado").innerHTML = resultado;
     } catch (err) {
       console.error("Error al listar pacientes:", err);
+    }
+  }
+
+  async function verHistorialTurnos(idPaciente) {
+    try {
+      const res = await fetch(`http://localhost:3000/api/turnos/paciente/${idPaciente}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const turnos = await res.json();
+
+      if (turnos.length === 0) {
+        alert("Este paciente no tiene turnos registrados.");
+        return;
+      }
+
+      const lista = turnos.map(t =>
+        `<p>🗓️ <strong>${t.fecha_turno}</strong> - ${t.especialidad} con ${t.profesional}</p>`
+      ).join("");
+
+      document.getElementById("pacientesResultado").innerHTML +=
+        `<div style="margin-top:10px; background:#eef; padding:10px; border-radius:8px;">
+          <h4>Historial de Turnos</h4>
+          ${lista}
+        </div>`;
+    } catch (err) {
+      console.error("Error al obtener historial:", err);
     }
   }
 
