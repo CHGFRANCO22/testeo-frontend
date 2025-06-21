@@ -1,18 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const turnosController = require('../controllers/turnosController');
+const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-const { crearTurno, obtenerTurnosPorPaciente } = require('../controllers/turnosController');
-const { verifyToken } = require('../middleware/authMiddleware');
+// Crear turno (usuario autenticado)
+router.post('/', verifyToken, turnosController.crearTurno);
 
+// Obtener turnos del paciente autenticado
+router.get('/mios', verifyToken, turnosController.obtenerTurnosPorPaciente);
 
-// Crear nuevo turno (POST)
-router.post('/crear', crearTurno);
-
-// Obtener turnos de un paciente con token (GET)
-router.get('/paciente/:id', authMiddleware, turnosController.obtenerTurnosPorIdPaciente);
-router.get('/mis-turnos', verifyToken, obtenerTurnosPorPaciente);
-
-console.log('Tipo de verifyToken:', typeof verifyToken);
-console.log('Tipo de obtenerTurnosPorPaciente:', typeof obtenerTurnosPorPaciente);
+// Obtener historial de turnos por ID (solo admin o secretaria si querés)
+router.get('/paciente/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.obtenerTurnosPorIdPaciente);
 
 module.exports = router;
