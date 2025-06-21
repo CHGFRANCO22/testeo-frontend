@@ -13,17 +13,24 @@
       display: flex;
       background-color: #f4f6f9;
       color: #333;
+      height: 100vh;
+      overflow: hidden;
     }
     #sidebar {
       width: 240px;
       background: #2c3e50;
       color: white;
-      height: 100vh;
+      height: 100%;
       position: fixed;
       top: 0;
       left: 0;
       padding-top: 60px;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    #sidebar.hide {
+      transform: translateX(-100%);
     }
     #sidebar ul {
       list-style: none;
@@ -60,13 +67,21 @@
       padding: 10px 15px;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 1000;
+      z-index: 1100;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    #toggle-btn.active {
+      transform: rotate(90deg);
     }
     #content {
       margin-left: 240px;
       padding: 40px;
       width: 100%;
+      transition: margin-left 0.3s ease;
+    }
+    .sidebar-hidden #content {
+      margin-left: 0;
     }
     .section {
       background: white;
@@ -91,6 +106,18 @@
     }
     button:hover {
       background-color: #2980b9;
+    }
+    @media (max-width: 768px) {
+      #sidebar {
+        transform: translateX(-100%);
+      }
+      #sidebar.show {
+        transform: translateX(0);
+      }
+      #content {
+        margin-left: 0;
+        padding: 20px;
+      }
     }
   </style>
 </head>
@@ -150,6 +177,8 @@
 
   toggleBtn.onclick = () => {
     sidebar.classList.toggle('hide');
+    document.body.classList.toggle('sidebar-hidden');
+    toggleBtn.classList.toggle('active');
   };
 
   function showSection(sectionId) {
@@ -168,13 +197,10 @@
       const res = await fetch("http://localhost:3000/api/pacientes", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       const pacientes = await res.json();
-
       const resultado = pacientes.map(p =>
         `<p>${p.nombre_completo} - DNI: ${p.dni}</p>`
       ).join("");
-
       document.getElementById("pacientesResultado").innerHTML = resultado;
     } catch (err) {
       console.error("Error al listar pacientes:", err);
