@@ -12,4 +12,7 @@ router.get('/mios', verifyToken, turnosController.obtenerTurnosPorPaciente);
 // Obtener historial de turnos por ID (solo admin o secretaria si querés)
 router.get('/paciente/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.obtenerTurnosPorIdPaciente);
 
+router.put('/cancelar/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.cancelarTurno);
+router.put('/reprogramar/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.reprogramarTurno);
+
 module.exports = router;
