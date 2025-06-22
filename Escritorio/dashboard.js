@@ -1,13 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-
   window.nuevoTurno = function() {
-    showSection('turnos');  // Cambia a la sección Turnos
-    cargarEspecialidades();  // Carga especialidades y configura select
-    document.getElementById('formularioTurno').style.display = 'block'; // Mostrar formulario
-  };
-
+  showSection('turnos');  // Cambia a la sección Turnos
+  cargarEspecialidades();  // Carga especialidades y configura select
+  document.getElementById('formularioTurno').style.display = 'block'; // Mostrar formulario
+};
 
   if (!token || !usuario) {
     window.location.href = "login.html";
@@ -307,6 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await fetch("http://localhost:3000/api/turnos/especialidades", {
       headers: { Authorization: `Bearer ${token}` }
     });
+
+     if (!res.ok) throw new Error("Error en la respuesta");
+
     const especialidades = await res.json();
 
     selectEsp.innerHTML = '<option value="">Seleccione especialidad</option>';
