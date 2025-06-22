@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
   selectEsp.innerHTML = "<option>Cargando especialidades...</option>";
 
   try {
-    const res = await fetch("http://localhost:3000/api/turnos/especialidades", {
+    const res = await fetch("http://localhost:3000/api/especialidades", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
