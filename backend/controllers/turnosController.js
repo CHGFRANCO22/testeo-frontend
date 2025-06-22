@@ -1,44 +1,21 @@
 const db = require('../db');
 
-// Crear turno
+// Crear turno con IDs
 const crearTurno = async (req, res) => {
   try {
-    const { nombre_profesional, nombre_especialidad, fecha_turno, id_paciente } = req.body;
+    const { id_profesional, id_especialidad, fecha_turno, id_paciente } = req.body;
 
-    if (!nombre_profesional || !nombre_especialidad || !fecha_turno || !id_paciente) {
+    if (!id_profesional || !id_especialidad || !fecha_turno || !id_paciente) {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
     }
 
-    // Buscar ID de especialidad
-    const [especialidad] = await db.query(
-      'SELECT id_espe FROM especialidades WHERE nombre = ?',
-      [nombre_especialidad]
-    );
-    if (especialidad.length === 0) {
-      return res.status(404).json({ mensaje: 'Especialidad no encontrada' });
-    }
-
-    // Buscar ID del profesional
-    const [profesional] = await db.query(
-      `SELECT prof.id_profesional 
-       FROM profesionales prof
-       JOIN persona p ON prof.id_persona = p.id
-       WHERE p.nombre_completo = ?`,
-      [nombre_profesional]
-    );
-    if (profesional.length === 0) {
-      return res.status(404).json({ mensaje: 'Profesional no encontrado' });
-    }
-
-    // Insertar turno
     await db.query(
       `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
        VALUES (?, ?, ?, ?)`,
-      [id_paciente, profesional[0].id_profesional, especialidad[0].id_espe, fecha_turno]
+      [id_paciente, id_profesional, id_especialidad, fecha_turno]
     );
 
     res.status(201).json({ mensaje: 'Turno reservado con éxito' });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: 'Error al reservar el turno' });
@@ -112,7 +89,7 @@ const cancelarTurno = async (req, res) => {
 // Reprogramar turno
 const reprogramarTurno = async (req, res) => {
   const { id } = req.params;
-  const { fecha_turno } = req.body;  // Mejor usar el mismo campo que en creación
+  const { fecha_turno } = req.body;
 
   if (!fecha_turno) {
     return res.status(400).json({ mensaje: "La nueva fecha es requerida" });

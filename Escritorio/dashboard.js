@@ -292,6 +292,55 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  async function cargarEspecialidades() {
+  const selectEsp = document.getElementById("selectEspecialidad");
+  selectEsp.innerHTML = "<option>Cargando especialidades...</option>";
+
+  try {
+    const res = await fetch("http://localhost:3000/api/turnos/especialidades", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const especialidades = await res.json();
+
+    selectEsp.innerHTML = '<option value="">Seleccione especialidad</option>';
+    especialidades.forEach(e => {
+      const opt = document.createElement("option");
+      opt.value = e.id_espe;
+      opt.textContent = e.nombre;
+      selectEsp.appendChild(opt);
+    });
+
+    // Cargar profesionales según especialidad elegida
+    selectEsp.onchange = async () => {
+      const idEspecialidad = selectEsp.value;
+      const selectProf = document.getElementById("selectProfesional");
+
+      selectProf.innerHTML = "<option>Cargando profesionales...</option>";
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/turnos/profesionales/especialidad/${idEspecialidad}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const profesionales = await res.json();
+
+        selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
+        profesionales.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id_profesional;
+          opt.textContent = p.nombre_completo;
+          selectProf.appendChild(opt);
+        });
+      } catch (err) {
+        selectProf.innerHTML = "<option>Error al cargar profesionales</option>";
+      }
+    };
+
+  } catch (err) {
+    selectEsp.innerHTML = "<option>Error al cargar especialidades</option>";
+  }
+}
+
+
   window.cargarProfesionalesPorEspecialidad = cargarProfesionalesPorEspecialidad;
 
   window.enviarFormularioTurno = async function() {
@@ -324,8 +373,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify({
            id_paciente: idPaciente,
-           nombre_especialidad: especialidad,
-           nombre_profesional: profesional,
+           id_especialidad: especialidad,
+           id_profesional: profesional,
            fecha_turno
         }),
       });

@@ -15,4 +15,28 @@ router.get('/paciente/:id', verifyToken, authorizeRoles('admin', 'secretaria'), 
 router.put('/cancelar/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.cancelarTurno);
 router.put('/reprogramar/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.reprogramarTurno);
 
+router.get('/especialidades', async (req, res) => {
+  try {
+    const [especialidades] = await db.query('SELECT id_espe, nombre FROM especialidades');
+    res.json(especialidades);
+  } catch (err) {
+    res.status(500).json({ mensaje: 'Error al obtener especialidades' });
+  }
+});
+
+// Obtener profesionales por especialidad
+router.get('/profesionales/especialidad/:id', async (req, res) => {
+  const idEspecialidad = req.params.id;
+  try {
+    const [profesionales] = await db.query(`
+      SELECT prof.id_profesional, p.nombre_completo
+      FROM profesionales prof
+      JOIN persona p ON prof.id_persona = p.id
+      WHERE prof.id_especialidad = ?
+    `, [idEspecialidad]);
+    res.json(profesionales);
+  } catch (err) {
+    res.status(500).json({ mensaje: 'Error al obtener profesionales' });
+  }
+});
 module.exports = router;
