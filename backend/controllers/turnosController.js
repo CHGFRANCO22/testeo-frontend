@@ -68,7 +68,7 @@ const obtenerTurnosPorPaciente = async (req, res) => {
   }
 };
 
-
+// Obtener historial turnos por ID de paciente (para admin o secretaria)
 const obtenerTurnosPorIdPaciente = async (req, res) => {
   const idPaciente = req.params.id;
 
@@ -92,10 +92,16 @@ const obtenerTurnosPorIdPaciente = async (req, res) => {
 };
 
 // Cancelar turno
-exports.cancelarTurno = async (req, res) => {
+const cancelarTurno = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id_turno = ?", [id]);
+    const [result] = await db.query(
+      "UPDATE turnos SET estado = 'cancelado' WHERE id_turno = ?",
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: 'Turno no encontrado' });
+    }
     res.json({ mensaje: "Turno cancelado correctamente" });
   } catch (err) {
     console.error("Error al cancelar turno:", err);
@@ -104,15 +110,22 @@ exports.cancelarTurno = async (req, res) => {
 };
 
 // Reprogramar turno
-exports.reprogramarTurno = async (req, res) => {
+const reprogramarTurno = async (req, res) => {
   const { id } = req.params;
-  const { nuevaFecha } = req.body;
+  const { fecha_turno } = req.body;  // Mejor usar el mismo campo que en creación
+
+  if (!fecha_turno) {
+    return res.status(400).json({ mensaje: "La nueva fecha es requerida" });
+  }
 
   try {
-    await pool.query(
+    const [result] = await db.query(
       "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id_turno = ?",
-      [nuevaFecha, id]
+      [fecha_turno, id]
     );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: 'Turno no encontrado' });
+    }
     res.json({ mensaje: "Turno reprogramado correctamente" });
   } catch (err) {
     console.error("Error al reprogramar turno:", err);
@@ -127,4 +140,3 @@ module.exports = {
   cancelarTurno,
   reprogramarTurno
 };
-
