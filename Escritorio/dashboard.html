@@ -98,6 +98,8 @@
       transition: margin-left 0.3s ease;
       min-height: 100vh;
       background: #f4f6f9;
+      position: relative;
+      z-index: 1;
     }
     #content.fullwidth {
       margin-left: 0;
@@ -153,6 +155,9 @@
       border: 1.5px solid #ccc;
       border-radius: 6px;
       transition: border-color 0.3s;
+      background-color: white;
+      z-index: 10;
+      position: relative;
     }
     input:focus, select:focus {
       border-color: #1abc9c;
@@ -193,6 +198,8 @@
     }
     #formularioPaciente, #formularioTurno {
       max-width: 350px;
+      position: relative;
+      z-index: 10;
     }
     .turno-box {
       border-bottom: 1px solid #ccc;
@@ -213,14 +220,12 @@
       margin-top: 10px;
       display: none;
     }
-    /* Mensajes de error */
     .error-msg {
       color: #e74c3c;
       font-weight: 600;
       margin-bottom: 12px;
       font-size: 0.9rem;
     }
-    /* Usuario perfil */
     #usuarioNombre {
       font-weight: 700;
       font-size: 1.2rem;
@@ -229,9 +234,7 @@
   </style>
 </head>
 <body>
-
 <button id="toggle-btn" aria-label="Toggle sidebar">☰</button>
-
 <div id="sidebar">
   <ul id="menuList">
     <li onclick="showSection('pacientes')" class="active">Pacientes</li>
@@ -241,14 +244,11 @@
   </ul>
   <button id="logoutBtn">Cerrar sesión</button>
 </div>
-
 <div id="content">
-  <!-- Sección Pacientes -->
   <div id="pacientes" class="section">
     <h2>Gestión de Pacientes</h2>
     <button onclick="listarPacientes()">Listar Pacientes</button>
     <button onclick="toggleFormulario()">Registrar Paciente</button>
-
     <div id="formularioPaciente" style="display:none; margin-top: 20px;">
       <h3>Nuevo Paciente</h3>
       <div id="errorPaciente" class="error-msg" style="display:none;"></div>
@@ -267,10 +267,8 @@
       <input type="password" id="repetir_contrasena" placeholder="Repetir contraseña" />
       <button onclick="enviarFormularioPaciente()">Guardar</button>
     </div>
-
     <div id="pacientesResultado" style="margin-top: 20px;"></div>
   </div>
-
   <!-- Sección Turnos -->
   <div id="turnos" class="section" style="display:none">
     <h2>Turnos</h2>
