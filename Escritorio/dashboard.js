@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-     if (!res.ok) throw new Error("Error en la respuesta");
+     if (!res.ok) throw new Error("Error al cargar especialidades");
 
     const especialidades = await res.json();
 
