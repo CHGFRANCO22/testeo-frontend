@@ -225,6 +225,7 @@
       <input type="number" id="edad" placeholder="Edad" min="0" max="150" />
       <input type="email" id="email" placeholder="Email" />
       <input type="password" id="contrasena" placeholder="Contraseña" />
+      <input type="password" id="repetir_contrasena" placeholder="Repetir contraseña" />
       <button onclick="enviarFormularioPaciente()">Guardar</button>
     </div>
 
@@ -337,51 +338,62 @@
   }
 
   async function enviarFormularioPaciente() {
-    const nombre_completo = document.getElementById("nombre_completo").value.trim();
-    const dni = document.getElementById("dni").value.trim();
-    const sexo = document.getElementById("sexo").value.trim();
-    const edad = document.getElementById("edad").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const contrasena = document.getElementById("contrasena").value.trim();
+  const nombre_completo = document.getElementById("nombre_completo").value.trim();
+  const dni = document.getElementById("dni").value.trim();
+  const sexo = document.getElementById("sexo").value.trim();
+  const edad = document.getElementById("edad").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const contrasena = document.getElementById("contrasena").value.trim();
+  const repetir_contrasena = document.getElementById("repetir_contrasena").value.trim();
 
-    if (!nombre_completo || !dni || !sexo || !edad || !email || !contrasena) {
-      alert("Todos los campos son obligatorios.");
-      return;
-    }
-
-    if (!email.includes("@") || !email.includes(".")) {
-      alert("Email inválido.");
-      return;
-    }
-
-    if (contrasena.length < 6) {
-      alert("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:3000/api/pacientes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ nombre_completo, dni, sexo, edad, email, contrasena }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("Paciente registrado correctamente");
-        document.getElementById("formularioPaciente").style.display = "none";
-        listarPacientes();
-      } else {
-        alert(data.mensaje || "Error al registrar paciente");
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Ocurrió un error al registrar el paciente.");
-    }
+  if (!nombre_completo || !dni || !sexo || !edad || !email || !contrasena || !repetir_contrasena) {
+    alert("Todos los campos son obligatorios.");
+    return;
   }
+
+  if (!email.includes("@") || !email.includes(".")) {
+    alert("Email inválido.");
+    return;
+  }
+
+  if (contrasena !== repetir_contrasena) {
+    alert("Las contraseñas no coinciden.");
+    return;
+  }
+
+  const tieneMayuscula = /[A-Z]/.test(contrasena);
+  const tieneNumero = /[0-9]/.test(contrasena);
+  const longitudValida = contrasena.length >= 6;
+
+  if (!tieneMayuscula || !tieneNumero || !longitudValida) {
+    alert("La contraseña debe tener al menos 6 caracteres, una mayúscula y un número.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/api/pacientes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ nombre_completo, dni, sexo, edad, email, contrasena }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("Paciente registrado correctamente");
+      document.getElementById("formularioPaciente").style.display = "none";
+      listarPacientes();
+    } else {
+      alert(data.mensaje || "Error al registrar paciente");
+    }
+  } catch (err) {
+    console.error("Error:", err);
+    alert("Ocurrió un error al registrar el paciente.");
+  }
+}
+
 
   async function listarPacientes() {
     const container = document.getElementById("pacientesResultado");
