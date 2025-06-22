@@ -50,15 +50,19 @@ exports.deletePaciente = async (req, res) => {
   const id = req.params.id;
 
   try {
+    // 1. Eliminar los turnos relacionados
+    await pool.query('DELETE FROM turnos WHERE id_paciente = ?', [id]);
+
+    // 2. Luego eliminar el paciente
     const [result] = await pool.query('DELETE FROM pacientes WHERE id_paciente = ?', [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ mensaje: 'Paciente no encontrado' });
     }
 
-    res.status(200).json({ mensaje: 'Paciente eliminado correctamente' });
+    res.status(200).json({ mensaje: 'Paciente y turnos eliminados correctamente' });
   } catch (err) {
     console.error('Error al eliminar paciente:', err);
-    res.status(500).json({ mensaje: 'Error del servidor al eliminar paciente' });
+    res.status(500).json({ mensaje: 'Error al eliminar paciente' });
   }
 };
