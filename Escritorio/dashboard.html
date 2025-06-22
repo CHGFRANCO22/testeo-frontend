@@ -194,6 +194,25 @@
     #formularioPaciente, #formularioTurno {
       max-width: 350px;
     }
+    .turno-box {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      position: relative;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .turno-acciones {
+      margin-top: 8px;
+    }
+    .turno-acciones button {
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      margin-right: 8px;
+    }
+    .reprogramar-div {
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -338,62 +357,61 @@
   }
 
   async function enviarFormularioPaciente() {
-  const nombre_completo = document.getElementById("nombre_completo").value.trim();
-  const dni = document.getElementById("dni").value.trim();
-  const sexo = document.getElementById("sexo").value.trim();
-  const edad = document.getElementById("edad").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const contrasena = document.getElementById("contrasena").value.trim();
-  const repetir_contrasena = document.getElementById("repetir_contrasena").value.trim();
+    const nombre_completo = document.getElementById("nombre_completo").value.trim();
+    const dni = document.getElementById("dni").value.trim();
+    const sexo = document.getElementById("sexo").value.trim();
+    const edad = document.getElementById("edad").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const contrasena = document.getElementById("contrasena").value.trim();
+    const repetir_contrasena = document.getElementById("repetir_contrasena").value.trim();
 
-  if (!nombre_completo || !dni || !sexo || !edad || !email || !contrasena || !repetir_contrasena) {
-    alert("Todos los campos son obligatorios.");
-    return;
-  }
-
-  if (!email.includes("@") || !email.includes(".")) {
-    alert("Email inválido.");
-    return;
-  }
-
-  if (contrasena !== repetir_contrasena) {
-    alert("Las contraseñas no coinciden.");
-    return;
-  }
-
-  const tieneMayuscula = /[A-Z]/.test(contrasena);
-  const tieneNumero = /[0-9]/.test(contrasena);
-  const longitudValida = contrasena.length >= 6;
-
-  if (!tieneMayuscula || !tieneNumero || !longitudValida) {
-    alert("La contraseña debe tener al menos 6 caracteres, una mayúscula y un número.");
-    return;
-  }
-
-  try {
-    const res = await fetch("http://localhost:3000/api/pacientes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ nombre_completo, dni, sexo, edad, email, contrasena }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      alert("Paciente registrado correctamente");
-      document.getElementById("formularioPaciente").style.display = "none";
-      listarPacientes();
-    } else {
-      alert(data.mensaje || "Error al registrar paciente");
+    if (!nombre_completo || !dni || !sexo || !edad || !email || !contrasena || !repetir_contrasena) {
+      alert("Todos los campos son obligatorios.");
+      return;
     }
-  } catch (err) {
-    console.error("Error:", err);
-    alert("Ocurrió un error al registrar el paciente.");
-  }
-}
 
+    if (!email.includes("@") || !email.includes(".")) {
+      alert("Email inválido.");
+      return;
+    }
+
+    if (contrasena !== repetir_contrasena) {
+      alert("Las contraseñas no coinciden.");
+      return;
+    }
+
+    const tieneMayuscula = /[A-Z]/.test(contrasena);
+    const tieneNumero = /[0-9]/.test(contrasena);
+    const longitudValida = contrasena.length >= 6;
+
+    if (!tieneMayuscula || !tieneNumero || !longitudValida) {
+      alert("La contraseña debe tener al menos 6 caracteres, una mayúscula y un número.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/api/pacientes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nombre_completo, dni, sexo, edad, email, contrasena }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Paciente registrado correctamente");
+        document.getElementById("formularioPaciente").style.display = "none";
+        listarPacientes();
+      } else {
+        alert(data.mensaje || "Error al registrar paciente");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Ocurrió un error al registrar el paciente.");
+    }
+  }
 
   async function listarPacientes() {
     const container = document.getElementById("pacientesResultado");
@@ -500,9 +518,9 @@
     }
   }
 
-
   // === Turnos ===
   let turnosVisibles = false;
+  let turnoReprogramando = null;
 
   function toggleFormularioTurno() {
     const form = document.getElementById("formularioTurno");
@@ -582,20 +600,32 @@
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/turnos", {
-        method: "POST",
+      let url = "http://localhost:3000/api/turnos";
+      let method = "POST";
+      let bodyData = { idPaciente, especialidad, profesional, fecha_turno };
+
+      // Si estamos reprogramando, usamos PUT y pasamos el idTurno
+      if (turnoReprogramando) {
+        url = `http://localhost:3000/api/turnos/${turnoReprogramando.id}`;
+        method = "PUT";
+        bodyData = { ...bodyData };
+      }
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ idPaciente, especialidad, profesional, fecha_turno }),
+        body: JSON.stringify(bodyData),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        alert("Turno registrado correctamente");
+        alert(turnoReprogramando ? "Turno reprogramado correctamente" : "Turno registrado correctamente");
         document.getElementById("formularioTurno").style.display = "none";
+        turnoReprogramando = null;
         listarTurnos();
       } else {
         alert(data.mensaje || "Error al registrar turno");
@@ -624,17 +654,134 @@
       if (!Array.isArray(turnos) || turnos.length === 0) {
         container.innerHTML = "<p>No hay turnos registrados.</p>";
       } else {
-        container.innerHTML = turnos
-          .map(
-            (t) =>
-              `<div style="border-bottom:1px solid #ccc; padding:10px 0;">
-                <strong>Paciente:</strong> ${t.paciente_nombre || "N/A"}<br>
-                <strong>Especialidad:</strong> ${t.especialidad}<br>
-                <strong>Profesional:</strong> ${t.profesional}<br>
-                <strong>Fecha:</strong> ${new Date(t.fecha_turno).toLocaleString()}
-              </div>`
-          )
-          .join("");
+        container.innerHTML = '';
+        turnos.forEach(t => {
+          const turnoDiv = document.createElement('div');
+          turnoDiv.className = 'turno-box';
+          turnoDiv.dataset.id = t.id_turno;
+
+          turnoDiv.innerHTML = `
+            <strong>Paciente:</strong> ${t.paciente_nombre || "N/A"}<br>
+            <strong>Especialidad:</strong> ${t.especialidad}<br>
+            <strong>Profesional:</strong> ${t.profesional}<br>
+            <strong>Fecha:</strong> ${new Date(t.fecha_turno).toLocaleString()}
+            <div class="turno-acciones">
+              <button class="btn-cancelar" style="background:#e74c3c;">Cancelar</button>
+              <button class="btn-reprogramar" style="background:#f39c12;">Reprogramar</button>
+            </div>
+            <div class="reprogramar-div">
+              <label>Nuevo día y hora:</label>
+              <input type="datetime-local" class="nuevo-fecha" />
+              <button class="btn-guardar-reprogramacion">Guardar</button>
+              <button class="btn-cancelar-reprogramacion" style="background:#7f8c8d;">Cancelar</button>
+            </div>
+          `;
+
+          container.appendChild(turnoDiv);
+        });
+
+        // Eventos botones cancelar turno
+        document.querySelectorAll('.btn-cancelar').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const turnoDiv = e.target.closest('.turno-box');
+            const idTurno = turnoDiv.dataset.id;
+            if (!confirm('¿Seguro que deseas cancelar este turno?')) return;
+
+            try {
+              const res = await fetch(`http://localhost:3000/api/turnos/${idTurno}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+              });
+
+              if (res.ok) {
+                alert('Turno cancelado correctamente.');
+                turnoDiv.remove();
+              } else {
+                alert('Error al cancelar turno.');
+              }
+            } catch (err) {
+              alert('Error al cancelar turno.');
+              console.error(err);
+            }
+          });
+        });
+
+        // Eventos botones reprogramar turno
+        document.querySelectorAll('.btn-reprogramar').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const turnoDiv = e.target.closest('.turno-box');
+            const reprogramarDiv = turnoDiv.querySelector('.reprogramar-div');
+            reprogramarDiv.style.display = 'block';
+            turnoReprogramando = {
+              id: turnoDiv.dataset.id,
+              elemento: turnoDiv
+            };
+          });
+        });
+
+        // Guardar reprogramación
+        document.querySelectorAll('.btn-guardar-reprogramacion').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const turnoDiv = e.target.closest('.turno-box');
+            const nuevoFechaInput = turnoDiv.querySelector('.nuevo-fecha');
+            const nuevaFecha = nuevoFechaInput.value;
+
+            if (!nuevaFecha) {
+              alert('Seleccione una nueva fecha y hora.');
+              return;
+            }
+
+            // Cargar datos actuales del turno para enviar
+            // Asumimos que para editar solo se cambia la fecha_turno
+            try {
+              const idTurno = turnoDiv.dataset.id;
+
+              const resGet = await fetch(`http://localhost:3000/api/turnos/${idTurno}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (!resGet.ok) throw new Error('No se pudo obtener el turno');
+
+              const turno = await resGet.json();
+
+              // Enviar PUT con los datos actualizados (solo fecha_turno)
+              const resPut = await fetch(`http://localhost:3000/api/turnos/${idTurno}`, {
+                method: 'PUT',
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  idPaciente: turno.idPaciente || turno.id_paciente || turno.idPaciente,
+                  especialidad: turno.especialidad,
+                  profesional: turno.profesional,
+                  fecha_turno: nuevaFecha
+                })
+              });
+
+              if (resPut.ok) {
+                alert('Turno reprogramado correctamente.');
+                listarTurnos();
+              } else {
+                const data = await resPut.json();
+                alert(data.mensaje || 'Error al reprogramar turno.');
+              }
+            } catch (err) {
+              alert('Error al reprogramar turno.');
+              console.error(err);
+            }
+          });
+        });
+
+        // Cancelar reprogramación (ocultar input)
+        document.querySelectorAll('.btn-cancelar-reprogramacion').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const turnoDiv = e.target.closest('.turno-box');
+            const reprogramarDiv = turnoDiv.querySelector('.reprogramar-div');
+            reprogramarDiv.style.display = 'none';
+            turnoReprogramando = null;
+          });
+        });
+
       }
 
       turnosVisibles = true;
