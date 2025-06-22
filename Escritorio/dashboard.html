@@ -8,11 +8,13 @@
       box-sizing: border-box;
     }
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       display: flex;
       background-color: #f4f6f9;
       color: #333;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
     #sidebar {
       width: 240px;
@@ -26,6 +28,9 @@
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
       transition: transform 0.3s ease;
       z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     #sidebar.hide {
       transform: translateX(-240px);
@@ -34,15 +39,20 @@
       list-style: none;
       padding: 0;
       margin: 0;
+      flex-grow: 1;
     }
     #sidebar ul li {
       padding: 15px 25px;
       cursor: pointer;
       transition: background 0.3s;
       user-select: none;
+      font-weight: 600;
+      font-size: 1rem;
     }
-    #sidebar ul li:hover {
+    #sidebar ul li:hover,
+    #sidebar ul li.active {
       background: #1abc9c;
+      color: #fff;
     }
     #logoutBtn {
       background: #e74c3c;
@@ -55,6 +65,9 @@
       transition: background 0.3s;
       user-select: none;
       width: calc(100% - 50px);
+      font-weight: 600;
+      font-size: 1rem;
+      align-self: center;
     }
     #logoutBtn:hover {
       background: #c0392b;
@@ -80,12 +93,15 @@
     }
     #content {
       margin-left: 240px;
-      padding: 40px;
+      padding: 40px 40px 60px;
       width: 100%;
       transition: margin-left 0.3s ease;
+      min-height: 100vh;
+      background: #f4f6f9;
     }
     #content.fullwidth {
       margin-left: 0;
+      padding: 40px 20px 60px;
     }
     .section {
       background: white;
@@ -94,10 +110,22 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       margin-bottom: 30px;
       overflow: visible;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
     }
     h2 {
       margin-top: 0;
       color: #2c3e50;
+      font-weight: 700;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    h3 {
+      margin-top: 0;
+      color: #34495e;
+      margin-bottom: 15px;
+      font-weight: 600;
     }
     button {
       margin-right: 10px;
@@ -109,18 +137,46 @@
       cursor: pointer;
       transition: background 0.3s;
       user-select: none;
+      font-weight: 600;
+      font-size: 1rem;
     }
     button:hover {
       background-color: #2980b9;
+    }
+    input, select {
+      display: block;
+      margin-bottom: 15px;
+      padding: 10px 12px;
+      width: 100%;
+      max-width: 320px;
+      font-size: 1rem;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: #1abc9c;
+      outline: none;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+      color: #34495e;
     }
     .paciente-box {
       margin-bottom: 10px;
       border-bottom: 1px solid #ccc;
       padding: 10px 0;
       position: relative;
+      font-size: 1rem;
     }
     .acciones {
       margin-top: 8px;
+    }
+    .acciones button {
+      padding: 6px 14px;
+      font-size: 0.9rem;
     }
     .historial-turnos {
       background: #eef4fa;
@@ -130,16 +186,13 @@
       display: none;
       font-size: 14px;
       color: #2c3e50;
+      white-space: pre-wrap;
     }
     .historial-turnos p {
       margin: 5px 0;
     }
-    #formularioPaciente input {
-      display: block;
-      margin-bottom: 10px;
-      padding: 8px;
-      width: 100%;
-      max-width: 300px;
+    #formularioPaciente, #formularioTurno {
+      max-width: 350px;
     }
   </style>
 </head>
@@ -149,7 +202,7 @@
 
 <div id="sidebar">
   <ul id="menuList">
-    <li onclick="showSection('pacientes')">Pacientes</li>
+    <li onclick="showSection('pacientes')" class="active">Pacientes</li>
     <li onclick="showSection('turnos')">Turnos</li>
     <li onclick="showSection('agenda')">Agenda</li>
     <li onclick="showSection('perfil')">Perfil</li>
@@ -158,6 +211,7 @@
 </div>
 
 <div id="content">
+  <!-- Sección Pacientes -->
   <div id="pacientes" class="section">
     <h2>Gestión de Pacientes</h2>
     <button onclick="listarPacientes()">Listar Pacientes</button>
@@ -165,38 +219,74 @@
 
     <div id="formularioPaciente" style="display:none; margin-top: 20px;">
       <h3>Nuevo Paciente</h3>
-      <input type="text" id="nombre_completo" placeholder="Nombre completo">
-      <input type="text" id="dni" placeholder="DNI">
-      <input type="text" id="sexo" placeholder="Sexo">
-      <input type="number" id="edad" placeholder="Edad">
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="contrasena" placeholder="Contraseña">
+      <input type="text" id="nombre_completo" placeholder="Nombre completo" />
+      <input type="text" id="dni" placeholder="DNI" />
+      <input type="text" id="sexo" placeholder="Sexo" />
+      <input type="number" id="edad" placeholder="Edad" min="0" max="150" />
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="contrasena" placeholder="Contraseña" />
       <button onclick="enviarFormularioPaciente()">Guardar</button>
     </div>
 
     <div id="pacientesResultado" style="margin-top: 20px;"></div>
   </div>
 
+  <!-- Sección Turnos -->
   <div id="turnos" class="section" style="display:none">
     <h2>Turnos</h2>
+    <button onclick="toggleFormularioTurno()">Nuevo Turno</button>
+
+    <div id="formularioTurno" style="display:none; margin-top: 20px;">
+      <h3>Registrar Turno</h3>
+
+      <label for="selectPaciente">Paciente:</label>
+      <select id="selectPaciente"></select>
+
+      <label for="selectEspecialidad">Especialidad:</label>
+      <select id="selectEspecialidad">
+        <option value="">Seleccione especialidad</option>
+        <option value="Clínica General">Clínica General</option>
+        <option value="Pediatría">Pediatría</option>
+        <option value="Cardiología">Cardiología</option>
+        <option value="Ginecología">Ginecología</option>
+      </select>
+
+      <label for="selectProfesional">Profesional:</label>
+      <select id="selectProfesional">
+        <option value="">Seleccione profesional</option>
+      </select>
+
+      <label for="fechaTurno">Fecha y hora:</label>
+      <input type="datetime-local" id="fechaTurno" />
+
+      <button onclick="enviarFormularioTurno()">Guardar Turno</button>
+    </div>
+
+    <div id="turnosResultado" style="margin-top: 20px;"></div>
   </div>
 
+  <!-- Sección Agenda -->
   <div id="agenda" class="section" style="display:none">
     <h2>Agenda Médica</h2>
+    <p>Funcionalidad en desarrollo...</p>
   </div>
 
+  <!-- Sección Perfil -->
   <div id="perfil" class="section" style="display:none">
     <h2>Perfil de Usuario</h2>
+    <p>Funcionalidad en desarrollo...</p>
   </div>
 </div>
 
 <script>
   const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
+
   if (!token || !usuario) {
     window.location.href = "login.html";
   }
 
+  // Mostrar/Ocultar menús según rol
   if (usuario.rol === "secretaria") {
     document.getElementById("pacientes")?.remove();
     document.getElementById("perfil")?.remove();
@@ -209,6 +299,7 @@
   const toggleBtn = document.getElementById('toggle-btn');
   const content = document.getElementById('content');
   const sections = document.querySelectorAll('.section');
+  const menuItems = document.querySelectorAll('#menuList li');
 
   toggleBtn.onclick = () => {
     sidebar.classList.toggle('hide');
@@ -219,6 +310,10 @@
     sections.forEach(s => {
       s.style.display = s.id === sectionId ? 'block' : 'none';
     });
+    // Marcar menú activo
+    menuItems.forEach(li => {
+      li.classList.toggle('active', li.getAttribute('onclick').includes(sectionId));
+    });
   }
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -226,13 +321,13 @@
     window.electronAPI.logout();
   });
 
+  // === Pacientes ===
   let pacientesVisibles = false;
 
   function toggleFormulario() {
     const form = document.getElementById("formularioPaciente");
     const listado = document.getElementById("pacientesResultado");
 
-    // Oculta el listado si está visible
     if (pacientesVisibles) {
       listado.innerHTML = '';
       pacientesVisibles = false;
@@ -292,14 +387,12 @@
     const container = document.getElementById("pacientesResultado");
     const formulario = document.getElementById("formularioPaciente");
 
-    // Si ya está visible, ocultar
     if (pacientesVisibles) {
       container.innerHTML = '';
       pacientesVisibles = false;
       return;
     }
 
-    // Cerrar el formulario si está abierto
     formulario.style.display = "none";
 
     try {
@@ -329,6 +422,7 @@
 
       pacientesVisibles = true;
 
+      // Eventos historial
       document.querySelectorAll('.btn-historial').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const pacienteDiv = e.target.closest('.paciente-box');
@@ -362,6 +456,7 @@
         });
       });
 
+      // Eventos eliminar paciente
       document.querySelectorAll('.btn-eliminar').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const pacienteDiv = e.target.closest('.paciente-box');
@@ -392,6 +487,151 @@
       console.error("Error al listar pacientes:", err);
     }
   }
+
+
+  // === Turnos ===
+  let turnosVisibles = false;
+
+  function toggleFormularioTurno() {
+    const form = document.getElementById("formularioTurno");
+    const listado = document.getElementById("turnosResultado");
+
+    if (turnosVisibles) {
+      listado.innerHTML = "";
+      turnosVisibles = false;
+    }
+
+    form.style.display = form.style.display === "none" ? "block" : "none";
+    if (form.style.display === "block") {
+      cargarPacientesParaTurno();
+      cargarProfesionalesPorEspecialidad();
+    }
+  }
+
+  async function cargarPacientesParaTurno() {
+    const selectPaciente = document.getElementById("selectPaciente");
+    selectPaciente.innerHTML = "<option>Cargando pacientes...</option>";
+
+    try {
+      const res = await fetch("http://localhost:3000/api/pacientes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const pacientes = await res.json();
+
+      selectPaciente.innerHTML = `<option value="">Seleccione paciente</option>`;
+      pacientes.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.id_paciente;
+        option.textContent = `${p.nombre_completo} - DNI: ${p.dni}`;
+        selectPaciente.appendChild(option);
+      });
+    } catch (err) {
+      selectPaciente.innerHTML = `<option>Error al cargar pacientes</option>`;
+    }
+  }
+
+  function cargarProfesionalesPorEspecialidad() {
+    const selectEsp = document.getElementById("selectEspecialidad");
+    const selectProf = document.getElementById("selectProfesional");
+
+    selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
+
+    const profesionales = {
+      "Clínica General": ["Dr. López", "Dra. Pérez"],
+      "Pediatría": ["Dra. Gómez"],
+      "Cardiología": ["Dr. Fernández", "Dra. Martínez"],
+      "Ginecología": ["Dra. Ramírez"]
+    };
+
+    selectEsp.onchange = () => {
+      const esp = selectEsp.value;
+      selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
+
+      if (profesionales[esp]) {
+        profesionales[esp].forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          selectProf.appendChild(opt);
+        });
+      }
+    };
+  }
+
+  async function enviarFormularioTurno() {
+    const idPaciente = document.getElementById("selectPaciente").value;
+    const especialidad = document.getElementById("selectEspecialidad").value;
+    const profesional = document.getElementById("selectProfesional").value;
+    const fecha_turno = document.getElementById("fechaTurno").value;
+
+    if (!idPaciente || !especialidad || !profesional || !fecha_turno) {
+      alert("Por favor complete todos los campos del turno.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/api/turnos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ idPaciente, especialidad, profesional, fecha_turno }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Turno registrado correctamente");
+        document.getElementById("formularioTurno").style.display = "none";
+        listarTurnos();
+      } else {
+        alert(data.mensaje || "Error al registrar turno");
+      }
+    } catch (err) {
+      console.error("Error al registrar turno:", err);
+      alert("Ocurrió un error al registrar el turno.");
+    }
+  }
+
+  async function listarTurnos() {
+    const container = document.getElementById("turnosResultado");
+
+    if (turnosVisibles) {
+      container.innerHTML = "";
+      turnosVisibles = false;
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/api/turnos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const turnos = await res.json();
+
+      if (!Array.isArray(turnos) || turnos.length === 0) {
+        container.innerHTML = "<p>No hay turnos registrados.</p>";
+      } else {
+        container.innerHTML = turnos
+          .map(
+            (t) =>
+              `<div style="border-bottom:1px solid #ccc; padding:10px 0;">
+                <strong>Paciente:</strong> ${t.paciente_nombre || "N/A"}<br>
+                <strong>Especialidad:</strong> ${t.especialidad}<br>
+                <strong>Profesional:</strong> ${t.profesional}<br>
+                <strong>Fecha:</strong> ${new Date(t.fecha_turno).toLocaleString()}
+              </div>`
+          )
+          .join("");
+      }
+
+      turnosVisibles = true;
+    } catch (err) {
+      container.innerHTML = "<p>Error al cargar los turnos.</p>";
+      console.error(err);
+    }
+  }
+
 </script>
 
 </body>
