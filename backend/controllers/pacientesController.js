@@ -45,3 +45,20 @@ exports.createPaciente = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al crear paciente' });
   }
 };
+
+exports.deletePaciente = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const [result] = await pool.query('DELETE FROM pacientes WHERE id_paciente = ?', [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+    }
+
+    res.status(200).json({ mensaje: 'Paciente eliminado correctamente' });
+  } catch (err) {
+    console.error('Error al eliminar paciente:', err);
+    res.status(500).json({ mensaje: 'Error del servidor al eliminar paciente' });
+  }
+};
