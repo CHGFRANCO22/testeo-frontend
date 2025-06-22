@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const response = await fetch("http://localhost:3000/api/turnos/mis-turnos", {
+    const response = await fetch("http://localhost:3000/api/turnos/mios", {
       headers: {
         "Authorization": `Bearer ${token}`
       }
