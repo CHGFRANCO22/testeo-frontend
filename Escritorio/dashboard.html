@@ -617,7 +617,12 @@
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(bodyData),
+        body: JSON.stringify({
+           id_paciente: idPaciente,
+           nombre_especialidad: especialidad,
+           nombre_profesional: profesional,
+           fecha_turno
+        }),
       });
 
       const data = await res.json();
