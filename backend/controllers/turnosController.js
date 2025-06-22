@@ -91,9 +91,40 @@ const obtenerTurnosPorIdPaciente = async (req, res) => {
   }
 };
 
+// Cancelar turno
+exports.cancelarTurno = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id_turno = ?", [id]);
+    res.json({ mensaje: "Turno cancelado correctamente" });
+  } catch (err) {
+    console.error("Error al cancelar turno:", err);
+    res.status(500).json({ mensaje: "Error al cancelar el turno" });
+  }
+};
+
+// Reprogramar turno
+exports.reprogramarTurno = async (req, res) => {
+  const { id } = req.params;
+  const { nuevaFecha } = req.body;
+
+  try {
+    await pool.query(
+      "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id_turno = ?",
+      [nuevaFecha, id]
+    );
+    res.json({ mensaje: "Turno reprogramado correctamente" });
+  } catch (err) {
+    console.error("Error al reprogramar turno:", err);
+    res.status(500).json({ mensaje: "Error al reprogramar el turno" });
+  }
+};
+
 module.exports = {
   crearTurno,
   obtenerTurnosPorPaciente,
-  obtenerTurnosPorIdPaciente
+  obtenerTurnosPorIdPaciente,
+  cancelarTurno,
+  reprogramarTurno
 };
 
