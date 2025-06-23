@@ -101,54 +101,5 @@ router.get('/', async (req, res) => {
   }
 });
 
-const API_BASE = 'http://localhost:3000';
-
-async function cargarFiltrosTurnos() {
-  try {
-    const especialidades = await fetch(`${API_BASE}/api/especialidades`).then(res => res.json());
-    const profesionales = await fetch(`${API_BASE}/api/profesionales`).then(res => res.json());
-
-    const espeSelect = document.getElementById('selectFiltroEspecialidad');
-    const profSelect = document.getElementById('selectFiltroProfesional');
-
-    // Limpiar antes de volver a cargar
-    espeSelect.innerHTML = `<option value="">-- Todas --</option>`;
-    profSelect.innerHTML = `<option value="">-- Todos --</option>`;
-
-    especialidades.forEach(e => {
-      espeSelect.innerHTML += `<option value="${e.id_espe}">${e.nombre}</option>`;
-    });
-
-    profesionales.forEach(p => {
-      profSelect.innerHTML += `<option value="${p.id_profesional}">${p.nombre_completo}</option>`;
-    });
-  } catch (err) {
-    console.error('Error cargando filtros:', err);
-  }
-}
-
-async function filtrarTurnos() {
-  const espe = document.getElementById('selectFiltroEspecialidad').value;
-  const prof = document.getElementById('selectFiltroProfesional').value;
-
-  let url = `${API_BASE}/api/turnos?`;
-  if (espe) url += `especialidad=${espe}&`;
-  if (prof) url += `profesional=${prof}`;
-
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}` // Usa el token si lo usás en tu sistema
-      }
-    });
-
-    const turnos = await response.json();
-    renderTablaTurnos(turnos); // Asegurate de tener esta función ya definida en tu JS
-  } catch (err) {
-    console.error('Error al filtrar turnos:', err);
-  }
-}
-
-document.getElementById('btnBuscarTurnos').addEventListener('click', filtrarTurnos);
 
 module.exports = router;
