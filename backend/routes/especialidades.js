@@ -16,8 +16,7 @@ router.get('/api/turnos/profesionales/especialidad/:id', async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("Error en /api/turnos/profesionales/especialidad/:id:", err);
-    res.status(500).json({ mensaje: 'Error al obtener profesionales por especialidad' });
+    console.error("Error en /api/turnos/profesionales/especialidad/:id:", err);;
     res.status(500).json({ mensaje: 'Error al cargar especialidades' });
   }
 });
