@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 exports.getAllPacientes = async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const [rows] = await pool.query(`
       SELECT pa.id_paciente, per.nombre_completo, per.dni, pe.sexo, pe.edad, pa.email 
       FROM pacientes pa 
       JOIN persona pe ON pa.id_persona = pe.id
