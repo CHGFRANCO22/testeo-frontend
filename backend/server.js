@@ -18,7 +18,7 @@ app.use(express.json());
 
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 const escritorioPath = path.join(__dirname, '..', 'Escritorio');
-const informesRouter = require('./routes/informes');
+//const informesRouter = require('./routes/informes');
 
 app.use(express.static(frontendPath));
 app.use('/Escritorio', express.static(escritorioPath));
