@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const res = await fetch("http://localhost:3000/api/pacientes", {
-        method: "POST",
+        method: "GETT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
