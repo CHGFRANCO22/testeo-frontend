@@ -7,7 +7,6 @@ const pacientesRoutes = require('./routes/pacientes');
 const authRoutes = require('./routes/auth');
 const turnosRoutes = require('./routes/turnos');
 const contactoRoutes = require('./routes/contacto');
-const pacientesRoutes = require('./routes/pacientes');
 const especialidadesRoutes = require('./routes/especialidades');
 const profesionalesRoutes = require('./routes/profesionales')
 const app = express();
