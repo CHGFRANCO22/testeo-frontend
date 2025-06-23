@@ -34,10 +34,6 @@
         <label for="area" class="form-label">Área médica</label>
         <select class="form-select" id="area" required>
           <option value="" selected disabled>Seleccionar área</option>
-          <option value="pediatría">Pediatría</option>
-          <option value="cardiología">Cardiología</option>
-          <option value="ginecología">Ginecología</option>
-          <option value="clínica">Clínica General</option>
         </select>
       </div>
 
@@ -73,25 +69,51 @@
     const mensaje = document.getElementById("mensajeConfirmacion");
     const inputFecha = document.getElementById("fecha");
 
-    const medicosPorArea = {
-      "pediatría": [
-        { nombre: "Dra. Ana Gómez", dias: ["1","3"], horarioInicio: "08:00", horarioFin: "12:00" },
-        { nombre: "Dra. Marta López", dias: ["2","4"], horarioInicio: "08:00", horarioFin: "12:00" }
-      ],
-      "cardiología": [
-        { nombre: "Dr. Juan Pérez", dias: ["2","4"], horarioInicio: "14:00", horarioFin: "18:00" },
-        { nombre: "Dr. Carlos Ramírez", dias: ["1","3"], horarioInicio: "14:00", horarioFin: "18:00" }
-      ],
-      "ginecología": [
-        { nombre: "Dra. Laura Sánchez", dias: ["5"], horarioInicio: "10:00", horarioFin: "16:00" },
-        { nombre: "Dra. Patricia Fernández", dias: ["5"], horarioInicio: "10:00", horarioFin: "16:00" }
-      ],
-      "clínica": [
-        { nombre: "Dr. Martín Ruiz", dias: ["1","2","3","4","5"], horarioInicio: "08:00", horarioFin: "12:00" },
-        { nombre: "Dr. José Martínez", dias: ["1","2","3","4","5"], horarioInicio: "16:00", horarioFin: "20:00" }
-      ]
-    };
+    // Variable para guardar horarios de médicos (fetchará y actualizará)
+    let medicosHorarios = {};
 
+    // Función para obtener especialidades desde backend y cargar en selectArea
+    async function cargarEspecialidades() {
+      try {
+        const res = await fetch("http://localhost:3000/api/turnos/especialidades");
+        const especialidades = await res.json();
+        selectArea.innerHTML = '<option value="" selected disabled>Seleccionar área</option>';
+        especialidades.forEach(e => {
+          const option = document.createElement("option");
+          option.value = e.id_espe;
+          option.textContent = e.nombre;
+          selectArea.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error al cargar especialidades:", error);
+      }
+    }
+
+    // Función para cargar profesionales según especialidad seleccionada
+    async function cargarProfesionales(idEspecialidad) {
+      try {
+        selectDoctor.innerHTML = '<option value="" selected disabled>Cargando médicos...</option>';
+        const res = await fetch(`http://localhost:3000/api/turnos/profesionales/especialidad/${idEspecialidad}`);
+        const profesionales = await res.json();
+
+        selectDoctor.innerHTML = '<option value="" selected disabled>Seleccione un médico</option>';
+
+        profesionales.forEach(p => {
+          const option = document.createElement("option");
+          option.value = p.id_profesional;
+          option.textContent = p.nombre_completo;
+          selectDoctor.appendChild(option);
+        });
+
+        medicosHorarios = {}; // Resetear horarios
+        // Opcional: Podrías traer horarios del backend si los tienes, por ahora usarás hardcoded o null
+      } catch (error) {
+        console.error("Error al cargar profesionales:", error);
+        selectDoctor.innerHTML = '<option value="" selected disabled>Error al cargar médicos</option>';
+      }
+    }
+
+    // Genera intervalos de media hora entre dos horas (ejemplo 08:00 a 12:00)
     function generarIntervalos(horaInicio, horaFin) {
       const result = [];
       let [h, m] = horaInicio.split(':').map(Number);
@@ -107,47 +129,50 @@
       return result;
     }
 
+    // Ejemplo simple para horarios de médicos (hardcoded para demo)
+    // Ideal: traer desde backend los horarios y días disponibles
+    const horariosMedicosDemo = {
+      // id_profesional: { dias: [1,3,5], horarioInicio: "08:00", horarioFin: "12:00" }
+      1: { dias: [1,3], horarioInicio: "08:00", horarioFin: "12:00" },
+      2: { dias: [2,4], horarioInicio: "08:00", horarioFin: "12:00" },
+      3: { dias: [2,4], horarioInicio: "14:00", horarioFin: "18:00" },
+      4: { dias: [1,3], horarioInicio: "14:00", horarioFin: "18:00" },
+      5: { dias: [5], horarioInicio: "10:00", horarioFin: "16:00" },
+      6: { dias: [5], horarioInicio: "10:00", horarioFin: "16:00" },
+      7: { dias: [1,2,3,4,5], horarioInicio: "08:00", horarioFin: "12:00" },
+      8: { dias: [1,2,3,4,5], horarioInicio: "16:00", horarioFin: "20:00" }
+    };
+
+    // Verifica si la fecha es válida para el médico (día de la semana)
     function validarDiaMedico(fecha, diasPermitidos) {
-      const diaSemana = fecha.getDay() === 0 ? 7 : fecha.getDay();
-      return diasPermitidos.includes(diaSemana.toString());
+      const diaSemana = fecha.getDay() === 0 ? 7 : fecha.getDay(); // Domingo=0, lo convertimos a 7
+      return diasPermitidos.includes(diaSemana);
     }
 
-    function cargarDoctores(area) {
-      selectDoctor.innerHTML = '<option value="" selected disabled>Seleccione un médico</option>';
-      if (!area || !medicosPorArea[area]) return;
-      medicosPorArea[area].forEach(medico => {
-        const option = document.createElement("option");
-        option.value = medico.nombre;
-        option.textContent = medico.nombre;
-        selectDoctor.appendChild(option);
-      });
+    // Genera horarios disponibles para el médico y fecha
+    function generarHorariosDisponibles(idMedico, fechaStr) {
       selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
-      inputFecha.value = "";
-    }
+      if (!idMedico || !fechaStr) return;
 
-    function generarHorariosDisponibles(medico, fechaStr) {
-      selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
-      if (!medico || !fechaStr) return;
       const fecha = new Date(fechaStr + "T00:00:00");
-      let medicoData;
-      outerLoop:
-      for (const area in medicosPorArea) {
-        for (const m of medicosPorArea[area]) {
-          if (m.nombre === medico) {
-            medicoData = m;
-            break outerLoop;
-          }
-        }
+      const medicoData = horariosMedicosDemo[idMedico];
+      if (!medicoData) {
+        selectHora.innerHTML = '<option value="" disabled>No hay datos de horario para este médico</option>';
+        return;
       }
-      if (!medicoData) return;
+
       if (!validarDiaMedico(fecha, medicoData.dias)) {
         selectHora.innerHTML = '<option value="" disabled>El médico no atiende ese día</option>';
         return;
       }
+
       const todosHorarios = generarIntervalos(medicoData.horarioInicio, medicoData.horarioFin);
+
+      // Aquí se podría consultar backend para turnos ya reservados, pero usamos localStorage demo:
       const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
-      const key = `${medico}-${fechaStr}`;
+      const key = `${idMedico}-${fechaStr}`;
       const ocupados = turnosReservados[key] || [];
+
       todosHorarios.forEach(hora => {
         if (!ocupados.includes(hora)) {
           const option = document.createElement("option");
@@ -158,8 +183,9 @@
       });
     }
 
+    // Event listeners
     selectArea.addEventListener("change", () => {
-      cargarDoctores(selectArea.value);
+      cargarProfesionales(selectArea.value);
       selectHora.innerHTML = '<option value="" selected disabled>Seleccione una hora</option>';
       inputFecha.value = "";
     });
@@ -170,9 +196,10 @@
     });
 
     inputFecha.addEventListener("change", () => {
-      generarHorariosDisponibles(selectDoctor.value, inputFecha.value);
+      generarHorariosDisponibles(parseInt(selectDoctor.value), inputFecha.value);
     });
 
+    // Submit formulario
     document.getElementById("formTurno").addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -198,8 +225,8 @@
       }
 
       const datos = {
-        nombre_profesional: doctor,
-        nombre_especialidad: area,
+        id_profesional: parseInt(doctor),
+        id_especialidad: parseInt(area),
         fecha_turno: fecha + " " + hora + ":00",
         id_paciente: usuario.id
       };
@@ -235,6 +262,10 @@
 
       mensaje.style.display = "block";
     });
+
+    // Inicializar carga de especialidades al cargar la página
+    cargarEspecialidades();
+
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
