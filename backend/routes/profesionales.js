@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-router.get('/profesionales/especialidad/:id', async (req, res) => {
+router.get('/especialidad/:id', async (req, res) => {
   try {
     const { id } = req.params;
 

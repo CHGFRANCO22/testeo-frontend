@@ -20,11 +20,12 @@ const escritorioPath = path.join(__dirname, '..', 'Escritorio');
 
 app.use(express.static(frontendPath));
 app.use('/Escritorio', express.static(escritorioPath));
-app.use('/api', especialidadesRoutes);
+app.use('/api/especialidades', especialidadesRoutes);  // en especialidades.js ruta: '/'
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
-app.use('/api/turnos', profesionalesRoutes);
+app.use('/api/profesionales', profesionalesRoutes);  // acá cambió de /api/turnos a /api/profesionales
+app.use('/api/pacientes', pacientesRoutes);          // acá agregás prefijo para pacientes
 app.use(pacientesRoutes);
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
