@@ -87,7 +87,7 @@
         { id:6,nombre: "Dra. Patricia Fernández", dias: ["5"], horarioInicio: "10:00", horarioFin: "16:00" }
       ],
       "clínica": [
-        { id:7,ombre: "Dr. Martín Ruiz", dias: ["1","2","3","4","5"], horarioInicio: "08:00", horarioFin: "12:00" },
+        { id:7,nombre: "Dr. Martín Ruiz", dias: ["1","2","3","4","5"], horarioInicio: "08:00", horarioFin: "12:00" },
         { id:8,nombre: "Dr. José Martínez", dias: ["1","2","3","4","5"], horarioInicio: "16:00", horarioFin: "20:00" }
       ]
     };
@@ -141,7 +141,7 @@
       outerLoop:
       for (const area in medicosPorArea) {
         for (const m of medicosPorArea[area]) {
-          if (m.id === medico.id) {
+          if (m.id === number(medico)) {
             medicoData = m;
             break outerLoop;
           }
@@ -154,7 +154,7 @@
       }
       const todosHorarios = generarIntervalos(medicoData.horarioInicio, medicoData.horarioFin);
       const turnosReservados = JSON.parse(localStorage.getItem("turnosReservados")) || {};
-      const key = `${medico}-${fechaStr}`;
+      const key = `${medicoData.nombre}-${fechaStr}`;
       const ocupados = turnosReservados[key] || [];
       todosHorarios.forEach(hora => {
         if (!ocupados.includes(hora)) {
