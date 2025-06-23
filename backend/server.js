@@ -8,7 +8,7 @@ const turnosRoutes = require('./routes/turnos');
 const contactoRoutes = require('./routes/contacto');
 const pacientesRoutes = require('./routes/pacientes');
 const especialidadesRoutes = require('./routes/especialidades');
-
+const profesionalesRouter = require('./routes/profesionales')
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -25,7 +25,7 @@ app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
-
+app.use(profesionalesRouter);
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
