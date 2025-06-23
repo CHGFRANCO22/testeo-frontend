@@ -1,3 +1,6 @@
+const express = require('express');
+const router = express.Router();
+
 async function consultarTurnosPorProfesional() {
   const fechaInicio = document.getElementById('fechaInicio').value;
   const fechaFin = document.getElementById('fechaFin').value;
