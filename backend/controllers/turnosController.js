@@ -27,14 +27,6 @@ const crearTurno = async (req, res) => {
       [id_paciente, id_profesional, id_especialidad, fecha_turno]
     );
 
-
-
-    await db.query(
-      `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
-       VALUES (?, ?, ?, ?)`,
-      [id_paciente, id_profesional, id_especialidad, fecha_turno]
-    );
-
     res.status(201).json({ mensaje: 'Turno reservado con éxito' });
   } catch (error) {
     console.error(error);
