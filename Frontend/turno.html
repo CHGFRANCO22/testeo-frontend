@@ -207,7 +207,7 @@
       console.log("Datos enviados:", datos);
 
       try {
-        const response = await fetch("http://localhost:3000/api/turnos/crear", {
+        const response = await fetch("http://localhost:3000/api/turnos/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
