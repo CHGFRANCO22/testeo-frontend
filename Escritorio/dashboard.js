@@ -61,7 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     form.style.display = form.style.display === "none" ? "block" : "none";
+    if (form.style.display === "block") {
+      cargarPacientesParaTurno(); // ← esto está bien
+      cargarProfesionalesPorEspecialidad();
+    }
   };
+
+  async function cargarPacientesParaTurno() {
+    console.log("📌 Cargando pacientes..."); // ← Agregado
+  }
 
   window.enviarFormularioPaciente = async function() {
     const nombre_completo = document.getElementById("nombre_completo").value.trim();
