@@ -1,8 +1,9 @@
+// routes/profesionales.js
 const express = require('express');
-const router = express.Router(); // ✅ Definición correcta
-const db = require('../db'); // Ajustá si tu archivo de conexión se llama distinto
+const router = express.Router();
+const db = require('../db');
 
-router.get('/api/turnos/profesionales/especialidad/:id', async (req, res) => {
+router.get('/profesionales/especialidad/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -16,7 +17,7 @@ router.get('/api/turnos/profesionales/especialidad/:id', async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("Error en /api/turnos/profesionales/especialidad/:id:", err);
+    console.error("Error en GET /profesionales/especialidad/:id:", err);
     res.status(500).json({ mensaje: 'Error al obtener profesionales por especialidad' });
   }
 });
