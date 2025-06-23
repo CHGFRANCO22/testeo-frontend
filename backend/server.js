@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+const pacientesRoutes = require('./routes/pacientes');
 const authRoutes = require('./routes/auth');
 const turnosRoutes = require('./routes/turnos');
 const contactoRoutes = require('./routes/contacto');
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/turnos', profesionalesRoutes);
+app.use(pacientesRoutes);
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });

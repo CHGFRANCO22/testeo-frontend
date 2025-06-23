@@ -1,15 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Ajustá si tu archivo de conexión se llama distinto
+const db = require('../db');
 
-// Ruta para obtener especialidades
-router.get('/api/especialidades', async (req, res) => {
+// Obtener profesionales según especialidad
+router.get('/api/turnos/profesionales/especialidad/:id', async (req, res) => {
   try {
-    const [result] = await db.query('SELECT id_espe, nombre FROM especialidades');
-    res.json(result);
+    const { id } = req.params;
+    console.log('📌 Buscando profesionales para especialidad ID:', id);
+
+    const [rows] = await db.query(`
+      SELECT prof.id_profesional, persona.nombre_completo
+      FROM profesional_especialidad pe
+      JOIN profesionales prof ON pe.id_profesional = prof.id_profesional
+      JOIN persona ON prof.id_persona = persona.id
+      WHERE pe.id_especialidad = ?
+    `, [id]);
+
+    console.log('✅ Profesionales encontrados:', rows);
+    res.json(rows);
   } catch (err) {
-    console.error('Error al cargar especialidades:', err);
-    res.status(500).json({ mensaje: 'Error al cargar especialidades' });
+    console.error("❌ Error en /api/turnos/profesionales/especialidad/:id:", err);
+    res.status(500).json({ mensaje: 'Error al obtener profesionales por especialidad' });
   }
 });
 
