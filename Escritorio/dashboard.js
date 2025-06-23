@@ -1,11 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-  window.nuevoTurno = function() {
-  showSection('turnos');  // Cambia a la sección Turnos
-  cargarEspecialidades();  // Carga especialidades y configura select
-  document.getElementById('formularioTurno').style.display = 'block'; // Mostrar formulario
-};
 
   if (!token || !usuario) {
     window.location.href = "login.html";
@@ -33,18 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showSection(sectionId) {
     if (sectionId === 'turnos') {
-  cargarFiltrosTurnos(); // ← AGREGALO ACÁ
-}
+      cargarFiltrosTurnos();
+    }
     sections.forEach(s => {
       s.style.display = s.id === sectionId ? 'block' : 'none';
     });
-    // Marcar menú activo
     menuItems.forEach(li => {
       li.classList.toggle('active', li.getAttribute('onclick').includes(sectionId));
     });
   }
 
-  window.showSection = showSection; // Exportar función para el onclick inline
+  window.showSection = showSection;
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.clear();
@@ -64,14 +58,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     form.style.display = form.style.display === "none" ? "block" : "none";
+
     if (form.style.display === "block") {
-      cargarPacientesParaTurno(); // ← esto está bien
-      cargarProfesionalesPorEspecialidad();
+      cargarPacientesParaTurno();
     }
   };
 
   async function cargarPacientesParaTurno() {
-    console.log("📌 Cargando pacientes..."); // ← Agregado
+    const selectPaciente = document.getElementById("selectPaciente");
+    if (!selectPaciente) return; // selectPaciente solo existe en formularioTurno
+
+    selectPaciente.innerHTML = "<option>Cargando pacientes...</option>";
+
+    try {
+      const res = await fetch("http://localhost:3000/api/pacientes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const pacientes = await res.json();
+
+      selectPaciente.innerHTML = `<option value="">Seleccione paciente</option>`;
+      pacientes.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.id_paciente;
+        option.textContent = `${p.nombre_completo} - DNI: ${p.dni}`;
+        selectPaciente.appendChild(option);
+      });
+    } catch (err) {
+      selectPaciente.innerHTML = `<option>Error al cargar pacientes</option>`;
+    }
   }
 
   window.enviarFormularioPaciente = async function() {
@@ -170,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pacientesVisibles = true;
 
-      // Eventos historial
       document.querySelectorAll('.btn-historial').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const pacienteDiv = e.target.closest('.paciente-box');
@@ -192,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             historialDiv.innerHTML = turnos.length > 0
               ? turnos.map(t =>
-                  `<p>🗓️ <strong>${t.fecha_turno}</strong> - ${t.especialidad} con ${t.profesional}</p>`
+                  `<p>🗓️ <strong>${new Date(t.fecha_turno).toLocaleString()}</strong> - ${t.especialidad} con ${t.profesional}</p>`
                 ).join('')
               : '<p>No hay turnos registrados para este paciente.</p>';
 
@@ -204,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // Eventos eliminar paciente
       document.querySelectorAll('.btn-eliminar').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const pacienteDiv = e.target.closest('.paciente-box');
@@ -242,6 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let turnosVisibles = false;
   let turnoReprogramando = null;
 
+  window.nuevoTurno = function() {
+    showSection('turnos');
+    cargarEspecialidades();
+    document.getElementById('formularioTurno').style.display = 'block';
+  };
+
   window.toggleFormularioTurno = function() {
     const form = document.getElementById("formularioTurno");
     const listado = document.getElementById("turnosResultado");
@@ -254,151 +272,95 @@ document.addEventListener('DOMContentLoaded', () => {
     form.style.display = form.style.display === "none" ? "block" : "none";
     if (form.style.display === "block") {
       cargarPacientesParaTurno();
-      cargarProfesionalesPorEspecialidad();
     }
   };
 
-  async function cargarPacientesParaTurno() {
-    const selectPaciente = document.getElementById("selectPaciente");
-    selectPaciente.innerHTML = "<option>Cargando pacientes...</option>";
+  async function cargarEspecialidades() {
+    const selectEsp = document.getElementById("selectEspecialidad");
+    selectEsp.innerHTML = "<option>Cargando especialidades...</option>";
 
     try {
-      const res = await fetch("http://localhost:3000/api/pacientes", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch("http://localhost:3000/api/especialidades", {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const pacientes = await res.json();
 
-      selectPaciente.innerHTML = `<option value="">Seleccione paciente</option>`;
-      pacientes.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.id_paciente;
-        option.textContent = `${p.nombre_completo} - DNI: ${p.dni}`;
-        selectPaciente.appendChild(option);
+      if (!res.ok) throw new Error("Error al cargar especialidades");
+
+      const especialidades = await res.json();
+
+      selectEsp.innerHTML = '<option value="">Seleccione especialidad</option>';
+      especialidades.forEach(e => {
+        const opt = document.createElement("option");
+        opt.value = e.id_espe;
+        opt.textContent = e.nombre;
+        selectEsp.appendChild(opt);
       });
+
+      selectEsp.onchange = async () => {
+        const idEspecialidad = selectEsp.value;
+        const selectProf = document.getElementById("selectProfesional");
+
+        selectProf.innerHTML = "<option>Cargando profesionales...</option>";
+
+        try {
+          const res = await fetch(`http://localhost:3000/api/profesionales/por-especialidad/${idEspecialidad}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const profesionales = await res.json();
+
+          selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
+          profesionales.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id_profesional;
+            opt.textContent = p.nombre_completo;
+            selectProf.appendChild(opt);
+          });
+        } catch (err) {
+          selectProf.innerHTML = "<option>Error al cargar profesionales</option>";
+        }
+      };
+
     } catch (err) {
-      selectPaciente.innerHTML = `<option>Error al cargar pacientes</option>`;
+      selectEsp.innerHTML = "<option>Error al cargar especialidades</option>";
     }
   }
-
-  function cargarProfesionalesPorEspecialidad() {
-    const selectEsp = document.getElementById("selectEspecialidad");
-    const selectProf = document.getElementById("selectProfesional");
-
-    selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
-
-    const profesionales = {
-      "Clínica General": ["Dr. López", "Dra. Pérez"],
-      "Pediatría": ["Dra. Gómez"],
-      "Cardiología": ["Dr. Fernández", "Dra. Martínez"],
-      "Ginecología": ["Dra. Ramírez"]
-    };
-
-    selectEsp.onchange = () => {
-      const esp = selectEsp.value;
-      selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
-
-      if (profesionales[esp]) {
-        profesionales[esp].forEach(p => {
-          const opt = document.createElement("option");
-          opt.value = p;
-          opt.textContent = p;
-          selectProf.appendChild(opt);
-        });
-      }
-    };
-  }
-
-  async function cargarEspecialidades() {
-  const selectEsp = document.getElementById("selectEspecialidad");
-  selectEsp.innerHTML = "<option>Cargando especialidades...</option>";
-
-  try {
-    const res = await fetch("http://localhost:3000/api/especialidades", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-     if (!res.ok) throw new Error("Error al cargar especialidades");
-
-    const especialidades = await res.json();
-
-    selectEsp.innerHTML = '<option value="">Seleccione especialidad</option>';
-    especialidades.forEach(e => {
-      const opt = document.createElement("option");
-      opt.value = e.id_espe;
-      opt.textContent = e.nombre;
-      selectEsp.appendChild(opt);
-    });
-
-    // Cargar profesionales según especialidad elegida
-    selectEsp.onchange = async () => {
-      const idEspecialidad = selectEsp.value;
-      const selectProf = document.getElementById("selectProfesional");
-
-      selectProf.innerHTML = "<option>Cargando profesionales...</option>";
-
-      try {
-        const res = await fetch(`http://localhost:3000/api/profesionales/por-especialidad/${idEspecialidad}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const profesionales = await res.json();
-
-        selectProf.innerHTML = '<option value="">Seleccione profesional</option>';
-        profesionales.forEach(p => {
-          const opt = document.createElement("option");
-          opt.value = p.id_profesional;
-          opt.textContent = p.nombre_completo;
-          selectProf.appendChild(opt);
-        });
-      } catch (err) {
-        selectProf.innerHTML = "<option>Error al cargar profesionales</option>";
-      }
-    };
-
-  } catch (err) {
-    selectEsp.innerHTML = "<option>Error al cargar especialidades</option>";
-  }
-}
-
-
-  window.cargarProfesionalesPorEspecialidad = cargarProfesionalesPorEspecialidad;
 
   window.enviarFormularioTurno = async function() {
-  const id_paciente = document.getElementById("selectPaciente").value;
-  const id_especialidad = document.getElementById("selectEspecialidad").value;
-  const id_profesional = document.getElementById("selectProfesional").value;
-  const fecha_turno = document.getElementById("fechaTurno").value;
+    const id_paciente = document.getElementById("selectPaciente").value;
+    const id_especialidad = document.getElementById("selectEspecialidad").value;
+    const id_profesional = document.getElementById("selectProfesional").value;
+    const fecha_turno = document.getElementById("fechaTurno").value;
 
-  if (!id_paciente || !id_especialidad || !id_profesional || !fecha_turno) {
-    alert("Por favor complete todos los campos del turno.");
-    return;
-  }
-
-  try {
-    const res = await fetch("http://localhost:3000/api/turnos", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ id_paciente, id_especialidad, id_profesional, fecha_turno })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Turno registrado correctamente");
-      document.getElementById("formularioTurno").reset();
-      document.getElementById("formularioTurno").style.display = "none";
-      listarTurnos(); // Asegurate de tener esta función en tu script
-    } else {
-      alert(data.mensaje || "Error al registrar turno");
+    if (!id_paciente || !id_especialidad || !id_profesional || !fecha_turno) {
+      alert("Por favor complete todos los campos del turno.");
+      return;
     }
-  } catch (err) {
-    console.error("Error al registrar turno:", err);
-    alert("Ocurrió un error al registrar el turno.");
-  }
-};
 
+    try {
+      const res = await fetch("http://localhost:3000/api/turnos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id_paciente, id_especialidad, id_profesional, fecha_turno })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Turno registrado correctamente");
+        document.getElementById("formularioTurno").reset();
+        document.getElementById("formularioTurno").style.display = "none";
+        listarTurnos();
+      } else {
+        alert(data.mensaje || "Error al registrar turno");
+      }
+    } catch (err) {
+      console.error("Error al registrar turno:", err);
+      alert("Ocurrió un error al registrar el turno.");
+    }
+  };
 
   async function listarTurnos() {
     const container = document.getElementById("turnosResultado");
@@ -444,8 +406,8 @@ document.addEventListener('DOMContentLoaded', () => {
           container.appendChild(turnoDiv);
         });
 
-        // Eventos botones cancelar turno
-        document.querySelectorAll('.btn-cancelar').forEach(btn => {
+        // Cancelar turno
+        container.querySelectorAll('.btn-cancelar').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             const turnoDiv = e.target.closest('.turno-box');
             const idTurno = turnoDiv.dataset.id;
@@ -470,21 +432,17 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         });
 
-        // Eventos botones reprogramar turno
-        document.querySelectorAll('.btn-reprogramar').forEach(btn => {
+        // Reprogramar turno
+        container.querySelectorAll('.btn-reprogramar').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const turnoDiv = e.target.closest('.turno-box');
             const reprogramarDiv = turnoDiv.querySelector('.reprogramar-div');
             reprogramarDiv.style.display = 'block';
-            turnoReprogramando = {
-              id: turnoDiv.dataset.id,
-              elemento: turnoDiv
-            };
           });
         });
 
         // Guardar reprogramación
-        document.querySelectorAll('.btn-guardar-reprogramacion').forEach(btn => {
+        container.querySelectorAll('.btn-guardar-reprogramacion').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             const turnoDiv = e.target.closest('.turno-box');
             const nuevoFechaInput = turnoDiv.querySelector('.nuevo-fecha');
@@ -498,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
               const idTurno = turnoDiv.dataset.id;
 
+              // Obtener datos actuales del turno para enviar con la actualización
               const resGet = await fetch(`http://localhost:3000/api/turnos/${idTurno}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
@@ -512,9 +471,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                  idPaciente: turno.idPaciente || turno.id_paciente || turno.idPaciente,
-                  especialidad: turno.especialidad,
-                  profesional: turno.profesional,
+                  id_paciente: turno.id_paciente || turno.idPaciente,
+                  id_especialidad: turno.id_especialidad || turno.especialidad,
+                  id_profesional: turno.id_profesional || turno.profesional,
                   fecha_turno: nuevaFecha
                 })
               });
@@ -533,13 +492,12 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         });
 
-        // Cancelar reprogramación (ocultar input)
-        document.querySelectorAll('.btn-cancelar-reprogramacion').forEach(btn => {
+        // Cancelar reprogramación
+        container.querySelectorAll('.btn-cancelar-reprogramacion').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const turnoDiv = e.target.closest('.turno-box');
             const reprogramarDiv = turnoDiv.querySelector('.reprogramar-div');
             reprogramarDiv.style.display = 'none';
-            turnoReprogramando = null;
           });
         });
 
@@ -554,44 +512,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.listarTurnos = listarTurnos;
 
+  // Filtros para Turnos
+  const API_BASE = 'http://localhost:3000';
+
+  async function cargarFiltrosTurnos() {
+    try {
+      const especialidades = await fetch(`${API_BASE}/api/especialidades`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => res.json());
+
+      const profesionales = await fetch(`${API_BASE}/api/profesionales`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => res.json());
+
+      const espeSelect = document.getElementById('selectFiltroEspecialidad');
+      const profSelect = document.getElementById('selectFiltroProfesional');
+
+      espeSelect.innerHTML = '<option value="">Todas las especialidades</option>';
+      profSelect.innerHTML = '<option value="">Todos los profesionales</option>';
+
+      especialidades.forEach(e => {
+        espeSelect.innerHTML += `<option value="${e.id_espe}">${e.nombre}</option>`;
+      });
+
+      profesionales.forEach(p => {
+        profSelect.innerHTML += `<option value="${p.id_profesional}">${p.nombre_completo}</option>`;
+      });
+    } catch (err) {
+      console.error('Error cargando filtros:', err);
+    }
+  }
+
+  async function filtrarTurnos() {
+    const espe = document.getElementById('selectFiltroEspecialidad').value;
+    const prof = document.getElementById('selectFiltroProfesional').value;
+
+    let url = `${API_BASE}/api/turnos?`;
+    if (espe) url += `especialidad=${espe}&`;
+    if (prof) url += `profesional=${prof}`;
+
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const turnos = await res.json();
+      renderTablaTurnos(turnos);
+    } catch (err) {
+      console.error('Error al filtrar turnos:', err);
+    }
+  }
+
+  document.getElementById('btnBuscarTurnos').addEventListener('click', filtrarTurnos);
+
+  // Debés tener esta función renderTablaTurnos definida en tu JS para mostrar resultados filtrados
 });
-
-const API_BASE = 'http://localhost:3000';
-
-async function cargarFiltrosTurnos() {
-  try {
-    const especialidades = await fetch(`${API_BASE}/api/especialidades`).then(res => res.json());
-    const profesionales = await fetch(`${API_BASE}/api/profesionales`).then(res => res.json());
-
-    const espeSelect = document.getElementById('selectFiltroEspecialidad');
-    const profSelect = document.getElementById('selectFiltroProfesional');
-
-    especialidades.forEach(e => {
-      espeSelect.innerHTML += `<option value="${e.id_espe}">${e.nombre}</option>`;
-    });
-
-    profesionales.forEach(p => {
-      profSelect.innerHTML += `<option value="${p.id_profesional}">${p.nombre_completo}</option>`;
-    });
-  } catch (err) {
-    console.error('Error cargando filtros:', err);
-  }
-}
-
-async function filtrarTurnos() {
-  const espe = document.getElementById('selectFiltroEspecialidad').value;
-  const prof = document.getElementById('selectFiltroProfesional').value;
-
-  let url = `${API_BASE}/api/turnos?`;
-  if (espe) url += `especialidad=${espe}&`;
-  if (prof) url += `profesional=${prof}`;
-
-  try {
-    const turnos = await fetch(url).then(res => res.json());
-    renderTablaTurnos(turnos); // asegurate de tener esta función en tu JS
-  } catch (err) {
-    console.error('Error al filtrar turnos:', err);
-  }
-}
-
-document.getElementById('btnBuscarTurnos').addEventListener('click', filtrarTurnos);

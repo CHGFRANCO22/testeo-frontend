@@ -4,180 +4,334 @@
   <meta charset="UTF-8" />
   <title>Salud Total - Dashboard</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       display: flex;
-      background-color: #f4f4f4;
+      background-color: #f4f6f9;
+      color: #333;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-
     #sidebar {
-      width: 220px;
-      background-color: #2c3e50;
+      width: 240px;
+      background: #2c3e50;
       color: white;
-      padding: 20px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 60px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-
     #sidebar.hide {
-      display: none;
+      transform: translateX(-240px);
     }
-
-    #sidebar h2 {
-      font-size: 1.4em;
-      margin-bottom: 20px;
-    }
-
     #sidebar ul {
       list-style: none;
       padding: 0;
-    }
-
-    #sidebar li {
-      margin-bottom: 15px;
-      cursor: pointer;
-    }
-
-    #sidebar li:hover,
-    #sidebar li.active {
-      font-weight: bold;
-      color: #1abc9c;
-    }
-
-    #content {
+      margin: 0;
       flex-grow: 1;
-      padding: 20px;
     }
-
-    #content.fullwidth {
-      margin-left: 0;
+    #sidebar ul li {
+      padding: 15px 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+      user-select: none;
+      font-weight: 600;
+      font-size: 1rem;
     }
-
-    .section {
-      display: none;
+    #sidebar ul li:hover,
+    #sidebar ul li.active {
+      background: #1abc9c;
+      color: #fff;
     }
-
-    .section.active {
-      display: block;
+    #logoutBtn {
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      margin: 30px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      user-select: none;
+      width: calc(100% - 50px);
+      font-weight: 600;
+      font-size: 1rem;
+      align-self: center;
     }
-
-    .form-group {
-      margin-bottom: 12px;
+    #logoutBtn:hover {
+      background: #c0392b;
     }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 15px;
-      background-color: #1abc9c;
+    #toggle-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #3498db;
       color: white;
       border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
       cursor: pointer;
+      z-index: 1100;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      user-select: none;
+      transition: transform 0.3s ease, background 0.3s ease;
     }
-
-    button:hover {
-      background-color: #16a085;
+    #toggle-btn:hover {
+      transform: scale(1.05);
+      background-color: #2980b9;
     }
-
-    .btn-secondary {
-      background-color: #95a5a6;
+    #content {
+      margin-left: 240px;
+      padding: 40px 40px 60px;
+      width: 100%;
+      transition: margin-left 0.3s ease;
+      min-height: 100vh;
+      background: #f4f6f9;
+      position: relative;
+      z-index: 1;
     }
-
-    .btn-secondary:hover {
-      background-color: #7f8c8d;
+    #content.fullwidth {
+      margin-left: 0;
+      padding: 40px 20px 60px;
     }
-
-    .form-container {
+    .section {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 500px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      overflow: visible;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h2 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-weight: 700;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    h3 {
+      margin-top: 0;
+      color: #34495e;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+      user-select: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    input, select {
+      display: block;
+      margin-bottom: 15px;
+      padding: 10px 12px;
+      width: 100%;
+      max-width: 320px;
+      font-size: 1rem;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s;
+      background-color: white;
+      z-index: 10;
+      position: relative;
+    }
+    input:focus, select:focus {
+      border-color: #1abc9c;
+      outline: none;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+      color: #34495e;
+    }
+    .paciente-box {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      position: relative;
+      font-size: 1rem;
+    }
+    .acciones {
+      margin-top: 8px;
+    }
+    .acciones button {
+      padding: 6px 14px;
+      font-size: 0.9rem;
+    }
+    .historial-turnos {
+      background: #eef4fa;
+      border-radius: 8px;
+      margin-top: 10px;
+      padding: 10px 15px;
+      display: none;
+      font-size: 14px;
+      color: #2c3e50;
+      white-space: pre-wrap;
+    }
+    .historial-turnos p {
+      margin: 5px 0;
+    }
+    #formularioPaciente, #formularioTurno {
+      max-width: 350px;
+      position: relative;
+      z-index: 10;
+    }
+    .turno-box {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      position: relative;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .turno-acciones {
+      margin-top: 8px;
+    }
+    .turno-acciones button {
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      margin-right: 8px;
+    }
+    .reprogramar-div {
+      margin-top: 10px;
+      display: none;
+    }
+    .error-msg {
+      color: #e74c3c;
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    #usuarioNombre {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #2980b9;
     }
   </style>
 </head>
 <body>
-  <div id="sidebar">
-    <h2>Salud Total</h2>
-    <ul id="menuList">
-      <li onclick="showSection('dashboard')">Inicio</li>
-      <li onclick="showSection('pacientes')">Pacientes</li>
-      <li onclick="showSection('turnos')">Turnos</li>
-      <li onclick="showSection('perfil')">Perfil</li>
-    </ul>
-    <button id="logoutBtn">Cerrar sesión</button>
+<button id="toggle-btn" aria-label="Toggle sidebar">☰</button>
+<div id="sidebar">
+  <ul id="menuList">
+    <li onclick="showSection('pacientes')" class="active">Pacientes</li>
+    <li onclick="showSection('turnos')">Turnos</li>
+    <li onclick="showSection('agenda')">Agenda</li>
+    <li onclick="showSection('perfil')">Perfil</li>
+  </ul>
+  <button id="logoutBtn">Cerrar sesión</button>
+</div>
+<div id="content">
+  <div id="pacientes" class="section">
+    <h2>Gestión de Pacientes</h2>
+    <button onclick="listarPacientes()">Listar Pacientes</button>
+    <button onclick="toggleFormulario()">Registrar Paciente</button>
+    <div id="formularioPaciente" style="display:none; margin-top: 20px;">
+      <h3>Nuevo Paciente</h3>
+      <div id="errorPaciente" class="error-msg" style="display:none;"></div>
+      <input type="text" id="nombre_completo" placeholder="Nombre completo" />
+      <input type="text" id="dni" placeholder="DNI" />
+      <label for="sexo">Sexo:</label>
+      <select id="sexo">
+        <option value="">Seleccione sexo</option>
+        <option value="M">M</option>
+        <option value="F">F</option>
+        <option value="O">O</option>
+      </select>
+      <input type="number" id="edad" placeholder="Edad" min="0" max="150" />
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="contrasena" placeholder="Contraseña" />
+      <input type="password" id="repetir_contrasena" placeholder="Repetir contraseña" />
+      <button onclick="enviarFormularioPaciente()">Guardar</button>
+    </div>
+    <div id="pacientesResultado" style="margin-top: 20px;"></div>
+  </div>
+  <!-- Sección Turnos -->
+  <div id="turnos" class="section" style="display:none">
+    <h3>Filtrar Turnos</h3>
+<div style="margin-bottom: 15px;">
+  <label for="selectFiltroEspecialidad">Especialidad:</label>
+  <select id="selectFiltroEspecialidad">
+    <option value="">-- Todas --</option>
+  </select>
+
+  <label for="selectFiltroProfesional">Profesional:</label>
+  <select id="selectFiltroProfesional">
+    <option value="">-- Todos --</option>
+  </select>
+
+  <button id="btnBuscarTurnos">Buscar</button>
+</div>
+
+    <h2>Turnos</h2>
+    <button onclick="nuevoTurno();">Nuevo Turno</button>
+
+    <div id="formularioTurno" style="display:none; margin-top: 20px;">
+      <h3>Registrar Turno</h3>
+
+      <label for="selectPaciente">Paciente:</label>
+      <select id="selectPaciente"></select>
+
+      <label for="selectEspecialidad">Especialidad:</label>
+      <select id="selectEspecialidad">
+        <option value="">Seleccione especialidad</option>
+        <option value="Clínica General">Clínica General</option>
+        <option value="Pediatría">Pediatría</option>
+        <option value="Cardiología">Cardiología</option>
+        <option value="Ginecología">Ginecología</option>
+      </select>
+
+      <label for="selectProfesional">Profesional:</label>
+      <select id="selectProfesional">
+        <option value="">Seleccione profesional</option>
+      </select>
+
+      <label for="fechaTurno">Fecha y hora:</label>
+      <input type="datetime-local" id="fechaTurno" />
+
+      <button onclick="enviarFormularioTurno()">Guardar Turno</button>
+    </div>
+
+    <div id="turnosResultado" style="margin-top: 20px;"></div>
   </div>
 
-  <div id="content">
-    <button id="toggle-btn">☰ Menú</button>
-
-    <!-- Sección Turnos -->
-    <div id="turnos" class="section">
-      <h2>Gestión de Turnos</h2>
-
-      <div class="form-container" id="formularioTurno" style="display:none;">
-        <h3>Crear Turno</h3>
-        <form id="crearTurnoForm" onsubmit="event.preventDefault(); enviarFormularioTurno();">
-          <div class="form-group">
-            <label for="selectPaciente">Paciente</label>
-            <select id="selectPaciente"></select>
-          </div>
-
-          <div class="form-group">
-            <label for="selectEspecialidad">Especialidad</label>
-            <select id="selectEspecialidad"></select>
-          </div>
-
-          <div class="form-group">
-            <label for="selectProfesional">Profesional</label>
-            <select id="selectProfesional"></select>
-          </div>
-
-          <div class="form-group">
-            <label for="fechaTurno">Fecha y Hora</label>
-            <input type="datetime-local" id="fechaTurno" />
-          </div>
-
-          <button type="submit">Crear Turno</button>
-        </form>
-      </div>
-
-      <br />
-      <button onclick="toggleFormularioTurno()">Nuevo Turno</button>
-      <div id="turnosResultado"></div>
-    </div>
-
-    <!-- Sección Pacientes -->
-    <div id="pacientes" class="section">
-      <h2>Gestión de Pacientes</h2>
-      <button onclick="toggleFormulario()">Registrar Paciente</button>
-      <div id="formularioPaciente" style="display:none;">
-        <!-- Formulario de pacientes (ya lo manejás en JS) -->
-      </div>
-      <div id="pacientesResultado"></div>
-    </div>
-
-    <!-- Sección Perfil -->
-    <div id="perfil" class="section">
-      <h2>Mi perfil</h2>
-      <p>Bienvenido al sistema de gestión del consultorio Salud Total.</p>
-    </div>
-
-    <!-- Sección Inicio -->
-    <div id="dashboard" class="section active">
-      <h2>Inicio</h2>
-      <p>Selecciona una opción del menú para comenzar.</p>
-    </div>
+  <!-- Sección Agenda -->
+  <div id="agenda" class="section" style="display:none">
+    <h2>Agenda Médica</h2>
+    <p>Funcionalidad en desarrollo...</p>
   </div>
 
-  <script src="dashboard.js"></script>
+  <!-- Sección Perfil -->
+  <div id="perfil" class="section" style="display:none">
+    <h2>Perfil de Usuario</h2>
+    <p>Bienvenido, <span id="usuarioNombre">Usuario</span></p>
+    <p>Funcionalidad en desarrollo...</p>
+  </div>
+</div>
+
+<script src="dashboard.js"></script>
 </body>
 </html>
