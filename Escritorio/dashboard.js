@@ -1,5 +1,5 @@
+ const token = localStorage.getItem("token");
 document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
   if (!token || !usuario) {
@@ -357,19 +357,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await res.json();
+       console.log("Respuesta del backend:", data);
 
-      if (res.ok) {
-        alert("Turno registrado correctamente");
-        document.getElementById("formularioTurno").reset();
-        document.getElementById("formularioTurno").style.display = "none";
-        listarTurnos();
-      } else {
-        alert(data.mensaje || "Error al registrar turno");
-      }
-    } catch (err) {
-      console.error("Error al registrar turno:", err);
-      alert("Ocurrió un error al registrar el turno.");
+        if (!res.ok) {
+      alert(data.mensaje || "Error al registrar turno");
+      return; // 👈 IMPORTANTE: cortar la ejecución acá
     }
+     alert("Turno registrado correctamente");
+      document.getElementById("formularioTurno").reset();
+      document.getElementById("formularioTurno").style.display = "none";
+      listarTurnos();
+    } catch (err) {
+    console.error("Error al registrar turno:", err);
+    alert("Ocurrió un error al registrar el turno.");
+  }
   };
 
   function renderTablaTurnos(turnos) {
