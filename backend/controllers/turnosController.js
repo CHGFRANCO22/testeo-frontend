@@ -115,7 +115,7 @@ const obtenerTodosLosTurnos = async (req, res) => {
   try {
     const [turnos] = await db.query(`
       SELECT 
-        t.id_turno,
+        t.id,
         per.nombre_completo AS paciente_nombre,
         e.nombre AS especialidad,
         profe.nombre_completo AS profesional,

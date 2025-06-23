@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         turnos.forEach(t => {
           const turnoDiv = document.createElement('div');
           turnoDiv.className = 'turno-box';
-          turnoDiv.dataset.id = t.id_turno;
+          turnoDiv.dataset.id = t.id;
 
           turnoDiv.innerHTML = `
             <strong>Paciente:</strong> ${t.paciente_nombre || "N/A"}<br>

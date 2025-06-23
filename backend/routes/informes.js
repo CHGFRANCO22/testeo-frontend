@@ -9,7 +9,7 @@ router.get('/turnos-atendidos', verificarToken, verificarRol(['admin', 'secretar
 
   try {
     const [result] = await db.query(`
-      SELECT p.nombre AS profesional, COUNT(t.id_turno) AS cantidad
+      SELECT p.nombre AS profesional, COUNT(t.id) AS cantidad
       FROM turnos t
       JOIN profesionales p ON t.id_profesional = p.id_profesional
       WHERE t.estado = 'confirmado' AND t.fecha BETWEEN ? AND ?
