@@ -24,7 +24,7 @@ app.use('/api/especialidades', especialidadesRoutes);  // en especialidades.js r
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
-app.use('/api', profesionalesRoutes);  // acá cambió de /api/turnos a /api/profesionales
+app.use('/api/profesionales', profesionalesRoutes);  // acá cambió de /api/turnos a /api/profesionales
 app.use('/api/pacientes', pacientesRoutes);          // acá agregás prefijo para pacientes
 app.use(pacientesRoutes);
 app.get('/', (req, res) => {
