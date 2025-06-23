@@ -363,56 +363,42 @@ document.addEventListener('DOMContentLoaded', () => {
   window.cargarProfesionalesPorEspecialidad = cargarProfesionalesPorEspecialidad;
 
   window.enviarFormularioTurno = async function() {
-    const idPaciente = document.getElementById("selectPaciente").value;
-    const especialidad = document.getElementById("selectEspecialidad").value;
-    const profesional = document.getElementById("selectProfesional").value;
-    const fecha_turno = document.getElementById("fechaTurno").value;
+  const id_paciente = document.getElementById("selectPaciente").value;
+  const id_especialidad = document.getElementById("selectEspecialidad").value;
+  const id_profesional = document.getElementById("selectProfesional").value;
+  const fecha_turno = document.getElementById("fechaTurno").value;
 
-    if (!idPaciente || !especialidad || !profesional || !fecha_turno) {
-      alert("Por favor complete todos los campos del turno.");
-      return;
+  if (!id_paciente || !id_especialidad || !id_profesional || !fecha_turno) {
+    alert("Por favor complete todos los campos del turno.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/api/turnos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id_paciente, id_especialidad, id_profesional, fecha_turno })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Turno registrado correctamente");
+      document.getElementById("formularioTurno").reset();
+      document.getElementById("formularioTurno").style.display = "none";
+      listarTurnos(); // Asegurate de tener esta función en tu script
+    } else {
+      alert(data.mensaje || "Error al registrar turno");
     }
+  } catch (err) {
+    console.error("Error al registrar turno:", err);
+    alert("Ocurrió un error al registrar el turno.");
+  }
+};
 
-    try {
-      let url = "http://localhost:3000/api/turnos";
-      let method = "POST";
-      let bodyData = { idPaciente, especialidad, profesional, fecha_turno };
-
-      if (turnoReprogramando) {
-        url = `http://localhost:3000/api/turnos/${turnoReprogramando.id}`;
-        method = "PUT";
-        bodyData = { ...bodyData };
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-           id_paciente: idPaciente,
-           id_especialidad: especialidad,
-           id_profesional: profesional,
-           fecha_turno
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(turnoReprogramando ? "Turno reprogramado correctamente" : "Turno registrado correctamente");
-        document.getElementById("formularioTurno").style.display = "none";
-        turnoReprogramando = null;
-        listarTurnos();
-      } else {
-        alert(data.mensaje || "Error al registrar turno");
-      }
-    } catch (err) {
-      console.error("Error al registrar turno:", err);
-      alert("Ocurrió un error al registrar el turno.");
-    }
-  };
 
   async function listarTurnos() {
     const container = document.getElementById("turnosResultado");
