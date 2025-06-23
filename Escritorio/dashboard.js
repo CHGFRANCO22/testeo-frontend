@@ -65,28 +65,37 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   async function cargarPacientesParaTurno() {
-    const selectPaciente = document.getElementById("selectPaciente");
-    if (!selectPaciente) return; // selectPaciente solo existe en formularioTurno
+  const selectPaciente = document.getElementById("selectPaciente");
+  if (!selectPaciente) return; // Solo si existe el select
 
-    selectPaciente.innerHTML = "<option>Cargando pacientes...</option>";
+  selectPaciente.innerHTML = "<option>Cargando pacientes...</option>";
 
-    try {
-      const res = await fetch("http://localhost:3000/api/pacientes", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const pacientes = await res.json();
+  try {
+    const res = await fetch("http://localhost:3000/api/pacientes", {
+      headers: {
+        Authorization: `Bearer ${token}`,  // token válido y con rol correcto
+      },
+    });
 
-      selectPaciente.innerHTML = `<option value="">Seleccione paciente</option>`;
-      pacientes.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.id_paciente;
-        option.textContent = `${p.nombre_completo} - DNI: ${p.dni}`;
-        selectPaciente.appendChild(option);
-      });
-    } catch (err) {
-      selectPaciente.innerHTML = `<option>Error al cargar pacientes</option>`;
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
+
+    const pacientes = await res.json();
+
+    selectPaciente.innerHTML = `<option value="">Seleccione paciente</option>`;
+    pacientes.forEach(p => {
+      const option = document.createElement("option");
+      option.value = p.id_paciente;
+      option.textContent = `${p.nombre_completo} - DNI: ${p.dni}`;
+      selectPaciente.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error al cargar pacientes:", err);
+    selectPaciente.innerHTML = `<option>Error al cargar pacientes</option>`;
   }
+}
+
 
   window.enviarFormularioPaciente = async function() {
     const nombre_completo = document.getElementById("nombre_completo").value.trim();
