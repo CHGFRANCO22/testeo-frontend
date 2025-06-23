@@ -25,7 +25,7 @@ app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
-app.use('/api/turnos', profesionalesRouter);
+app.use('/api/turnos', profesionalesRoutes);
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
