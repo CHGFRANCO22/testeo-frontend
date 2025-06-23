@@ -1,4 +1,5 @@
 const express = require('express');
+const db = require('../db');
 const router = express.Router();
 const pacientesController = require('../controllers/pacientesController');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');

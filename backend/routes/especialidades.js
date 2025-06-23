@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../db');
 
 // Obtener profesionales según especialidad
-router.get('/api/turnos/profesionales/especialidad/:id', async (req, res) => {
+router.get('profesionales/especialidad/:id', async (req, res) => {
   try {
     const { id } = req.params;
     console.log('📌 Buscando profesionales para especialidad ID:', id);
