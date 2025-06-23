@@ -22,7 +22,6 @@ const escritorioPath = path.join(__dirname, '..', 'Escritorio');
 app.use(express.static(frontendPath));
 app.use('/Escritorio', express.static(escritorioPath));
 app.use(especialidadesRoutes);
-app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
