@@ -8,7 +8,7 @@ const turnosRoutes = require('./routes/turnos');
 const contactoRoutes = require('./routes/contacto');
 const pacientesRoutes = require('./routes/pacientes');
 const especialidadesRoutes = require('./routes/especialidades');
-const profesionalesRouter = require('./routes/profesionales')
+const profesionalesRoutes = require('./routes/profesionales')
 const app = express();
 const PORT = process.env.PORT || 3000;
 
