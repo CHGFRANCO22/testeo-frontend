@@ -241,9 +241,49 @@
     <li onclick="showSection('turnos')">Turnos</li>
     <li onclick="showSection('agenda')">Agenda</li>
     <li onclick="showSection('perfil')">Perfil</li>
+    <li onclick="showSection('informes')">Informes</li>
   </ul>
   <button id="logoutBtn">Cerrar sesión</button>
 </div>
+<!-- Sección Informes -->
+<div id="informes" class="section" style="display:none;">
+  <h2>Informes de Gestión</h2>
+
+  <div>
+    <h3>Turnos atendidos por profesional (rango de fechas)</h3>
+    <label for="fechaInicio">Desde:</label>
+    <input type="date" id="fechaInicio" />
+    <label for="fechaFin">Hasta:</label>
+    <input type="date" id="fechaFin" />
+    <button onclick="consultarTurnosPorProfesional()">Consultar</button>
+    <div id="resultadoInforme1" style="margin-top: 15px;"></div>
+  </div>
+
+  <hr style="margin: 30px 0;">
+
+  <div>
+    <h3>Turnos cancelados y reprogramados</h3>
+    <button onclick="consultarCanceladosReprogramados()">Ver</button>
+    <div id="resultadoInforme2" style="margin-top: 15px;"></div>
+  </div>
+
+  <hr style="margin: 30px 0;">
+
+  <div>
+    <h3>Turnos por especialidad</h3>
+    <button onclick="consultarTurnosPorEspecialidad()">Ver</button>
+    <div id="resultadoInforme3" style="margin-top: 15px;"></div>
+  </div>
+
+  <hr style="margin: 30px 0;">
+
+  <div>
+    <h3>Pacientes con más turnos este mes</h3>
+    <button onclick="consultarTopPacientes()">Ver</button>
+    <div id="resultadoInforme4" style="margin-top: 15px;"></div>
+  </div>
+</div>
+
 <div id="content">
   <div id="pacientes" class="section">
     <h2>Gestión de Pacientes</h2>
@@ -292,16 +332,8 @@
     <div id="formularioTurno" style="display:none; margin-top: 20px;">
       <h3>Registrar Turno</h3>
 
-      <label for="selectPaciente">Paciente:</label>
-      <select id="selectPaciente"></select>
-
-      <label for="selectEspecialidad">Especialidad:</label>
       <select id="selectEspecialidad">
         <option value="">Seleccione especialidad</option>
-        <option value="Clínica General">Clínica General</option>
-        <option value="Pediatría">Pediatría</option>
-        <option value="Cardiología">Cardiología</option>
-        <option value="Ginecología">Ginecología</option>
       </select>
 
       <label for="selectProfesional">Profesional:</label>
