@@ -19,13 +19,10 @@ router.get('/api/turnos/profesionales/especialidad/:id', async (req, res) => {
     console.log('✅ Profesionales encontrados:', rows);
     res.json(rows);
   } catch (err) {
-    console.error("❌ ERROR al obtener profesionales por especialidad:\n", err.stack);
-
-    // Devuelve más información en desarrollo
-    res.status(500).json({
-      mensaje: 'Error al obtener profesionales',
-      error: err.message
-    });
+    res.status(500).json({ 
+       mensaje: 'Error al obtener profesionales',
+       error: err.message,
+       detalle: err.stack
   }
 });
 
