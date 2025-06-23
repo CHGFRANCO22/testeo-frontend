@@ -271,8 +271,23 @@
   </div>
   <!-- Sección Turnos -->
   <div id="turnos" class="section" style="display:none">
+    <h3>Filtrar Turnos</h3>
+<div style="margin-bottom: 15px;">
+  <label for="selectFiltroEspecialidad">Especialidad:</label>
+  <select id="selectFiltroEspecialidad">
+    <option value="">-- Todas --</option>
+  </select>
+
+  <label for="selectFiltroProfesional">Profesional:</label>
+  <select id="selectFiltroProfesional">
+    <option value="">-- Todos --</option>
+  </select>
+
+  <button id="btnBuscarTurnos">Buscar</button>
+</div>
+
     <h2>Turnos</h2>
-    <button onclick="nuevoTurno();;">Nuevo Turno</button>
+    <button onclick="nuevoTurno();">Nuevo Turno</button>
 
     <div id="formularioTurno" style="display:none; margin-top: 20px;">
       <h3>Registrar Turno</h3>

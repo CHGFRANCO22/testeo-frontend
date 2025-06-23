@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function showSection(sectionId) {
+    if (sectionId === 'turnos') {
+  cargarFiltrosTurnos(); // ← AGREGALO ACÁ
+}
     sections.forEach(s => {
       s.style.display = s.id === sectionId ? 'block' : 'none';
     });
@@ -566,3 +569,43 @@ document.addEventListener('DOMContentLoaded', () => {
   window.listarTurnos = listarTurnos;
 
 });
+
+const API_BASE = 'http://localhost:3000';
+
+async function cargarFiltrosTurnos() {
+  try {
+    const especialidades = await fetch(`${API_BASE}/api/especialidades`).then(res => res.json());
+    const profesionales = await fetch(`${API_BASE}/api/profesionales`).then(res => res.json());
+
+    const espeSelect = document.getElementById('selectFiltroEspecialidad');
+    const profSelect = document.getElementById('selectFiltroProfesional');
+
+    especialidades.forEach(e => {
+      espeSelect.innerHTML += `<option value="${e.id_espe}">${e.nombre}</option>`;
+    });
+
+    profesionales.forEach(p => {
+      profSelect.innerHTML += `<option value="${p.id_profesional}">${p.nombre_completo}</option>`;
+    });
+  } catch (err) {
+    console.error('Error cargando filtros:', err);
+  }
+}
+
+async function filtrarTurnos() {
+  const espe = document.getElementById('selectFiltroEspecialidad').value;
+  const prof = document.getElementById('selectFiltroProfesional').value;
+
+  let url = `${API_BASE}/api/turnos?`;
+  if (espe) url += `especialidad=${espe}&`;
+  if (prof) url += `profesional=${prof}`;
+
+  try {
+    const turnos = await fetch(url).then(res => res.json());
+    renderTablaTurnos(turnos); // asegurate de tener esta función en tu JS
+  } catch (err) {
+    console.error('Error al filtrar turnos:', err);
+  }
+}
+
+document.getElementById('btnBuscarTurnos').addEventListener('click', filtrarTurnos);
