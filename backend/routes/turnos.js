@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
   try {
     let query = `
       SELECT 
-        t.id_turno AS id, 
+        t.id AS id, 
         t.fecha_turno, 
         t.estado, 
         per.nombre_completo AS paciente,
