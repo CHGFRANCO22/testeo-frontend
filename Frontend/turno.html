@@ -113,6 +113,7 @@
       }
       return result;
     }
+    
 
     function validarDiaMedico(fecha, diasPermitidos) {
       const diaSemana = fecha.getDay() === 0 ? 7 : fecha.getDay();
@@ -147,6 +148,13 @@
           }
         }
       }
+
+      console.log("ID médico:", medico);
+      console.log("Fecha seleccionada:", fechaStr);
+      console.log("Fecha convertida:", fecha);
+      console.log("Días que atiende el médico:", medicoData?.dias);
+      console.log("Día de la semana elegido:", fecha.getDay());
+      
       if (!medicoData) return;
       if (!validarDiaMedico(fecha, medicoData.dias)) {
         selectHora.innerHTML = '<option value="" disabled>El médico no atiende ese día</option>';
