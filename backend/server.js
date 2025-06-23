@@ -29,7 +29,7 @@ app.use('/api/turnos', turnosRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/especialidades', especialidadesRoutes);
 app.use('/api/profesionales', profesionalesRoutes);
-app.use('/api/informes', informesRouter);
+
 // Manejo de rutas API no encontradas
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api')) {
