@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showSection(sectionId) {
     if (sectionId === 'turnos') {
       cargarFiltrosTurnos();
+      listarTurnos;
     }
     sections.forEach(s => {
       s.style.display = s.id === sectionId ? 'block' : 'none';
