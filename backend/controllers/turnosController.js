@@ -9,6 +9,26 @@ const crearTurno = async (req, res) => {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
     }
 
+    // Verificar si ya hay 2 turnos en esa fecha y hora con ese profesional
+    const [rows] = await db.query(
+      `SELECT COUNT(*) AS cantidad FROM turnos 
+       WHERE id_profesional = ? AND fecha_turno = ? AND (estado IS NULL OR estado = 'confirmado')`,
+      [id_profesional, fecha_turno]
+    );
+
+    if (rows[0].cantidad >= 2) {
+      return res.status(409).json({ mensaje: 'Ese horario ya está completo para este médico' });
+    }
+
+    // Si no hay 2, crear el turno
+    await db.query(
+      `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
+       VALUES (?, ?, ?, ?)`,
+      [id_paciente, id_profesional, id_especialidad, fecha_turno]
+    );
+
+
+
     await db.query(
       `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
        VALUES (?, ?, ?, ?)`,
@@ -21,6 +41,8 @@ const crearTurno = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al reservar el turno' });
   }
 };
+
+
 
 // Obtener turnos por paciente autenticado
 const obtenerTurnosPorPaciente = async (req, res) => {
