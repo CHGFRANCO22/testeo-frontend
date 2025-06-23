@@ -110,10 +110,38 @@ const reprogramarTurno = async (req, res) => {
   }
 };
 
+// Obtener todos los turnos
+const obtenerTodosLosTurnos = async (req, res) => {
+  try {
+    const [turnos] = await db.query(`
+      SELECT 
+        t.id_turno,
+        per.nombre_completo AS paciente_nombre,
+        e.nombre AS especialidad,
+        profe.nombre_completo AS profesional,
+        t.fecha_turno
+      FROM turnos t
+      JOIN pacientes pa ON t.id_paciente = pa.id_paciente
+      JOIN persona per ON pa.id_persona = per.id
+      JOIN profesionales pr ON t.id_profesional = pr.id_profesional
+      JOIN persona profe ON pr.id_persona = profe.id
+      JOIN especialidades e ON t.id_especialidad = e.id_espe
+      WHERE t.estado IS NULL OR t.estado NOT IN ('cancelado')
+      ORDER BY t.fecha_turno DESC
+    `);
+
+    res.status(200).json(turnos);
+  } catch (error) {
+    console.error('Error al obtener todos los turnos:', error);
+    res.status(500).json({ mensaje: 'Error al obtener los turnos' });
+  }
+};
+
 module.exports = {
   crearTurno,
   obtenerTurnosPorPaciente,
   obtenerTurnosPorIdPaciente,
   cancelarTurno,
-  reprogramarTurno
+  reprogramarTurno,
+  obtenerTodosLosTurnos
 };

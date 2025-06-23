@@ -362,6 +362,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  function renderTablaTurnos(turnos) {
+  const container = document.getElementById("turnosResultado");
+  container.innerHTML = "";
+
+  if (!Array.isArray(turnos) || turnos.length === 0) {
+    container.innerHTML = "<p>No hay turnos registrados.</p>";
+    return;
+  }
+
+  const tabla = document.createElement("table");
+  tabla.classList.add("tabla-turnos");
+
+  const thead = document.createElement("thead");
+  thead.innerHTML = `
+    <tr>
+      <th>Paciente</th>
+      <th>Especialidad</th>
+      <th>Profesional</th>
+      <th>Fecha</th>
+    </tr>
+  `;
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  turnos.forEach(t => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td>${t.paciente_nombre || "N/A"}</td>
+      <td>${t.especialidad}</td>
+      <td>${t.profesional}</td>
+      <td>${new Date(t.fecha_turno).toLocaleString()}</td>
+    `;
+    tbody.appendChild(fila);
+  });
+
+  tabla.appendChild(tbody);
+  container.appendChild(tabla);
+}
+
+
   async function listarTurnos() {
     const container = document.getElementById("turnosResultado");
 
@@ -377,7 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const turnos = await res.json();
 
-      if (!Array.isArray(turnos) || turnos.length === 0) {
+       renderTablaTurnos(turnos);  // Usar la función que definimos
+       // turnosVisibles = true;
+
+        if (!Array.isArray(turnos) || turnos.length === 0) {
         container.innerHTML = "<p>No hay turnos registrados.</p>";
       } else {
         container.innerHTML = '';

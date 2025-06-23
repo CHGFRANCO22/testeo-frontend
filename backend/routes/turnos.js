@@ -1,4 +1,5 @@
 const express = require('express');
+const db = require('../db');
 const router = express.Router();
 const turnosController = require('../controllers/turnosController');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
@@ -63,7 +64,7 @@ router.get('/', async (req, res) => {
   try {
     let query = `
       SELECT 
-        t.id, 
+        t.id_turno AS id, 
         t.fecha_turno, 
         t.estado, 
         per.nombre_completo AS paciente,
