@@ -1,109 +1,87 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../db'); // Asegurate que este es tu módulo de conexión a MySQL
+const authMiddleware = require('../middlewares/auth'); // Si tenés un middleware de autenticación
 
-async function consultarTurnosPorProfesional() {
-  const fechaInicio = document.getElementById('fechaInicio').value;
-  const fechaFin = document.getElementById('fechaFin').value;
+router.use(authMiddleware);
 
-  if (!fechaInicio || !fechaFin) {
-    alert('Por favor, ingrese ambas fechas.');
-    return;
-  }
+// Turnos por profesional en rango de fechas
+router.get('/turnos-por-profesional', async (req, res) => {
+  const { desde, hasta } = req.query;
 
   try {
-    const res = await fetch(`http://localhost:3000/api/informes/turnos-por-profesional?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!res.ok) throw new Error('Error al consultar el informe');
-    const data = await res.json();
+    const [rows] = await db.query(`
+      SELECT p.nombre_completo AS profesional, COUNT(*) AS total_turnos
+      FROM turnos t
+      JOIN profesionales p ON t.id_profesional = p.id_profesional
+      WHERE t.fecha_turno BETWEEN ? AND ?
+      GROUP BY p.nombre_completo
+    `, [desde, hasta]);
 
-    const contenedor = document.getElementById('resultadoInforme1');
-    if (data.length === 0) {
-      contenedor.innerHTML = '<p>No hay datos para ese rango de fechas.</p>';
-      return;
-    }
-
-    contenedor.innerHTML = '<ul>' + data.map(item =>
-      `<li><strong>${item.profesional}</strong>: ${item.cantidad_turnos} turnos atendidos</li>`
-    ).join('') + '</ul>';
-
+    res.json(rows);
   } catch (err) {
     console.error(err);
-    alert('Error al cargar el informe.');
+    res.status(500).json({ mensaje: 'Error al obtener turnos por profesional' });
   }
-}
+});
 
-async function consultarCanceladosReprogramados() {
+// Turnos cancelados y reprogramados (reprogramados = hay PUT, cancelados = DELETE)
+router.get('/turnos-cancelados-reprogramados', async (req, res) => {
   try {
-    const res = await fetch(`http://localhost:3000/api/informes/turnos-cancelados-reprogramados`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!res.ok) throw new Error('Error al consultar el informe');
-    const data = await res.json();
+    const [cancelados] = await db.query(`
+      SELECT COUNT(*) AS total_cancelados
+      FROM turnos
+      WHERE estado = 'cancelado'
+    `);
 
-    const contenedor = document.getElementById('resultadoInforme2');
-    if (data.length === 0) {
-      contenedor.innerHTML = '<p>No hay turnos cancelados ni reprogramados.</p>';
-      return;
-    }
+    const [reprogramados] = await db.query(`
+      SELECT COUNT(*) AS total_reprogramados
+      FROM turnos
+      WHERE estado = 'reprogramado'
+    `);
 
-    contenedor.innerHTML = '<ul>' + data.map(item =>
-      `<li><strong>${item.tipo}</strong>: ${item.cantidad}</li>`
-    ).join('') + '</ul>';
-
+    res.json({ cancelados: cancelados[0].total_cancelados, reprogramados: reprogramados[0].total_reprogramados });
   } catch (err) {
     console.error(err);
-    alert('Error al cargar el informe.');
+    res.status(500).json({ mensaje: 'Error al obtener datos de cancelados y reprogramados' });
   }
-}
+});
 
-async function consultarTurnosPorEspecialidad() {
+// Turnos por especialidad
+router.get('/turnos-por-especialidad', async (req, res) => {
   try {
-    const res = await fetch(`http://localhost:3000/api/informes/turnos-por-especialidad`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!res.ok) throw new Error('Error al consultar el informe');
-    const data = await res.json();
+    const [rows] = await db.query(`
+      SELECT e.nombre AS especialidad, COUNT(*) AS total_turnos
+      FROM turnos t
+      JOIN especialidades e ON t.id_especialidad = e.id_espe
+      GROUP BY e.nombre
+    `);
 
-    const contenedor = document.getElementById('resultadoInforme3');
-    if (data.length === 0) {
-      contenedor.innerHTML = '<p>No hay datos de turnos por especialidad.</p>';
-      return;
-    }
-
-    contenedor.innerHTML = '<ul>' + data.map(item =>
-      `<li><strong>${item.especialidad}</strong>: ${item.cantidad_turnos} turnos</li>`
-    ).join('') + '</ul>';
-
+    res.json(rows);
   } catch (err) {
     console.error(err);
-    alert('Error al cargar el informe.');
+    res.status(500).json({ mensaje: 'Error al obtener turnos por especialidad' });
   }
-}
+});
 
-async function consultarTopPacientes() {
+// Top pacientes del mes
+router.get('/top-pacientes', async (req, res) => {
   try {
-    const res = await fetch(`http://localhost:3000/api/informes/top-pacientes-mes`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!res.ok) throw new Error('Error al consultar el informe');
-    const data = await res.json();
+    const [rows] = await db.query(`
+      SELECT pa.nombre_completo AS paciente, COUNT(*) AS total_turnos
+      FROM turnos t
+      JOIN pacientes pa ON t.id_paciente = pa.id_paciente
+      WHERE MONTH(t.fecha_turno) = MONTH(CURDATE())
+      GROUP BY pa.nombre_completo
+      ORDER BY total_turnos DESC
+      LIMIT 5
+    `);
 
-    const contenedor = document.getElementById('resultadoInforme4');
-    if (data.length === 0) {
-      contenedor.innerHTML = '<p>No hay pacientes con turnos este mes.</p>';
-      return;
-    }
-
-    contenedor.innerHTML = '<ul>' + data.map(item =>
-      `<li><strong>${item.nombre_completo}</strong>: ${item.cantidad_turnos} turnos este mes</li>`
-    ).join('') + '</ul>';
-
+    res.json(rows);
   } catch (err) {
     console.error(err);
-    alert('Error al cargar el informe.');
+    res.status(500).json({ mensaje: 'Error al obtener top pacientes' });
   }
-}
-
+});
 
 module.exports = router;

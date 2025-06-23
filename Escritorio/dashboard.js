@@ -702,26 +702,69 @@ async function consultarTurnosPorEspecialidad() {
   }
 }
 
-async function consultarTopPacientes() {
+async function consultarTurnosPorProfesional() {
+  const desde = document.getElementById("fechaInicio").value;
+  const hasta = document.getElementById("fechaFin").value;
+
+  if (!desde || !hasta) {
+    alert("Seleccione un rango de fechas");
+    return;
+  }
+
   try {
-    const res = await fetch(`http://localhost:3000/api/informes/top-pacientes-mes`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    const res = await fetch(`http://localhost:3000/api/informes/turnos-por-profesional?desde=${desde}&hasta=${hasta}`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error('Error al consultar el informe');
+
     const data = await res.json();
-
-    const contenedor = document.getElementById('resultadoInforme4');
-    if (data.length === 0) {
-      contenedor.innerHTML = '<p>No hay pacientes con turnos este mes.</p>';
-      return;
-    }
-
-    contenedor.innerHTML = '<ul>' + data.map(item =>
-      `<li><strong>${item.nombre_completo}</strong>: ${item.cantidad_turnos} turnos este mes</li>`
-    ).join('') + '</ul>';
-
+    const container = document.getElementById("resultadoInforme1");
+    container.innerHTML = data.length === 0 ? "No hay datos." :
+      `<ul>${data.map(d => `<li>${d.profesional}: ${d.total_turnos} turnos</li>`).join('')}</ul>`;
   } catch (err) {
     console.error(err);
-    alert('Error al cargar el informe.');
+  }
+}
+
+async function consultarCanceladosReprogramados() {
+  try {
+    const res = await fetch("http://localhost:3000/api/informes/turnos-cancelados-reprogramados", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const container = document.getElementById("resultadoInforme2");
+    container.innerHTML = `
+      <p>Turnos cancelados: ${data.cancelados}</p>
+      <p>Turnos reprogramados: ${data.reprogramados}</p>
+    `;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function consultarTurnosPorEspecialidad() {
+  try {
+    const res = await fetch("http://localhost:3000/api/informes/turnos-por-especialidad", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const container = document.getElementById("resultadoInforme3");
+    container.innerHTML = data.length === 0 ? "No hay datos." :
+      `<ul>${data.map(d => `<li>${d.especialidad}: ${d.total_turnos} turnos</li>`).join('')}</ul>`;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function consultarTopPacientes() {
+  try {
+    const res = await fetch("http://localhost:3000/api/informes/top-pacientes", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const container = document.getElementById("resultadoInforme4");
+    container.innerHTML = data.length === 0 ? "No hay datos." :
+      `<ul>${data.map(d => `<li>${d.paciente}: ${d.total_turnos} turnos</li>`).join('')}</ul>`;
+  } catch (err) {
+    console.error(err);
   }
 }
