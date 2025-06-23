@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
       selectProf.innerHTML = "<option>Cargando profesionales...</option>";
 
       try {
-        const res = await fetch(`http://localhost:3000/api/turnos/profesionales/especialidad/${idEspecialidad}`, {
+        const res = await fetch(`http://localhost:3000/api/profesionales/por-especialidad/${idEspecialidad}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const profesionales = await res.json();
