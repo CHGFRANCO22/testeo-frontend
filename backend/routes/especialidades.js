@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../db');
 
 // Obtener profesionales según especialidad
-router.get('profesionales/especialidad/:id', async (req, res) => {
+router.get('/especialidades', async (req, res) => {
   try {
     const { id } = req.params;
     console.log('📌 Buscando profesionales para especialidad ID:', id);
@@ -19,7 +19,7 @@ router.get('profesionales/especialidad/:id', async (req, res) => {
     console.log('✅ Profesionales encontrados:', rows);
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error en /api/turnos/profesionales/especialidad/:id:", err);
+    console.error("❌ Error en /especialidades", err);
     res.status(500).json({ mensaje: 'Error al obtener profesionales por especialidad' });
   }
 });
