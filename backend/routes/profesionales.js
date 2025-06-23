@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-router.get('/especialidad/:id', async (req, res) => {
+router.get('/turnos/profesionales/especialidad/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -17,8 +17,8 @@ router.get('/especialidad/:id', async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("Error en GET /profesionales/especialidad/:id:", err);
-    res.status(500).json({ mensaje: 'Error al obtener profesionales por especialidad' });
+     console.error("❌ Error en /api/turnos/profesionales/especialidad/:id:\n", err.stack);
+  res.status(500).json({ mensaje: 'Error al obtener profesionales' });
   }
 });
 
