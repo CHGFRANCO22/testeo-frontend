@@ -141,7 +141,7 @@
       outerLoop:
       for (const area in medicosPorArea) {
         for (const m of medicosPorArea[area]) {
-          if (m.id === number(medico)) {
+          if (m.id === Number(medico)) {
             medicoData = m;
             break outerLoop;
           }
