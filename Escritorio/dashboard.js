@@ -1,15 +1,23 @@
- // dashboard.js (script principal modular)
-import { verificarSesion, aplicarRol } from "./modules/sesion.js";
-import { configurarSidebar, showSection } from "./modules/layout.js";
-import { initPacientes } from "./modules/pacientes.js";
-import { initTurnos } from "./modules/turnos.js";
-
-window.showSection = showSection;
+// dashboard.js
+import { verificarSesion } from "./modules/sesion.js";
 
 verificarSesion();
+
 document.addEventListener("DOMContentLoaded", () => {
-  aplicarRol();
-  configurarSidebar();
-  initPacientes();
-  initTurnos();
+  document.getElementById("btnPacientes").addEventListener("click", () => {
+    window.location.href = "pacientes.html";
+  });
+
+  document.getElementById("btnTurnos").addEventListener("click", () => {
+    window.location.href = "turnos.html";
+  });
+
+  document.getElementById("btnInformes").addEventListener("click", () => {
+    window.location.href = "informes.html";
+  });
+
+  document.getElementById("cerrarSesion").addEventListener("click", () => {
+    localStorage.clear();
+    window.electronAPI.logout();
+  });
 });
