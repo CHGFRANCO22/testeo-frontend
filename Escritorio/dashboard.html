@@ -1,3 +1,4 @@
+<!-- dashboard.html corregido -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,7 +15,6 @@
       background-color: #f4f6f9;
     }
 
-    /* Barra de navegación */
     .navbar {
       background-color: #3498db;
       color: white;
@@ -45,7 +45,6 @@
       background-color: #c0392b;
     }
 
-    /* Contenedor de botones debajo de la barra */
     .btn-container {
       display: flex;
       justify-content: center;
@@ -70,30 +69,25 @@
       background-color: #2980b9;
     }
 
-    /* Área principal donde se mostrará el contenido */
     #mainContent {
       padding: 20px 40px;
     }
   </style>
 </head>
 <body>
-  <!-- Barra superior -->
   <div class="navbar">
     <h1>Salud Total - Panel de Control Interno</h1>
     <button class="logout-btn" id="cerrarSesion">Cerrar Sesión</button>
   </div>
 
-  <!-- Botones de navegación -->
   <div class="btn-container">
     <button id="btnPacientes">Gestión de Pacientes</button>
     <button id="btnTurnos">Gestión de Turnos</button>
     <button id="btnInformes">Informes</button>
   </div>
 
-  <!-- Zona de contenido -->
   <div id="mainContent">
-    <h2>Bienvenido</h2>
-    <p>Seleccione una opción para comenzar.</p>
+    <!-- El contenido de cada sección se cargará aquí dinámicamente -->
   </div>
 
   <script type="module" src="dashboard.js"></script>

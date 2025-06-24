@@ -3,7 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestión de Pacientes - Salud Total</title>
-  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    .hidden { display: none; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+    .btn-edit, .btn-delete {
+      padding: 6px 10px;
+      margin: 0 2px;
+      cursor: pointer;
+    }
+    .btn-edit { background-color: #27ae60; color: white; border: none; }
+    .btn-delete { background-color: #c0392b; color: white; border: none; }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -13,7 +37,38 @@
 
   <div id="mainContent">
     <h2>Pacientes</h2>
-    <div id="pacientesResultado"></div>
+    <button id="btnAgregarPaciente">+ Nuevo Paciente</button>
+
+    <form id="formularioPaciente" class="hidden">
+      <input type="text" id="nombre_completo" placeholder="Nombre Completo">
+      <input type="number" id="edad" placeholder="Edad">
+      <input type="text" id="dni" placeholder="DNI">
+      <input type="email" id="email" placeholder="Email">
+      <select id="sexo">
+        <option value="">Sexo</option>
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+        <option value="X">Otro</option>
+      </select>
+      <button type="submit">Guardar</button>
+      <button type="button" id="btnCancelar">Cancelar</button>
+    </form>
+
+    <table id="tablaPacientes">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Edad</th>
+          <th>DNI</th>
+          <th>Email</th>
+          <th>Sexo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aquí se cargan los pacientes -->
+      </tbody>
+    </table>
   </div>
 
   <script type="module" src="pacientes.js"></script>
