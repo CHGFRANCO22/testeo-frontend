@@ -4,63 +4,91 @@
   <meta charset="UTF-8" />
   <title>Salud Total - Panel de Control</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
       background-color: #f4f6f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
     }
 
-    h1 {
-      color: #2c3e50;
-      font-size: 2.5rem;
-      margin-bottom: 40px;
-    }
-
-    .btn-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 300px;
-    }
-
-    button {
-      padding: 15px;
-      font-size: 1.1rem;
+    .navbar {
       background-color: #3498db;
       color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .navbar-left h1 {
+      margin: 0;
+      font-size: 1.6rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-buttons button,
+    .logout-btn {
+      padding: 10px 16px;
+      font-size: 1rem;
       font-weight: 600;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
       transition: background 0.3s ease;
     }
 
-    button:hover {
-      background-color: #2980b9;
+    .nav-buttons button {
+      background-color: #ffffff22;
+      color: white;
     }
 
-    #cerrarSesion {
+    .nav-buttons button:hover {
+      background-color: #ffffff44;
+    }
+
+    .logout-btn {
       background-color: #e74c3c;
+      color: white;
     }
 
-    #cerrarSesion:hover {
+    .logout-btn:hover {
       background-color: #c0392b;
+    }
+
+    .main-content {
+      padding: 30px;
     }
   </style>
 </head>
 <body>
-  <h1>Salud Total - Panel de Control</h1>
-  <div class="btn-container">
-    <button id="btnPacientes">Gestión de Pacientes</button>
-    <button id="btnTurnos">Gestión de Turnos</button>
-    <button id="btnInformes">Informes</button>
-    <button id="cerrarSesion">Cerrar Sesión</button>
+  <div class="navbar">
+    <div class="navbar-left">
+      <h1>Salud Total</h1>
+      <div class="nav-buttons">
+        <button id="btnPacientes">Gestión de Pacientes</button>
+        <button id="btnTurnos">Gestión de Turnos</button>
+        <button id="btnInformes">Informes</button>
+      </div>
+    </div>
+    <button class="logout-btn" id="cerrarSesion">Cerrar Sesión</button>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <h2>Bienvenido al Panel de Control</h2>
+    <p>Seleccione una opción del menú superior para comenzar.</p>
   </div>
 
   <script type="module" src="dashboard.js"></script>
