@@ -24,6 +24,13 @@ ipcMain.on('cerrar-sesion', () => {
     mainWindow = null;
   }
   createWindow('login.html');
+
+  ipcMain.on("cargar-vista", (event, archivo) => {
+  if (mainWindow) {
+    mainWindow.loadFile(path.join(__dirname, archivo));
+  }
+});
+
 });
 
 app.whenReady().then(() => createWindow());

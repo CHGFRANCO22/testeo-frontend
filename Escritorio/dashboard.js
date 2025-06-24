@@ -4,20 +4,22 @@ import { verificarSesion } from "./modules/sesion.js";
 verificarSesion();
 
 document.addEventListener("DOMContentLoaded", () => {
+  const { electronAPI } = window;
+
   document.getElementById("btnPacientes").addEventListener("click", () => {
-    window.location.href = "pacientes.html";
+    electronAPI.cargarVista("pacientes.html");
   });
 
   document.getElementById("btnTurnos").addEventListener("click", () => {
-    window.location.href = "turnos.html";
+    electronAPI.cargarVista("turnos.html");
   });
 
   document.getElementById("btnInformes").addEventListener("click", () => {
-    window.location.href = "informes.html";
+    electronAPI.cargarVista("informes.html");
   });
 
   document.getElementById("cerrarSesion").addEventListener("click", () => {
     localStorage.clear();
-    window.electronAPI.logout();
+    electronAPI.cerrarSesion();
   });
 });
