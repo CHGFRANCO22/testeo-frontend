@@ -17,20 +17,16 @@ function createWindow(file = 'login.html') {
   mainWindow.loadFile(path.join(__dirname, file));
 }
 
-// Evento para cerrar sesión desde renderer
 ipcMain.on('cerrar-sesion', () => {
   if (mainWindow) {
-    mainWindow.close();
-    mainWindow = null;
-  }
-  createWindow('login.html');
-
-  ipcMain.on("cargar-vista", (event, archivo) => {
-  if (mainWindow) {
-    mainWindow.loadFile(path.join(__dirname, archivo));
+    mainWindow.loadFile(path.join(__dirname, 'login.html'));
   }
 });
 
+ipcMain.on('ir-a', (_, archivo) => {
+  if (mainWindow) {
+    mainWindow.loadFile(path.join(__dirname, archivo));
+  }
 });
 
 app.whenReady().then(() => createWindow());

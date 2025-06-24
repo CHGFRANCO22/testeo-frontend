@@ -7,8 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const { electronAPI } = window;
 
   document.getElementById("btnPacientes").addEventListener("click", () => {
-    electronAPI.cargarVista("pacientes.html");
-  });
+  window.electronAPI.irA('pacientes.html');
+});
+
 
   document.getElementById("btnTurnos").addEventListener("click", () => {
     electronAPI.cargarVista("turnos.html");
