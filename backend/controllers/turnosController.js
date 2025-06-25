@@ -100,6 +100,59 @@ const cancelarTurno = async (req, res) => {
   }
 };
 
+
+// Obtener horarios disponibles para un profesional en una fecha
+const obtenerHorariosDisponibles = async (req, res) => {
+  const { profesional, fecha } = req.query;
+
+  if (!profesional || !fecha) {
+    return res.status(400).json({ mensaje: 'Faltan parámetros' });
+  }
+
+  try {
+    const fechaInicio = `${fecha} 00:00:00`;
+    const fechaFin = `${fecha} 23:59:59`;
+
+    // Obtener los horarios ya ocupados (solo turnos confirmados o sin estado)
+    const [ocupados] = await db.query(
+      `SELECT DATE_FORMAT(fecha_turno, '%H:%i') AS hora FROM turnos
+       WHERE id_profesional = ? AND fecha_turno BETWEEN ? AND ?
+       AND (estado IS NULL OR estado = 'confirmado')`,
+      [profesional, fechaInicio, fechaFin]
+    );
+
+    const horariosOcupados = ocupados.map(row => row.hora);
+
+    // Generar lista de horarios (de 8:00 a 16:30 cada 30 min)
+    const horarios = [];
+    for (let hora = 8; hora <= 16; hora++) {
+      horarios.push(`${hora.toString().padStart(2, '0')}:00`);
+      horarios.push(`${hora.toString().padStart(2, '0')}:30`);
+    }
+
+    // Filtrar los horarios disponibles (máx 2 turnos por horario)
+    const disponibles = [];
+
+    for (let hora of horarios) {
+      const [conteo] = await db.query(
+        `SELECT COUNT(*) AS cantidad FROM turnos 
+         WHERE id_profesional = ? AND DATE_FORMAT(fecha_turno, '%Y-%m-%d %H:%i') = ? 
+         AND (estado IS NULL OR estado = 'confirmado')`,
+        [profesional, `${fecha} ${hora}`]
+      );
+      if (conteo[0].cantidad < 2) {
+        disponibles.push(hora);
+      }
+    }
+
+    res.json(disponibles);
+  } catch (error) {
+    console.error('Error al obtener horarios:', error);
+    res.status(500).json({ mensaje: 'Error al obtener horarios' });
+  }
+};
+
+
 // Reprogramar turno
 const reprogramarTurno = async (req, res) => {
   const { id } = req.params;

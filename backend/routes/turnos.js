@@ -4,6 +4,9 @@ const router = express.Router();
 const turnosController = require('../controllers/turnosController');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
+// Obtener horarios disponibles
+router.get('/horarios-disponibles', require('../controllers/turnosController').obtenerHorariosDisponibles);
+
 // Crear turno (usuario autenticado)
 router.post('/', verifyToken, turnosController.crearTurno);
 

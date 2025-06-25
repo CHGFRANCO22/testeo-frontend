@@ -152,9 +152,33 @@ formTurno.addEventListener('submit', async (e) => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+    selectProfesional.addEventListener('change', cargarHorariosDisponibles);
+inputFecha.addEventListener('change', cargarHorariosDisponibles);
   cargarSelects();
   cargarTurnos();
   document.getElementById('volverDashboard').addEventListener('click', () => {
     window.location.href = 'dashboard.html';
   });
 });
+async function cargarHorariosDisponibles() {
+  const id_profesional = selectProfesional.value;
+  const fecha = inputFecha.value;
+
+  if (!id_profesional || !fecha) {
+    inputHora.innerHTML = '<option value="">Seleccionar horario</option>';
+    return;
+  }
+
+  try {
+    const resp = await fetch(`${API_URL}/turnos/horarios-disponibles?profesional=${id_profesional}&fecha=${fecha}`);
+    const horarios = await resp.json();
+
+    inputHora.innerHTML = '<option value="">Seleccionar horario</option>';
+    horarios.forEach(h => {
+      inputHora.innerHTML += `<option value="${h}">${h}</option>`;
+    });
+  } catch (err) {
+    console.error('Error al cargar horarios:', err);
+    inputHora.innerHTML = '<option value="">Error al cargar</option>';
+  }
+}
