@@ -12,22 +12,20 @@ const inputHora = document.getElementById('hora');
 
 const tablaTurnosBody = document.querySelector('#tablaTurnos tbody');
 
-// URL base de tu API
-const API_URL = 'http://localhost:3000/api'; // Cambiá según tu backend
+const API_URL = 'http://localhost:3000/api';
 
-// Abrir popup al hacer click en Nuevo Turno
 btnNuevo.addEventListener('click', () => {
   dialog.showModal();
 });
 
-// Cerrar popup al cancelar
 btnCancelar.addEventListener('click', () => {
   dialog.close();
 });
 
-// Cargar datos para los select
+// Establecer fecha mínima en el input
+inputFecha.min = new Date().toISOString().split('T')[0];
+
 async function cargarSelects() {
-  // Cargar pacientes
   const respPacientes = await fetch(`${API_URL}/pacientes`, {
     headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
   });
@@ -37,7 +35,6 @@ async function cargarSelects() {
     selectPaciente.innerHTML += `<option value="${p.id_paciente}">${p.nombre_completo}</option>`;
   });
 
-  // Cargar especialidades
   const respEspecialidades = await fetch(`${API_URL}/especialidades`);
   const especialidades = await respEspecialidades.json();
   selectEspecialidad.innerHTML = '<option value="">Seleccionar especialidad</option>';
@@ -45,11 +42,9 @@ async function cargarSelects() {
     selectEspecialidad.innerHTML += `<option value="${e.id_espe}">${e.nombre}</option>`;
   });
 
-  // Limpiar profesionales hasta elegir especialidad
   selectProfesional.innerHTML = '<option value="">Seleccionar profesional</option>';
 }
 
-// Cargar profesionales según especialidad seleccionada
 selectEspecialidad.addEventListener('change', async () => {
   const idEspecialidad = selectEspecialidad.value;
   if (!idEspecialidad) {
@@ -64,7 +59,6 @@ selectEspecialidad.addEventListener('change', async () => {
   });
 });
 
-// Cargar turnos en la tabla
 async function cargarTurnos() {
   const resp = await fetch(`${API_URL}/turnos`, {
     headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
@@ -79,7 +73,7 @@ async function cargarTurnos() {
 
     tablaTurnosBody.innerHTML += `
       <tr>
-        <td>${t.paciente_nombre}</td>
+        <td>${t.paciente_nombre || 'Sin datos'}</td>
         <td>${t.profesional}</td>
         <td>${t.especialidad}</td>
         <td>${fechaStr}</td>
@@ -91,22 +85,25 @@ async function cargarTurnos() {
     `;
   });
 
-  // Agregar event listener para botones cancelar
   document.querySelectorAll('button[data-accion="cancelar"]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const idTurno = e.target.dataset.id;
       if (confirm('¿Confirmás cancelar el turno?')) {
-        await fetch(`${API_URL}/turnos/${idTurno}/cancelar`, {
+        const resp = await fetch(`${API_URL}/turnos/${idTurno}/cancelar`, {
           method: 'PUT',
           headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
         });
-        cargarTurnos();
+        if (resp.ok) {
+          alert('Turno cancelado');
+          cargarTurnos();
+        } else {
+          alert('Error al cancelar el turno');
+        }
       }
     });
   });
 }
 
-// Manejar submit para crear turno
 formTurno.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -154,12 +151,9 @@ formTurno.addEventListener('submit', async (e) => {
   }
 });
 
-// Al cargar la página
 window.addEventListener('DOMContentLoaded', () => {
   cargarSelects();
   cargarTurnos();
-
-  // Volver al dashboard al hacer click en el título
   document.getElementById('volverDashboard').addEventListener('click', () => {
     window.location.href = 'dashboard.html';
   });
