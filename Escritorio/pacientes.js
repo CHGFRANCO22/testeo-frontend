@@ -37,16 +37,19 @@ async function cargarPacientes(rol) {
 
     pacientes.forEach(p => {
       const tr = document.createElement("tr");
+      const botones = usuario.rol === "admin"
+    ? `
+      <button onclick="editarPaciente(${p.id_paciente}, '${p.nombre_completo}', ${p.edad}, '${p.dni}', '${p.email}', '${p.sexo}')">Editar</button>
+      <button class="btn-red" onclick="eliminarPaciente(${p.id_paciente})">Eliminar</button>
+    `
+    : "-";
+    
       tr.innerHTML = `
         <td>${p.nombre_completo}</td>
         <td>${p.edad}</td>
         <td>${p.dni}</td>
         <td>${p.email}</td>
         <td>${p.sexo}</td>
-        <td>
-          <button onclick="editarPaciente(${p.id_paciente}, '${p.nombre_completo}', ${p.edad}, '${p.dni}', '${p.email}', '${p.sexo}')">Editar</button>
-          <button class="btn-red" onclick="eliminarPaciente(${p.id_paciente})">Eliminar</button>
-        </td>
       `;
       tbody.appendChild(tr);
     });

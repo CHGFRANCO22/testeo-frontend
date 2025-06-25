@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Turnos</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f6f9;
+    }
+    .navbar {
+      background-color: #3498db;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h1 {
+      margin: 0;
+      cursor: pointer;
+    }
+    table {
+      width: 90%;
+      margin: 30px auto;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .btn-red {
+      background-color: #e74c3c;
+    }
+    .btn-red:hover {
+      background-color: #c0392b;
+    }
+    #btnNuevo {
+      margin: 20px 5%;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1 id="volverDashboard">Salud Total - Gestión de Turnos</h1>
+  </div>
+
+  <button id="btnNuevo">Nuevo Turno</button>
+
+  <table id="tablaTurnos">
+    <thead>
+      <tr>
+        <th>Paciente</th>
+        <th>Profesional</th>
+        <th>Especialidad</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script type="module" src="turnos.js"></script>
+</body>
+</html>
