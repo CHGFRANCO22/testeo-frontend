@@ -9,54 +9,121 @@
       margin: 0;
       background-color: #f4f6f9;
     }
+
     .navbar {
       background-color: #3498db;
       color: white;
       padding: 15px 30px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      cursor: pointer;
+      justify-content: space-between;
     }
+
     .navbar h1 {
       margin: 0;
-      font-size: 1.4rem;
+      cursor: pointer;
     }
+
+    .table-container {
+      width: 95%;
+      margin: 20px auto;
+    }
+
     table {
-      width: 90%;
-      margin: 30px auto;
+      width: 100%;
       border-collapse: collapse;
       background: white;
     }
+
     th, td {
       border: 1px solid #ccc;
-      padding: 12px;
+      padding: 10px;
       text-align: left;
     }
+
     th {
       background-color: #3498db;
       color: white;
     }
+
+    .acciones button {
+      margin-right: 5px;
+      padding: 5px 10px;
+    }
+
+    #btnAgregar {
+      margin: 20px auto;
+      display: block;
+      padding: 10px 20px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #formulario {
+      width: 90%;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      display: none;
+      border-radius: 8px;
+    }
+
+    #formulario input, #formulario select {
+      margin-bottom: 10px;
+      padding: 8px;
+      width: 100%;
+    }
+
+    #formulario button {
+      margin-top: 10px;
+      padding: 8px 12px;
+    }
+
   </style>
 </head>
 <body>
-  <div class="navbar" id="volverDashboard">
-    <h1>Salud Total - Gestión de Pacientes</h1>
+  <div class="navbar">
+    <h1 id="volverDashboard">Salud Total</h1>
   </div>
 
-  <table id="tablaPacientes">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Edad</th>
-        <th>DNI</th>
-        <th>Email</th>
-        <th>Sexo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <button id="btnAgregar">Agregar Paciente</button>
+
+  <div id="formulario">
+    <h3 id="formTitulo">Nuevo Paciente</h3>
+    <form id="formPaciente">
+      <input type="hidden" id="id_paciente">
+      <input type="text" id="nombre_completo" placeholder="Nombre completo">
+      <input type="number" id="edad" placeholder="Edad">
+      <input type="text" id="dni" placeholder="DNI">
+      <input type="email" id="email" placeholder="Email">
+      <select id="sexo">
+        <option value="">Sexo</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Femenino">Femenino</option>
+      </select>
+      <button type="submit">Guardar</button>
+      <button type="button" id="btnCancelar">Cancelar</button>
+    </form>
+  </div>
+
+  <div class="table-container">
+    <table id="tablaPacientes">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Edad</th>
+          <th>DNI</th>
+          <th>Email</th>
+          <th>Sexo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <script type="module" src="pacientes.js"></script>
 </body>
