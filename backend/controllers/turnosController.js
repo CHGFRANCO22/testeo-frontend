@@ -21,11 +21,13 @@ const crearTurno = async (req, res) => {
     }
 
     // Si no hay 2, crear el turno
-    await db.query(
-      `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
-       VALUES (?, ?, ?, ?)`,
-      [id_paciente, id_profesional, id_especialidad, fecha_turno]
-    );
+   const fechaFormateada = new Date(fecha_turno).toISOString().slice(0, 19).replace('T', ' ');
+   await db.query(
+  `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
+   VALUES (?, ?, ?, ?)`,
+  [id_paciente, id_profesional, id_especialidad, fechaFormateada]
+);
+
 
     res.status(201).json({ mensaje: 'Turno reservado con éxito' });
   } catch (error) {
@@ -182,7 +184,7 @@ const obtenerTodosLosTurnos = async (req, res) => {
   try {
     const [turnos] = await db.query(`
       SELECT 
-        t.idturno AS id,
+        t.id AS id,
         per.nombre_completo AS paciente_nombre,
         e.nombre AS especialidad,
         profe.nombre_completo AS profesional,
