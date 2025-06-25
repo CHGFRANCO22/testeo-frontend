@@ -16,14 +16,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-    .logout-btn {
-      background-color: #e74c3c;
-      border: none;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 5px;
       cursor: pointer;
+    }
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.4rem;
     }
     table {
       width: 90%;
@@ -43,9 +40,8 @@
   </style>
 </head>
 <body>
-  <div class="navbar">
-    <h1>Gestión de Pacientes</h1>
-    <button class="logout-btn" id="cerrarSesion">Cerrar Sesión</button>
+  <div class="navbar" id="volverDashboard">
+    <h1>Salud Total - Gestión de Pacientes</h1>
   </div>
 
   <table id="tablaPacientes">

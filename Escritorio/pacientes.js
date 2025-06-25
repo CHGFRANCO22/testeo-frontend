@@ -1,10 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("cerrarSesion").addEventListener("click", () => {
-    localStorage.clear();
-    window.electronAPI.logout();
-  });
-
+  // Cargar pacientes al iniciar
   cargarPacientes();
+
+  // Manejar clic en título para volver al dashboard
+  const volver = document.getElementById("volverDashboard");
+  if (volver) {
+    volver.addEventListener("click", () => {
+      window.electronAPI.navegar("dashboard.html");
+    });
+  }
+
+  // (Opcional) cerrar sesión si hay botón
+  const btnCerrarSesion = document.getElementById("cerrarSesion");
+  if (btnCerrarSesion) {
+    btnCerrarSesion.addEventListener("click", () => {
+      localStorage.clear();
+      window.electronAPI.logout();
+    });
+  }
 });
 
 async function cargarPacientes() {
@@ -15,8 +28,8 @@ async function cargarPacientes() {
     });
 
     if (!res.ok) throw new Error("Error cargando pacientes");
-    const pacientes = await res.json();
 
+    const pacientes = await res.json();
     const tbody = document.querySelector("#tablaPacientes tbody");
     tbody.innerHTML = "";
 
@@ -28,7 +41,7 @@ async function cargarPacientes() {
         <td>${p.dni}</td>
         <td>${p.email}</td>
         <td>${p.sexo}</td>
-        <td>-</td>
+        <td>-</td> <!-- Acciones futuras: editar/eliminar -->
       `;
       tbody.appendChild(tr);
     });
