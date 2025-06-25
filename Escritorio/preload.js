@@ -1,6 +1,6 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  logout: () => ipcRenderer.send('cerrar-sesion'),
-  navegar: (archivo) => ipcRenderer.send('navegar-a', archivo),
+contextBridge.exposeInMainWorld("electronAPI", {
+  logout: () => ipcRenderer.send("cerrar-sesion"),
+  navegar: (ruta) => ipcRenderer.send("navegar", ruta)
 });

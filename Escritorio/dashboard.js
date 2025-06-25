@@ -1,9 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("cerrarSesion").addEventListener("click", () => {
-    localStorage.clear();
-    window.electronAPI.logout();
-  });
-
   document.getElementById("btnPacientes").addEventListener("click", () => {
     window.electronAPI.navegar("pacientes.html");
   });
@@ -14,5 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btnInformes").addEventListener("click", () => {
     window.electronAPI.navegar("informes.html");
+  });
+
+  document.getElementById("cerrarSesion").addEventListener("click", () => {
+    localStorage.clear();
+    window.electronAPI.logout();
   });
 });

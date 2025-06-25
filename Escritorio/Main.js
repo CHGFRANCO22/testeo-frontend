@@ -21,11 +21,12 @@ ipcMain.on('cerrar-sesion', () => {
   createWindow('login.html');
 });
 
-ipcMain.on('navegar-a', (_e, archivo) => {
+ipcMain.on("navegar", (e, ruta) => {
   if (mainWindow) {
-    mainWindow.loadFile(path.join(__dirname, archivo));
+    mainWindow.loadFile(path.join(__dirname, ruta));
   }
 });
+
 
 app.whenReady().then(() => createWindow());
 
