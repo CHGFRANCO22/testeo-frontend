@@ -15,8 +15,8 @@
       color: white;
       padding: 15px 30px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .navbar h1 {
@@ -24,20 +24,16 @@
       cursor: pointer;
     }
 
-    .table-container {
-      width: 95%;
-      margin: 20px auto;
-    }
-
     table {
-      width: 100%;
+      width: 90%;
+      margin: 30px auto;
       border-collapse: collapse;
       background: white;
     }
 
     th, td {
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 12px;
       text-align: left;
     }
 
@@ -46,84 +42,102 @@
       color: white;
     }
 
-    .acciones button {
-      margin-right: 5px;
-      padding: 5px 10px;
-    }
-
-    #btnAgregar {
-      margin: 20px auto;
-      display: block;
-      padding: 10px 20px;
-      background-color: #27ae60;
-      color: white;
+    button {
+      padding: 8px 12px;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
+      background-color: #3498db;
+      color: white;
       cursor: pointer;
     }
 
-    #formulario {
-      width: 90%;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      display: none;
-      border-radius: 8px;
+    button:hover {
+      background-color: #2980b9;
     }
 
-    #formulario input, #formulario select {
+    .btn-red {
+      background-color: #e74c3c;
+    }
+
+    .btn-red:hover {
+      background-color: #c0392b;
+    }
+
+    dialog {
+      border: none;
+      border-radius: 8px;
+      padding: 20px;
+      width: 300px;
+      max-width: 90%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    dialog::backdrop {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    form input, form select {
+      width: 100%;
       margin-bottom: 10px;
       padding: 8px;
-      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
 
-    #formulario button {
-      margin-top: 10px;
-      padding: 8px 12px;
+    form button {
+      width: 48%;
     }
 
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #btnAgregar {
+      margin: 20px 5%;
+    }
   </style>
 </head>
 <body>
   <div class="navbar">
-    <h1 id="volverDashboard">Salud Total</h1>
+    <h1 id="volverDashboard">Salud Total - Gestión de Pacientes</h1>
   </div>
 
   <button id="btnAgregar">Agregar Paciente</button>
 
-  <div id="formulario">
-    <h3 id="formTitulo">Nuevo Paciente</h3>
-    <form id="formPaciente">
-      <input type="hidden" id="id_paciente">
-      <input type="text" id="nombre_completo" placeholder="Nombre completo">
-      <input type="number" id="edad" placeholder="Edad">
-      <input type="text" id="dni" placeholder="DNI">
-      <input type="email" id="email" placeholder="Email">
-      <select id="sexo">
-        <option value="">Sexo</option>
+  <table id="tablaPacientes">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Edad</th>
+        <th>DNI</th>
+        <th>Email</th>
+        <th>Sexo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <dialog id="formPopup">
+    <form method="dialog" id="formPaciente">
+      <h3 id="formTitulo">Nuevo Paciente</h3>
+      <input type="hidden" id="id_paciente" />
+      <input type="text" id="nombre_completo" placeholder="Nombre completo" required />
+      <input type="number" id="edad" placeholder="Edad" required />
+      <input type="text" id="dni" placeholder="DNI" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <select id="sexo" required>
+        <option value="">Seleccionar sexo</option>
         <option value="Masculino">Masculino</option>
         <option value="Femenino">Femenino</option>
       </select>
-      <button type="submit">Guardar</button>
-      <button type="button" id="btnCancelar">Cancelar</button>
+      <div class="form-actions">
+        <button type="submit">Guardar</button>
+        <button type="button" id="btnCancelar">Cancelar</button>
+      </div>
     </form>
-  </div>
-
-  <div class="table-container">
-    <table id="tablaPacientes">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Edad</th>
-          <th>DNI</th>
-          <th>Email</th>
-          <th>Sexo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  </dialog>
 
   <script type="module" src="pacientes.js"></script>
 </body>
