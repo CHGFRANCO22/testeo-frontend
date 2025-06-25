@@ -1,93 +1,107 @@
 // turnos.js
+const token = localStorage.getItem("token");
+const dialog = document.getElementById("dialogNuevoTurno");
+const btnNuevoTurno = document.getElementById("btnNuevoTurno");
+const btnCancelar = document.getElementById("btnCancelar");
+const form = document.getElementById("formNuevoTurno");
+const especialidadSelect = document.getElementById("especialidad");
+const profesionalSelect = document.getElementById("profesional");
+const pacienteSelect = document.getElementById("paciente");
+const fechaHoraInput = document.getElementById("fechaHora");
 
-document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem("token");
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-  if (!token || !usuario) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  // Redirigir al Dashboard
-  document.getElementById("volverDashboard").addEventListener("click", () => {
-    window.location.href = "dashboard.html";
-  });
-
-  // Redirigir a la creación de turno
-  document.getElementById("btnNuevo").addEventListener("click", () => {
-    window.location.href = "crearTurno.html";
-  });
-
-  // Función para cargar turnos desde la API
-  async function cargarTurnos() {
-    try {
-      const response = await fetch("http://localhost:3000/api/turnos", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error("Error al obtener los turnos");
-
-      const turnos = await response.json();
-      mostrarTurnos(turnos);
-    } catch (error) {
-      console.error("Error al cargar turnos:", error);
-    }
-  }
-
-  // Función para insertar los turnos en la tabla
-  function mostrarTurnos(turnos) {
-    const tbody = document.querySelector("#tablaTurnos tbody");
-    tbody.innerHTML = "";
-
-    if (!turnos.length) {
-      tbody.innerHTML = "<tr><td colspan='6'>No hay turnos disponibles.</td></tr>";
-      return;
-    }
-
-    turnos.forEach(turno => {
-      const tr = document.createElement("tr");
-      const fecha = new Date(turno.fecha_turno);
-
-      tr.innerHTML = `
-        <td>${turno.nombre_paciente || 'Sin nombre'}</td>
-        <td>${turno.nombre_profesional || 'Sin nombre'}</td>
-        <td>${turno.nombre_especialidad || 'Sin especialidad'}</td>
-        <td>${fecha.toLocaleDateString()}</td>
-        <td>${fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-        <td>
-          <button class="btn-red" data-id="${turno.id}">Cancelar</button>
-        </td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-    // Botones de cancelar
-    document.querySelectorAll(".btn-red").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-id");
-        if (confirm("¿Deseás cancelar este turno?")) {
-          try {
-            const res = await fetch(`http://localhost:3000/api/turnos/${id}`, {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            });
-
-            if (!res.ok) throw new Error("No se pudo cancelar el turno.");
-            cargarTurnos(); // Recargar turnos
-          } catch (err) {
-            alert("Error al cancelar turno");
-          }
-        }
-      });
-    });
-  }
-
-  // Llamar a cargar turnos al iniciar
-  cargarTurnos();
+// Redirigir al dashboard
+const volverDashboard = document.getElementById("volverDashboard");
+volverDashboard.addEventListener("click", () => {
+  window.location.href = "dashboard.html";
 });
+
+// Mostrar diálogo
+btnNuevoTurno.addEventListener("click", () => {
+  dialog.showModal();
+});
+
+// Cerrar diálogo
+btnCancelar.addEventListener("click", () => {
+  dialog.close();
+});
+
+// Cargar especialidades
+async function cargarEspecialidades() {
+  const res = await fetch("http://localhost:3000/api/especialidades", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const especialidades = await res.json();
+  especialidades.forEach((esp) => {
+    const option = document.createElement("option");
+    option.value = esp.id_espe;
+    option.textContent = esp.nombre;
+    especialidadSelect.appendChild(option);
+  });
+}
+
+// Cargar pacientes
+async function cargarPacientes() {
+  const res = await fetch("http://localhost:3000/api/pacientes", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const pacientes = await res.json();
+  pacientes.forEach((pac) => {
+    const option = document.createElement("option");
+    option.value = pac.id_paciente;
+    option.textContent = pac.nombre_completo;
+    pacienteSelect.appendChild(option);
+  });
+}
+
+// Cargar profesionales al seleccionar especialidad
+especialidadSelect.addEventListener("change", async () => {
+  profesionalSelect.innerHTML = '<option value="">Seleccionar profesional</option>';
+  const idEspecialidad = especialidadSelect.value;
+  if (!idEspecialidad) return;
+
+  const res = await fetch(`http://localhost:3000/api/profesionales/por-especialidad/${idEspecialidad}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const profesionales = await res.json();
+  profesionales.forEach((pro) => {
+    const option = document.createElement("option");
+    option.value = pro.id_profesional;
+    option.textContent = pro.nombre_completo;
+    profesionalSelect.appendChild(option);
+  });
+});
+
+// Enviar formulario
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    id_profesional: profesionalSelect.value,
+    id_especialidad: especialidadSelect.value,
+    fecha_turno: fechaHoraInput.value,
+    id_paciente: pacienteSelect.value,
+  };
+
+  const res = await fetch("http://localhost:3000/api/turnos", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await res.json();
+
+  if (res.ok) {
+    alert("Turno creado correctamente");
+    dialog.close();
+    location.reload();
+  } else {
+    alert(result.mensaje || "Error al crear turno");
+  }
+});
+
+// Inicializar
+cargarEspecialidades();
+cargarPacientes();
