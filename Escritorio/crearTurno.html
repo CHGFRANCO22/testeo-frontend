@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nuevo Turno - Salud Total</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f6f9;
+      padding: 20px;
+    }
+    h2 {
+      color: #3498db;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    select, input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      background-color: #3498db;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .mensaje {
+      margin-top: 15px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h2>Nuevo Turno</h2>
+
+  <label for="paciente">Paciente:</label>
+  <select id="paciente"></select>
+
+  <label for="especialidad">Especialidad:</label>
+  <select id="especialidad"></select>
+
+  <label for="profesional">Profesional:</label>
+  <select id="profesional"></select>
+
+  <label for="fechaHora">Fecha y hora del turno:</label>
+  <input type="datetime-local" id="fechaHora" />
+
+  <button id="btnGuardarTurno">Guardar Turno</button>
+
+  <div class="mensaje" id="mensaje"></div>
+
+  <script type="module" src="crearTurno.js"></script>
+</body>
+</html>
