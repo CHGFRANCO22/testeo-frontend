@@ -1,26 +1,18 @@
-// dashboard.js
-import { verificarSesion } from "./modules/sesion.js";
-
-verificarSesion();
-
 document.addEventListener("DOMContentLoaded", () => {
-  const { electronAPI } = window;
+  document.getElementById("cerrarSesion").addEventListener("click", () => {
+    localStorage.clear();
+    window.electronAPI.logout();
+  });
 
   document.getElementById("btnPacientes").addEventListener("click", () => {
-  window.electronAPI.irA('pacientes.html');
-});
-
+    window.electronAPI.navegar("pacientes.html");
+  });
 
   document.getElementById("btnTurnos").addEventListener("click", () => {
-    electronAPI.cargarVista("turnos.html");
+    window.electronAPI.navegar("turnos.html");
   });
 
   document.getElementById("btnInformes").addEventListener("click", () => {
-    electronAPI.cargarVista("informes.html");
-  });
-
-  document.getElementById("cerrarSesion").addEventListener("click", () => {
-    localStorage.clear();
-    electronAPI.cerrarSesion();
+    window.electronAPI.navegar("informes.html");
   });
 });

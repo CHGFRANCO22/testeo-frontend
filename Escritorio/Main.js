@@ -3,27 +3,25 @@ const path = require('path');
 
 let mainWindow;
 
-function createWindow(file = 'login.html') {
+function createWindow(archivo = 'login.html') {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
-    }
+    },
   });
 
-  mainWindow.loadFile(path.join(__dirname, file));
+  mainWindow.loadFile(path.join(__dirname, archivo));
 }
 
 ipcMain.on('cerrar-sesion', () => {
-  if (mainWindow) {
-    mainWindow.loadFile(path.join(__dirname, 'login.html'));
-  }
+  if (mainWindow) mainWindow.close();
+  createWindow('login.html');
 });
 
-ipcMain.on('ir-a', (_, archivo) => {
+ipcMain.on('navegar-a', (_e, archivo) => {
   if (mainWindow) {
     mainWindow.loadFile(path.join(__dirname, archivo));
   }
