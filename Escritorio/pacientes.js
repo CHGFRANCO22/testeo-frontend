@@ -43,13 +43,14 @@ async function cargarPacientes(rol) {
       <button class="btn-red" onclick="eliminarPaciente(${p.id_paciente})">Eliminar</button>
     `
     : "-";
-    
+
       tr.innerHTML = `
         <td>${p.nombre_completo}</td>
         <td>${p.edad}</td>
         <td>${p.dni}</td>
         <td>${p.email}</td>
         <td>${p.sexo}</td>
+        <td>${botones}</td>
       `;
       tbody.appendChild(tr);
     });
