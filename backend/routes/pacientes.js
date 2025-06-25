@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pacientesController = require('../controllers/pacientesController');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
-
+router.put('/:id', verificarToken, pacienteController.updatePaciente);
 // Obtener todos los pacientes (admin y secretaria)
 router.get('/', verifyToken, authorizeRoles('admin', 'secretaria'), pacientesController.getAllPacientes);
 

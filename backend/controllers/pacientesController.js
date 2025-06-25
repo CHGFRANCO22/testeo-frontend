@@ -66,3 +66,39 @@ exports.deletePaciente = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al eliminar paciente' });
   }
 };
+
+exports.updatePaciente = async (req, res) => {
+  const { id } = req.params;
+  const { nombre_completo, dni, sexo, edad, email } = req.body;
+
+  if (!nombre_completo || !dni || !sexo || !edad || !email) {
+    return res.status(400).json({ mensaje: 'Faltan datos para actualizar' });
+  }
+
+  try {
+    // Obtener el id_persona correspondiente al paciente
+    const [paciente] = await pool.query('SELECT id_persona FROM pacientes WHERE id_paciente = ?', [id]);
+    if (paciente.length === 0) {
+      return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+    }
+
+    const id_persona = paciente[0].id_persona;
+
+    // Actualizar datos en tabla persona
+    await pool.query(
+      'UPDATE persona SET nombre_completo=?, dni=?, sexo=?, edad=? WHERE id=?',
+      [nombre_completo, dni, sexo, edad, id_persona]
+    );
+
+    // Actualizar email en tabla pacientes
+    await pool.query(
+      'UPDATE pacientes SET email=? WHERE id_paciente=?',
+      [email, id]
+    );
+
+    res.status(200).json({ mensaje: 'Paciente actualizado correctamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al actualizar paciente' });
+  }
+};

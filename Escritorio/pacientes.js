@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formPaciente").reset();
     document.getElementById("id_paciente").value = "";
     document.getElementById("formPopup").showModal();
+
+    // Mostrar campos de contraseña en creación
+    document.getElementById("contrasena").style.display = "block";
+    document.getElementById("repetir_contrasena").style.display = "block";
   });
 
   document.getElementById("btnCancelar").addEventListener("click", () => {
@@ -61,6 +65,10 @@ window.editarPaciente = (id, nombre_completo, edad, dni, email, sexo) => {
   document.getElementById("email").value = email;
   document.getElementById("sexo").value = sexo;
   document.getElementById("formPopup").showModal();
+
+  // Ocultar campos de contraseña al editar
+  document.getElementById("contrasena").style.display = "none";
+  document.getElementById("repetir_contrasena").style.display = "none";
 };
 
 window.eliminarPaciente = async (id) => {
@@ -92,16 +100,39 @@ document.getElementById("formPaciente").addEventListener("submit", async (e) => 
   const email = document.getElementById("email").value.trim();
   const sexo = document.getElementById("sexo").value;
   const id = document.getElementById("id_paciente").value;
+  const contrasena = document.getElementById("contrasena").value;
+  const repetir_contrasena = document.getElementById("repetir_contrasena").value;
 
   if (!nombre_completo || !edad || !dni || !email || !sexo) {
     alert("Completa todos los campos");
     return;
   }
 
+  if (!id) {
+    // Validar contraseña en creación
+    if (!contrasena || !repetir_contrasena) {
+      alert("Ingresá y repetí la contraseña");
+      return;
+    }
+    if (contrasena !== repetir_contrasena) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
+  }
+
   const metodo = id ? "PUT" : "POST";
   const url = id
     ? `http://localhost:3000/api/pacientes/${id}`
     : "http://localhost:3000/api/pacientes";
+
+  const body = {
+    nombre_completo,
+    edad,
+    dni,
+    email,
+    sexo,
+    ...(metodo === "POST" && { contrasena }) // solo en creación
+  };
 
   try {
     const res = await fetch(url, {
@@ -110,12 +141,12 @@ document.getElementById("formPaciente").addEventListener("submit", async (e) => 
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ nombre_completo, edad, dni, email, sexo })
+      body: JSON.stringify(body)
     });
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.mensaje || "Error guardando paciente");
+      throw new Error(data.mensaje || (metodo === "POST" ? "Error al crear paciente" : "Error al actualizar paciente"));
     }
 
     alert("Paciente guardado correctamente");
@@ -123,7 +154,7 @@ document.getElementById("formPaciente").addEventListener("submit", async (e) => 
     const usuario = JSON.parse(localStorage.getItem("usuario"));
     cargarPacientes(usuario.rol);
   } catch (err) {
-    alert("Error guardando paciente");
+    alert(metodo === "POST" ? "Error al crear paciente" : "Error al actualizar paciente");
     console.error(err);
   }
 });
