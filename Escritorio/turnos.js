@@ -1,107 +1,166 @@
 // turnos.js
-const token = localStorage.getItem("token");
-const dialog = document.getElementById("dialogNuevoTurno");
-const btnNuevoTurno = document.getElementById("btnNuevoTurno");
-const btnCancelar = document.getElementById("btnCancelar");
-const form = document.getElementById("formNuevoTurno");
-const especialidadSelect = document.getElementById("especialidad");
-const profesionalSelect = document.getElementById("profesional");
-const pacienteSelect = document.getElementById("paciente");
-const fechaHoraInput = document.getElementById("fechaHora");
+const btnNuevo = document.getElementById('btnNuevo');
+const dialog = document.getElementById('formPopup');
+const btnCancelar = document.getElementById('btnCancelar');
+const formTurno = document.getElementById('formTurno');
 
-// Redirigir al dashboard
-const volverDashboard = document.getElementById("volverDashboard");
-volverDashboard.addEventListener("click", () => {
-  window.location.href = "dashboard.html";
-});
+const selectPaciente = document.getElementById('paciente');
+const selectEspecialidad = document.getElementById('especialidad');
+const selectProfesional = document.getElementById('profesional');
+const inputFecha = document.getElementById('fecha');
+const inputHora = document.getElementById('hora');
 
-// Mostrar diálogo
-btnNuevoTurno.addEventListener("click", () => {
+const tablaTurnosBody = document.querySelector('#tablaTurnos tbody');
+
+// URL base de tu API
+const API_URL = 'http://localhost:3000/api'; // Cambiá según tu backend
+
+// Abrir popup al hacer click en Nuevo Turno
+btnNuevo.addEventListener('click', () => {
   dialog.showModal();
 });
 
-// Cerrar diálogo
-btnCancelar.addEventListener("click", () => {
+// Cerrar popup al cancelar
+btnCancelar.addEventListener('click', () => {
   dialog.close();
 });
 
-// Cargar especialidades
-async function cargarEspecialidades() {
-  const res = await fetch("http://localhost:3000/api/especialidades", {
-    headers: { Authorization: `Bearer ${token}` },
+// Cargar datos para los select
+async function cargarSelects() {
+  // Cargar pacientes
+  const respPacientes = await fetch(`${API_URL}/pacientes`, {
+    headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
   });
-  const especialidades = await res.json();
-  especialidades.forEach((esp) => {
-    const option = document.createElement("option");
-    option.value = esp.id_espe;
-    option.textContent = esp.nombre;
-    especialidadSelect.appendChild(option);
+  const pacientes = await respPacientes.json();
+  selectPaciente.innerHTML = '<option value="">Seleccionar paciente</option>';
+  pacientes.forEach(p => {
+    selectPaciente.innerHTML += `<option value="${p.id_paciente}">${p.nombre_completo}</option>`;
   });
+
+  // Cargar especialidades
+  const respEspecialidades = await fetch(`${API_URL}/especialidades`);
+  const especialidades = await respEspecialidades.json();
+  selectEspecialidad.innerHTML = '<option value="">Seleccionar especialidad</option>';
+  especialidades.forEach(e => {
+    selectEspecialidad.innerHTML += `<option value="${e.id_espe}">${e.nombre}</option>`;
+  });
+
+  // Limpiar profesionales hasta elegir especialidad
+  selectProfesional.innerHTML = '<option value="">Seleccionar profesional</option>';
 }
 
-// Cargar pacientes
-async function cargarPacientes() {
-  const res = await fetch("http://localhost:3000/api/pacientes", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const pacientes = await res.json();
-  pacientes.forEach((pac) => {
-    const option = document.createElement("option");
-    option.value = pac.id_paciente;
-    option.textContent = pac.nombre_completo;
-    pacienteSelect.appendChild(option);
-  });
-}
-
-// Cargar profesionales al seleccionar especialidad
-especialidadSelect.addEventListener("change", async () => {
-  profesionalSelect.innerHTML = '<option value="">Seleccionar profesional</option>';
-  const idEspecialidad = especialidadSelect.value;
-  if (!idEspecialidad) return;
-
-  const res = await fetch(`http://localhost:3000/api/profesionales/por-especialidad/${idEspecialidad}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const profesionales = await res.json();
-  profesionales.forEach((pro) => {
-    const option = document.createElement("option");
-    option.value = pro.id_profesional;
-    option.textContent = pro.nombre_completo;
-    profesionalSelect.appendChild(option);
+// Cargar profesionales según especialidad seleccionada
+selectEspecialidad.addEventListener('change', async () => {
+  const idEspecialidad = selectEspecialidad.value;
+  if (!idEspecialidad) {
+    selectProfesional.innerHTML = '<option value="">Seleccionar profesional</option>';
+    return;
+  }
+  const respProfesionales = await fetch(`${API_URL}/profesionales/por-especialidad/${idEspecialidad}`);
+  const profesionales = await respProfesionales.json();
+  selectProfesional.innerHTML = '<option value="">Seleccionar profesional</option>';
+  profesionales.forEach(prof => {
+    selectProfesional.innerHTML += `<option value="${prof.id_profesional}">${prof.nombre_completo}</option>`;
   });
 });
 
-// Enviar formulario
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// Cargar turnos en la tabla
+async function cargarTurnos() {
+  const resp = await fetch(`${API_URL}/turnos`, {
+    headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+  });
+  const turnos = await resp.json();
 
-  const data = {
-    id_profesional: profesionalSelect.value,
-    id_especialidad: especialidadSelect.value,
-    fecha_turno: fechaHoraInput.value,
-    id_paciente: pacienteSelect.value,
-  };
+  tablaTurnosBody.innerHTML = '';
+  turnos.forEach(t => {
+    const fecha = new Date(t.fecha_turno);
+    const fechaStr = fecha.toLocaleDateString();
+    const horaStr = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  const res = await fetch("http://localhost:3000/api/turnos", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
+    tablaTurnosBody.innerHTML += `
+      <tr>
+        <td>${t.paciente_nombre}</td>
+        <td>${t.profesional}</td>
+        <td>${t.especialidad}</td>
+        <td>${fechaStr}</td>
+        <td>${horaStr}</td>
+        <td>
+          <button class="btn-red" data-id="${t.id}" data-accion="cancelar">Cancelar</button>
+        </td>
+      </tr>
+    `;
   });
 
-  const result = await res.json();
+  // Agregar event listener para botones cancelar
+  document.querySelectorAll('button[data-accion="cancelar"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const idTurno = e.target.dataset.id;
+      if (confirm('¿Confirmás cancelar el turno?')) {
+        await fetch(`${API_URL}/turnos/${idTurno}/cancelar`, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+        });
+        cargarTurnos();
+      }
+    });
+  });
+}
 
-  if (res.ok) {
-    alert("Turno creado correctamente");
+// Manejar submit para crear turno
+formTurno.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const id_paciente = selectPaciente.value;
+  const id_especialidad = selectEspecialidad.value;
+  const id_profesional = selectProfesional.value;
+  const fecha = inputFecha.value;
+  const hora = inputHora.value;
+
+  if (!id_paciente || !id_especialidad || !id_profesional || !fecha || !hora) {
+    alert('Completar todos los campos');
+    return;
+  }
+
+  const fecha_turno = new Date(`${fecha}T${hora}`);
+  if (isNaN(fecha_turno.getTime())) {
+    alert('Fecha u hora inválida');
+    return;
+  }
+
+  const body = {
+    id_paciente,
+    id_especialidad,
+    id_profesional,
+    fecha_turno: fecha_turno.toISOString()
+  };
+
+  const resp = await fetch(`${API_URL}/turnos`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (resp.ok) {
+    alert('Turno creado');
     dialog.close();
-    location.reload();
+    cargarTurnos();
+    formTurno.reset();
   } else {
-    alert(result.mensaje || "Error al crear turno");
+    const errorData = await resp.json();
+    alert('Error: ' + errorData.mensaje);
   }
 });
 
-// Inicializar
-cargarEspecialidades();
-cargarPacientes();
+// Al cargar la página
+window.addEventListener('DOMContentLoaded', () => {
+  cargarSelects();
+  cargarTurnos();
+
+  // Volver al dashboard al hacer click en el título
+  document.getElementById('volverDashboard').addEventListener('click', () => {
+    window.location.href = 'dashboard.html';
+  });
+});
