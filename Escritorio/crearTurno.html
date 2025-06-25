@@ -2,64 +2,109 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Nuevo Turno - Salud Total</title>
+  <title>Gestión de Turnos - Nuevo Turno</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       background-color: #f4f6f9;
-      padding: 20px;
     }
-    h2 {
-      color: #3498db;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    select, input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 15px;
+
+    .navbar {
       background-color: #3498db;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 8px 12px;
       border: none;
+      border-radius: 5px;
+      background-color: #3498db;
       color: white;
       cursor: pointer;
-      border-radius: 5px;
     }
+
     button:hover {
       background-color: #2980b9;
     }
-    .mensaje {
-      margin-top: 15px;
-      color: green;
+
+    dialog {
+      border: none;
+      border-radius: 8px;
+      padding: 20px;
+      width: 320px;
+      max-width: 90%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    dialog::backdrop {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    form select, form input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .form-actions button {
+      width: 48%;
     }
   </style>
 </head>
 <body>
-  <h2>Nuevo Turno</h2>
+  <div class="navbar">
+    <h1 id="volverDashboard">Salud Total - Gestión de Turnos</h1>
+  </div>
 
-  <label for="paciente">Paciente:</label>
-  <select id="paciente"></select>
+  <button id="btnNuevoTurno">Nuevo Turno</button>
 
-  <label for="especialidad">Especialidad:</label>
-  <select id="especialidad"></select>
+  <dialog id="dialogNuevoTurno">
+    <form id="formNuevoTurno" method="dialog">
+      <h3>Nuevo Turno</h3>
 
-  <label for="profesional">Profesional:</label>
-  <select id="profesional"></select>
+      <label for="especialidad">Especialidad:</label>
+      <select id="especialidad" required>
+        <option value="">Seleccionar especialidad</option>
+      </select>
 
-  <label for="fechaHora">Fecha y hora del turno:</label>
-  <input type="datetime-local" id="fechaHora" />
+      <label for="profesional">Profesional:</label>
+      <select id="profesional" required>
+        <option value="">Seleccionar profesional</option>
+      </select>
 
-  <button id="btnGuardarTurno">Guardar Turno</button>
+      <label for="fechaHora">Fecha y Hora:</label>
+      <input type="datetime-local" id="fechaHora" required />
 
-  <div class="mensaje" id="mensaje"></div>
+      <label for="paciente">Paciente:</label>
+      <select id="paciente" required>
+        <option value="">Seleccionar paciente</option>
+      </select>
 
-  <script type="module" src="crearTurno.js"></script>
+      <div class="form-actions">
+        <button type="submit">Guardar</button>
+        <button type="button" id="btnCancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="turnos.js"></script>
 </body>
 </html>
