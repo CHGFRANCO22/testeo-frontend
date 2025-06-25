@@ -210,5 +210,6 @@ module.exports = {
   obtenerTurnosPorIdPaciente,
   cancelarTurno,
   reprogramarTurno,
-  obtenerTodosLosTurnos
+  obtenerTodosLosTurnos,
+  obtenerHorariosDisponibles 
 };
