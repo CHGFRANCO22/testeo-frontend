@@ -3,7 +3,9 @@ const db = require('../db');
 // Crear turno con IDs
 const crearTurno = async (req, res) => {
   try {
-    const { id_profesional, id_especialidad, fecha_turno, id_paciente } = req.body;
+    const id_paciente = req.user.id;
+    const { id_profesional, id_especialidad, fecha_turno } = req.body;
+
 
     if (!id_profesional || !id_especialidad || !fecha_turno || !id_paciente) {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
