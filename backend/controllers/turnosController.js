@@ -89,7 +89,7 @@ const cancelarTurno = async (req, res) => {
   const { id } = req.params;
   try {
     const [result] = await db.query(
-      "UPDATE turnos SET estado = 'cancelado' WHERE id_turno = ?",
+      "UPDATE turnos SET estado = 'cancelado' WHERE id = ?",
       [id]
     );
     if (result.affectedRows === 0) {
@@ -166,7 +166,7 @@ const reprogramarTurno = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id_turno = ?",
+      "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?",
       [fecha_turno, id]
     );
     if (result.affectedRows === 0) {
