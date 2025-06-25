@@ -20,6 +20,7 @@ async function cargarPacientes() {
     option.value = p.id_paciente;
     option.textContent = p.nombre_completo;
     select.appendChild(option);
+  });
 }
 
 async function cargarEspecialidades() {
