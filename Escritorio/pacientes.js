@@ -1,5 +1,5 @@
+const usuario = JSON.parse(localStorage.getItem("usuario"));
 document.addEventListener("DOMContentLoaded", () => {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
   cargarPacientes(usuario.rol);
 
   document.getElementById("btnAgregar").addEventListener("click", () => {
@@ -86,7 +86,6 @@ window.eliminarPaciente = async (id) => {
 
     if (!res.ok) throw new Error("Error eliminando paciente");
     alert("Paciente eliminado correctamente");
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
     cargarPacientes(usuario.rol);
   } catch (e) {
     alert("Error al eliminar paciente");
