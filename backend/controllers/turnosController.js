@@ -94,6 +94,7 @@ const cancelarTurno = async (req, res) => {
       "UPDATE turnos SET estado = 'cancelado' WHERE id = ?",
       [id]
     );
+    console.log("Resultado al cancelar:", result);
     if (result.affectedRows === 0) {
       return res.status(404).json({ mensaje: 'Turno no encontrado' });
     }
@@ -197,7 +198,7 @@ const obtenerTodosLosTurnos = async (req, res) => {
       JOIN profesionales pr ON t.id_profesional = pr.id_profesional
       JOIN persona profe ON pr.id_persona = profe.id
       JOIN especialidades e ON t.id_especialidad = e.id_espe
-      WHERE t.estado IS NULL OR t.estado NOT IN ('cancelado')
+      WHERE t.estado != 'cancelado')
       ORDER BY t.fecha_turno DESC
     `);
 
