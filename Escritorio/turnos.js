@@ -18,18 +18,12 @@ const inputIdRepro = document.getElementById('reproIdTurno');
 const btnCerrarRepro = document.getElementById('btnCerrarRepro');
 
 const tablaTurnosBody = document.querySelector('#tablaTurnos tbody');
-
 const API_URL = 'http://localhost:3000/api';
 
-btnNuevo.addEventListener('click', () => {
-  dialog.showModal();
-});
+btnNuevo.addEventListener('click', () => dialog.showModal());
+btnCancelar.addEventListener('click', () => dialog.close());
+btnCerrarRepro.addEventListener('click', () => dialogRepro.close());
 
-btnCancelar.addEventListener('click', () => {
-  dialog.close();
-});
-
-// Establecer fecha mínima en el input
 inputFecha.min = new Date().toISOString().split('T')[0];
 
 async function cargarSelects() {
@@ -66,11 +60,13 @@ selectEspecialidad.addEventListener('change', async () => {
   });
 });
 
+let turnos = [];
+
 async function cargarTurnos() {
   const resp = await fetch(`${API_URL}/turnos`, {
     headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
   });
-  const turnos = await resp.json();
+  turnos = await resp.json();
 
   tablaTurnosBody.innerHTML = '';
   turnos.forEach(t => {
@@ -78,31 +74,29 @@ async function cargarTurnos() {
     const fechaStr = fecha.toLocaleDateString();
     const horaStr = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Mostrar estado capitalizado
     const estadoDisplay = t.estado.charAt(0).toUpperCase() + t.estado.slice(1);
-    // Si el turno está cancelado, deshabilitar botón
-    const botonCancelar = t.estado === 'cancelado' 
+
+    const botonCancelar = t.estado === 'cancelado'
       ? '<button class="btn-red" disabled>Cancelado</button>'
       : `<button class="btn-red" data-id="${t.id}" data-accion="cancelar">Cancelar</button>`;
-      const botonReprogramar = t.estado !== 'cancelado'
+
+    const botonReprogramar = t.estado !== 'cancelado'
       ? `<button class="btn-blue" data-id="${t.id}" data-accion="reprogramar">Reprogramar</button>`
       : '';
 
     tablaTurnosBody.innerHTML += `
-    
-  <tr>
-    <td>${t.paciente_nombre || 'Sin datos'}</td>
-    <td>${t.profesional}</td>
-    <td>${t.especialidad}</td>
-    <td>${fechaStr}</td>
-    <td>${horaStr}</td>
-    <td>${botonCancelar} ${botonReprogramar}</td>
-    <td>${estadoDisplay}</td>
-  </tr>
-`;
+      <tr>
+        <td>${t.paciente_nombre || 'Sin datos'}</td>
+        <td>${t.profesional}</td>
+        <td>${t.especialidad}</td>
+        <td>${fechaStr}</td>
+        <td>${horaStr}</td>
+        <td>${botonCancelar} ${botonReprogramar}</td>
+        <td>${estadoDisplay}</td>
+      </tr>
+    `;
   });
 
-  // Escuchar solo los botones habilitados para cancelar
   document.querySelectorAll('button[data-accion="cancelar"]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const idTurno = e.target.dataset.id;
@@ -118,6 +112,16 @@ async function cargarTurnos() {
           alert('Error al cancelar el turno');
         }
       }
+    });
+  });
+
+  document.querySelectorAll('button[data-accion="reprogramar"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const idTurno = e.target.dataset.id;
+      inputIdRepro.value = idTurno;
+      inputFechaRepro.value = '';
+      inputHoraRepro.innerHTML = '<option value="">Seleccionar horario</option>';
+      dialogRepro.showModal();
     });
   });
 }
@@ -169,15 +173,65 @@ formTurno.addEventListener('submit', async (e) => {
   }
 });
 
+// Reprogramar - al cambiar la fecha, cargar horarios
+inputFechaRepro.addEventListener('change', async () => {
+  const idTurno = inputIdRepro.value;
+  const fecha = inputFechaRepro.value;
+  if (!fecha) return;
+
+  const turno = turnos.find(t => t.id == idTurno);
+  if (!turno) return;
+
+  const resp = await fetch(`${API_URL}/turnos/horarios-disponibles?profesional=${turno.id_profesional}&fecha=${fecha}`);
+  const horarios = await resp.json();
+  inputHoraRepro.innerHTML = '<option value="">Seleccionar horario</option>';
+  horarios.forEach(h => {
+    inputHoraRepro.innerHTML += `<option value="${h}">${h}</option>`;
+  });
+});
+
+formRepro.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = inputIdRepro.value;
+  const fecha = inputFechaRepro.value;
+  const hora = inputHoraRepro.value;
+
+  if (!fecha || !hora) {
+    alert('Completar todos los campos');
+    return;
+  }
+
+  const fecha_turno = new Date(`${fecha}T${hora}`).toISOString();
+
+  const resp = await fetch(`${API_URL}/turnos/${id}/reprogramar`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify({ fecha_turno })
+  });
+
+  if (resp.ok) {
+    alert('Turno reprogramado');
+    dialogRepro.close();
+    cargarTurnos();
+  } else {
+    const errorData = await resp.json();
+    alert('Error: ' + errorData.mensaje);
+  }
+});
+
 window.addEventListener('DOMContentLoaded', () => {
-    selectProfesional.addEventListener('change', cargarHorariosDisponibles);
-inputFecha.addEventListener('change', cargarHorariosDisponibles);
+  selectProfesional.addEventListener('change', cargarHorariosDisponibles);
+  inputFecha.addEventListener('change', cargarHorariosDisponibles);
   cargarSelects();
   cargarTurnos();
   document.getElementById('volverDashboard').addEventListener('click', () => {
     window.location.href = 'dashboard.html';
   });
 });
+
 async function cargarHorariosDisponibles() {
   const id_profesional = selectProfesional.value;
   const fecha = inputFecha.value;
