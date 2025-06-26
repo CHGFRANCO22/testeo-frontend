@@ -9,31 +9,39 @@ function formatDateToLocalString(date) {
 // Crear turno con IDs
 const crearTurno = async (req, res) => {
   try {
-    const id_paciente = req.user.id;
+    const id_persona = req.user.id; // Esto viene del token (login del paciente)
+
+    // Buscamos el id_paciente real a partir del id_persona
+    const [[paciente]] = await db.query(
+      'SELECT id_paciente FROM pacientes WHERE id_persona = ?',
+      [id_persona]
+    );
+
+    if (!paciente) {
+      return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+    }
+
+    const id_paciente = paciente.id_paciente;
     const { id_profesional, id_especialidad, fecha_turno } = req.body;
 
     if (!id_profesional || !id_especialidad || !fecha_turno || !id_paciente) {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
     }
 
-    const fechaDate = new Date(fecha_turno);
-    if (isNaN(fechaDate.getTime())) {
-      return res.status(400).json({ mensaje: "Fecha inválida" });
-    }
-    const fechaFormateada = formatDateToLocalString(fechaDate);
-
-    // Verificar si ya hay 2 turnos en esa fecha y hora con ese profesional
+    // Verificamos si ya hay 2 turnos en ese horario
     const [rows] = await db.query(
       `SELECT COUNT(*) AS cantidad FROM turnos 
        WHERE id_profesional = ? AND fecha_turno = ? AND (estado IS NULL OR estado = 'confirmado')`,
-      [id_profesional, fechaFormateada]
+      [id_profesional, fecha_turno]
     );
 
     if (rows[0].cantidad >= 2) {
       return res.status(409).json({ mensaje: 'Ese horario ya está completo para este médico' });
     }
 
-    // Si no hay 2, crear el turno
+    // Insertamos el turno con fecha formateada
+    const fechaFormateada = new Date(fecha_turno).toISOString().slice(0, 19).replace('T', ' ');
+
     await db.query(
       `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
        VALUES (?, ?, ?, ?)`,
