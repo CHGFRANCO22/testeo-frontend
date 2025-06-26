@@ -71,6 +71,14 @@ async function cargarTurnos() {
     const fechaStr = fecha.toLocaleDateString();
     const horaStr = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    // Mostrar estado capitalizado
+    const estadoDisplay = t.estado.charAt(0).toUpperCase() + t.estado.slice(1);
+
+    // Si el turno está cancelado, deshabilitar botón
+    const botonCancelar = t.estado === 'cancelado' 
+      ? '<button class="btn-red" disabled>Cancelado</button>'
+      : `<button class="btn-red" data-id="${t.id}" data-accion="cancelar">Cancelar</button>`;
+
     tablaTurnosBody.innerHTML += `
       <tr>
         <td>${t.paciente_nombre || 'Sin datos'}</td>
@@ -78,13 +86,13 @@ async function cargarTurnos() {
         <td>${t.especialidad}</td>
         <td>${fechaStr}</td>
         <td>${horaStr}</td>
-        <td>
-          <button class="btn-red" data-id="${t.id}" data-accion="cancelar">Cancelar</button>
-        </td>
+        <td>${botonCancelar}</td>
+        <td>${estadoDisplay}</td>
       </tr>
     `;
   });
 
+  // Escuchar solo los botones habilitados para cancelar
   document.querySelectorAll('button[data-accion="cancelar"]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const idTurno = e.target.dataset.id;

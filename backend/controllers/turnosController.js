@@ -191,14 +191,14 @@ const obtenerTodosLosTurnos = async (req, res) => {
         per.nombre_completo AS paciente_nombre,
         e.nombre AS especialidad,
         profe.nombre_completo AS profesional,
-        t.fecha_turno
+        t.fecha_turno,
+        COALESCE(t.estado, 'confirmado') AS estado  -- si estado es null lo mostramos como confirmado
       FROM turnos t
       JOIN pacientes pa ON t.id_paciente = pa.id_paciente
       JOIN persona per ON pa.id_persona = per.id
       JOIN profesionales pr ON t.id_profesional = pr.id_profesional
       JOIN persona profe ON pr.id_persona = profe.id
       JOIN especialidades e ON t.id_especialidad = e.id_espe
-      WHERE t.estado != 'cancelado')
       ORDER BY t.fecha_turno DESC
     `);
 
@@ -208,6 +208,7 @@ const obtenerTodosLosTurnos = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener los turnos' });
   }
 };
+
 
 module.exports = {
   crearTurno,
