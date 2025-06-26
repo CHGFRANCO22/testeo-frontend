@@ -6,16 +6,22 @@ const crearTurno = async (req, res) => {
     const id_paciente = req.user.id;
     const { id_profesional, id_especialidad, fecha_turno } = req.body;
 
-
     if (!id_profesional || !id_especialidad || !fecha_turno || !id_paciente) {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
     }
+
+    // Formatear fecha_turno a 'YYYY-MM-DD HH:mm:ss' para MySQL
+    const fechaDate = new Date(fecha_turno);
+    if (isNaN(fechaDate.getTime())) {
+      return res.status(400).json({ mensaje: 'Fecha u hora inválida' });
+    }
+    const fechaFormateada = fechaDate.toISOString().slice(0, 19).replace('T', ' ');
 
     // Verificar si ya hay 2 turnos en esa fecha y hora con ese profesional
     const [rows] = await db.query(
       `SELECT COUNT(*) AS cantidad FROM turnos 
        WHERE id_profesional = ? AND fecha_turno = ? AND (estado IS NULL OR estado = 'confirmado')`,
-      [id_profesional, fecha_turno]
+      [id_profesional, fechaFormateada]
     );
 
     if (rows[0].cantidad >= 2) {
@@ -23,13 +29,11 @@ const crearTurno = async (req, res) => {
     }
 
     // Si no hay 2, crear el turno
-   const fechaFormateada = new Date(fecha_turno).toISOString().slice(0, 19).replace('T', ' ');
-   await db.query(
-  `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
-   VALUES (?, ?, ?, ?)`,
-  [id_paciente, id_profesional, id_especialidad, fechaFormateada]
-);
-
+    await db.query(
+      `INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno)
+       VALUES (?, ?, ?, ?)`,
+      [id_paciente, id_profesional, id_especialidad, fechaFormateada]
+    );
 
     res.status(201).json({ mensaje: 'Turno reservado con éxito' });
   } catch (error) {
@@ -37,8 +41,6 @@ const crearTurno = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al reservar el turno' });
   }
 };
-
-
 
 // Obtener turnos por paciente autenticado
 const obtenerTurnosPorPaciente = async (req, res) => {
@@ -105,8 +107,6 @@ const cancelarTurno = async (req, res) => {
   }
 };
 
-
-
 // Obtener horarios disponibles para un profesional en una fecha
 const obtenerHorariosDisponibles = async (req, res) => {
   const { profesional, fecha } = req.query;
@@ -158,7 +158,6 @@ const obtenerHorariosDisponibles = async (req, res) => {
   }
 };
 
-
 // Reprogramar turno
 const reprogramarTurno = async (req, res) => {
   const { id } = req.params;
@@ -169,9 +168,16 @@ const reprogramarTurno = async (req, res) => {
   }
 
   try {
+    // Formatear fecha_turno a 'YYYY-MM-DD HH:mm:ss' para MySQL
+    const fechaDate = new Date(fecha_turno);
+    if (isNaN(fechaDate.getTime())) {
+      return res.status(400).json({ mensaje: "Fecha inválida" });
+    }
+    const fechaFormateada = fechaDate.toISOString().slice(0, 19).replace('T', ' ');
+
     const [result] = await db.query(
       "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?",
-      [fecha_turno, id]
+      [fechaFormateada, id]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ mensaje: 'Turno no encontrado' });
@@ -209,7 +215,6 @@ const obtenerTodosLosTurnos = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener los turnos' });
   }
 };
-
 
 module.exports = {
   crearTurno,
