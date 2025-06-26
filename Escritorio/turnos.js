@@ -89,7 +89,7 @@ async function cargarTurnos() {
     btn.addEventListener('click', async (e) => {
       const idTurno = e.target.dataset.id;
       if (confirm('¿Confirmás cancelar el turno?')) {
-        const resp = await fetch(`${API_URL}/turnos/${idTurno}/cancelar`, {
+        const resp = await fetch(`${API_URL}/turnos/cancelar/${idTurno}`, {
           method: 'PUT',
           headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
         });
