@@ -1,5 +1,11 @@
 const db = require('../db');
 
+// Función para formatear fecha en hora local para MySQL 'YYYY-MM-DD HH:mm:ss'
+function formatDateToLocalString(date) {
+  const pad = (n) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 // Crear turno con IDs
 const crearTurno = async (req, res) => {
   try {
@@ -10,12 +16,11 @@ const crearTurno = async (req, res) => {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
     }
 
-    // Formatear fecha_turno a 'YYYY-MM-DD HH:mm:ss' para MySQL
     const fechaDate = new Date(fecha_turno);
     if (isNaN(fechaDate.getTime())) {
-      return res.status(400).json({ mensaje: 'Fecha u hora inválida' });
+      return res.status(400).json({ mensaje: "Fecha inválida" });
     }
-    const fechaFormateada = fechaDate.toISOString().slice(0, 19).replace('T', ' ');
+    const fechaFormateada = formatDateToLocalString(fechaDate);
 
     // Verificar si ya hay 2 turnos en esa fecha y hora con ese profesional
     const [rows] = await db.query(
@@ -168,15 +173,14 @@ const reprogramarTurno = async (req, res) => {
   }
 
   try {
-    // Formatear fecha_turno a 'YYYY-MM-DD HH:mm:ss' para MySQL
     const fechaDate = new Date(fecha_turno);
     if (isNaN(fechaDate.getTime())) {
       return res.status(400).json({ mensaje: "Fecha inválida" });
     }
-    const fechaFormateada = fechaDate.toISOString().slice(0, 19).replace('T', ' ');
+    const fechaFormateada = formatDateToLocalString(fechaDate);
 
     const [result] = await db.query(
-      "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?",
+      "UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado' WHERE id = ?",
       [fechaFormateada, id]
     );
     if (result.affectedRows === 0) {
