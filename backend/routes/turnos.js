@@ -17,7 +17,8 @@ router.get('/mios', verifyToken, turnosController.obtenerTurnosPorPaciente);
 router.get('/paciente/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.obtenerTurnosPorIdPaciente);
 
 router.put('/cancelar/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.cancelarTurno);
-router.put('/reprogramar/:id', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.reprogramarTurno);
+router.put('/:id/reprogramar', verifyToken, authorizeRoles('admin', 'secretaria'), turnosController.reprogramarTurno);
+
 
 router.get('/especialidades', async (req, res) => {
   try {
