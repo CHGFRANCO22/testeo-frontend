@@ -105,41 +105,8 @@ const cancelarTurno = async (req, res) => {
   }
 };
 
-document.querySelectorAll('button[data-accion="reprogramar"]').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    const idTurno = e.target.dataset.id;
-    
-    // Abrir un prompt o diálogo para pedir nueva fecha y hora
-    const nuevaFecha = prompt("Ingrese la nueva fecha (YYYY-MM-DD):");
-    if (!nuevaFecha) return alert("Debe ingresar una fecha válida.");
 
-    const nuevaHora = prompt("Ingrese la nueva hora (HH:mm):");
-    if (!nuevaHora) return alert("Debe ingresar una hora válida.");
 
-    const nuevaFechaHora = new Date(`${nuevaFecha}T${nuevaHora}`);
-    if (isNaN(nuevaFechaHora.getTime())) {
-      return alert("Fecha u hora inválida.");
-    }
-
-    // Enviar la solicitud PUT para reprogramar
-    const resp = await fetch(`${API_URL}/turnos/${idTurno}/reprogramar`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + localStorage.getItem('token')
-      },
-      body: JSON.stringify({ fecha_turno: nuevaFechaHora.toISOString() })
-    });
-
-    if (resp.ok) {
-      alert('Turno reprogramado correctamente');
-      cargarTurnos();
-    } else {
-      const errorData = await resp.json();
-      alert('Error al reprogramar: ' + (errorData.mensaje || 'Error desconocido'));
-    }
-  });
-});
 // Obtener horarios disponibles para un profesional en una fecha
 const obtenerHorariosDisponibles = async (req, res) => {
   const { profesional, fecha } = req.query;
