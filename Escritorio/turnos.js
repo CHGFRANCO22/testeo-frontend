@@ -10,6 +10,13 @@ const selectProfesional = document.getElementById('profesional');
 const inputFecha = document.getElementById('fecha');
 const inputHora = document.getElementById('hora');
 
+const dialogRepro = document.getElementById('formReprogramar');
+const formRepro = document.getElementById('formRepro');
+const inputFechaRepro = document.getElementById('reproFecha');
+const inputHoraRepro = document.getElementById('reproHora');
+const inputIdRepro = document.getElementById('reproIdTurno');
+const btnCerrarRepro = document.getElementById('btnCerrarRepro');
+
 const tablaTurnosBody = document.querySelector('#tablaTurnos tbody');
 
 const API_URL = 'http://localhost:3000/api';
@@ -73,23 +80,26 @@ async function cargarTurnos() {
 
     // Mostrar estado capitalizado
     const estadoDisplay = t.estado.charAt(0).toUpperCase() + t.estado.slice(1);
-
     // Si el turno está cancelado, deshabilitar botón
     const botonCancelar = t.estado === 'cancelado' 
       ? '<button class="btn-red" disabled>Cancelado</button>'
       : `<button class="btn-red" data-id="${t.id}" data-accion="cancelar">Cancelar</button>`;
+      const botonReprogramar = t.estado !== 'cancelado'
+      ? `<button class="btn-blue" data-id="${t.id}" data-accion="reprogramar">Reprogramar</button>`
+      : '';
 
     tablaTurnosBody.innerHTML += `
-      <tr>
-        <td>${t.paciente_nombre || 'Sin datos'}</td>
-        <td>${t.profesional}</td>
-        <td>${t.especialidad}</td>
-        <td>${fechaStr}</td>
-        <td>${horaStr}</td>
-        <td>${botonCancelar}</td>
-        <td>${estadoDisplay}</td>
-      </tr>
-    `;
+    
+  <tr>
+    <td>${t.paciente_nombre || 'Sin datos'}</td>
+    <td>${t.profesional}</td>
+    <td>${t.especialidad}</td>
+    <td>${fechaStr}</td>
+    <td>${horaStr}</td>
+    <td>${botonCancelar} ${botonReprogramar}</td>
+    <td>${estadoDisplay}</td>
+  </tr>
+`;
   });
 
   // Escuchar solo los botones habilitados para cancelar

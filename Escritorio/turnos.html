@@ -142,6 +142,21 @@
       </div>
     </form>
   </dialog>
+  <dialog id="formReprogramar">
+  <form method="dialog" id="formRepro">
+    <h3>Reprogramar Turno</h3>
+    <input type="hidden" id="reproIdTurno" />
+    <input type="date" id="reproFecha" required />
+    <select id="reproHora" required>
+      <option value="">Seleccionar horario</option>
+    </select>
+    <div class="form-actions">
+      <button type="submit">Reprogramar</button>
+      <button type="button" id="btnCerrarRepro">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
 
   <script type="module" src="turnos.js"></script>
 </body>
