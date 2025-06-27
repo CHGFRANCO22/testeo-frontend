@@ -19,7 +19,7 @@ app.use(express.json());
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 const escritorioPath = path.join(__dirname, '..', 'Escritorio');
 
-const agendaRoutes = require('./routes/agenda');
+app.use('/api/agenda', agendaRoutes);
 app.use(express.static(frontendPath));
 app.use('/Escritorio', express.static(escritorioPath));
 app.use('/api/informes', informesRoutes);
