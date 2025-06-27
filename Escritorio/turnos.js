@@ -92,8 +92,7 @@ async function cargarTurnos() {
         <td>${fechaStr}</td>
         <td>${horaStr}</td>
         <td>${botonCancelar} ${botonReprogramar}</td>
-        <td>${estadoDisplay}</td>
-        `;
+        <td>${estadoDisplay}</td>`;
 
 tablaTurnosBody.appendChild(fila);
 
@@ -275,7 +274,8 @@ function agregarHistorialPacienteBoton(idPaciente, celda) {
         headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
       });
       const historial = await resp.json();
-      tablaHistorial.innerHTML = '';
+      const tablaHistorialBody = document.querySelector('#tablaHistorial tbody');
+      tablaHistorialBody.innerHTML = '';
       historial.forEach(t => {
         const fecha = new Date(t.fecha_turno);
         const fechaStr = fecha.toLocaleDateString();
@@ -284,7 +284,7 @@ function agregarHistorialPacienteBoton(idPaciente, celda) {
           <td>${t.profesional}</td>
           <td>${t.especialidad}</td>
         </tr>`;
-        tablaHistorial.innerHTML += fila;
+        tablaHistorialBody.innerHTML += fila;
       });
       modalHistorial.showModal();
     } catch (error) {
@@ -297,34 +297,3 @@ function agregarHistorialPacienteBoton(idPaciente, celda) {
 // Modifica cargarTurnos para agregar el botón de historial por paciente
 // Luego de insertar la fila en tablaTurnosBody:
 //   agregarHistorialPacienteBoton(t.id_paciente, celdaHistorial);
-function agregarHistorialPacienteBoton(idPaciente, celda) {
-  const btn = document.createElement('button');
-  btn.textContent = 'Historial';
-  btn.addEventListener('click', async () => {
-    try {
-      const resp = await fetch(`${API_URL}/turnos/paciente/${idPaciente}`, {
-        headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
-      });
-      const historial = await resp.json();
-      const tablaHistorialBody = document.querySelector('#tablaHistorial tbody');
-      tablaHistorialBody.innerHTML = '';
-      historial.forEach(t => {
-        const fecha = new Date(t.fecha_turno).toLocaleDateString();
-        const fila = `<tr>
-          <td>${fecha}</td>
-          <td>${t.profesional}</td>
-          <td>${t.especialidad}</td>
-        </tr>`;
-        tablaHistorialBody.innerHTML += fila;
-      });
-      document.getElementById('modalHistorial').showModal();
-    } catch (error) {
-      alert('Error al obtener historial');
-    }
-  });
-  celda.appendChild(btn);
-}
-
-document.getElementById('cerrarHistorial').addEventListener('click', () => {
-  document.getElementById('modalHistorial').close();
-});
