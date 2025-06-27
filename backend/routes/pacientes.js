@@ -1,11 +1,30 @@
 // backend/Routes/pacientes.js
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs'); // Necesitamos bcrypt aquí para crear pacientes
-const pool = require('../db'); // Traemos la conexión a la BD directamente
-const authMiddleware = require('../middleware/authMiddleware');
+const jwt = require('jsonwebtoken');     // Necesario para el middleware
+const bcrypt = require('bcryptjs');  // Necesario para crear pacientes
+const pool = require('../db');         // Conexión a la BD
 
-// --- MIDDLEWARES DE PERMISOS ---
+// =============================================================================
+// == INICIO: CÓDIGO DEL MIDDLEWARE INTEGRADO PARA ELIMINAR EL ERROR ==
+// En lugar de importarlo con require, ponemos el código aquí.
+// Esto elimina el error "got a [object Object]".
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.header('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ msg: 'No hay token, autorización denegada' });
+    }
+    try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ msg: 'Token no es válido' });
+    }
+};
+// == FIN: CÓDIGO DEL MIDDLEWARE INTEGRADO ==
+// =============================================================================
 
 // Middleware para verificar si el usuario es Admin o Secretaria
 const adminOrSecretaria = (req, res, next) => {
@@ -24,9 +43,9 @@ const adminOnly = (req, res, next) => {
 };
 
 
-// --- RUTAS CON LÓGICA INTEGRADA (SIN CONTROLADOR EXTERNO) ---
+// --- RUTAS CON LÓGICA INTEGRADA (SIN LLAMADAS EXTERNAS PROBLEMÁTICAS) ---
 
-// 1. OBTENER TODOS LOS PACIENTES (Permitido para Admin y Secretaria)
+// 1. OBTENER TODOS LOS PACIENTES (Admin/Secretaria)
 router.get('/admin/todos', authMiddleware, adminOrSecretaria, async (req, res) => {
     try {
         const [pacientes] = await pool.query(`
@@ -41,7 +60,7 @@ router.get('/admin/todos', authMiddleware, adminOrSecretaria, async (req, res) =
     }
 });
 
-// 2. CREAR UN NUEVO PACIENTE (Permitido para Admin y Secretaria)
+// 2. CREAR UN NUEVO PACIENTE (Admin/Secretaria)
 router.post('/', authMiddleware, adminOrSecretaria, async (req, res) => {
     const { nombre_completo, dni, sexo, edad, email, contrasena } = req.body;
     if (!nombre_completo || !dni || !email || !contrasena) {
@@ -72,7 +91,7 @@ router.post('/', authMiddleware, adminOrSecretaria, async (req, res) => {
     }
 });
 
-// 3. ACTUALIZAR UN PACIENTE (Permitido SOLO para Admin)
+// 3. ACTUALIZAR UN PACIENTE (SOLO Admin)
 router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
     const { id } = req.params;
     const { nombre_completo, edad, dni, email, sexo } = req.body;
@@ -92,7 +111,7 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
     }
 });
 
-// 4. ELIMINAR UN PACIENTE (Permitido SOLO para Admin)
+// 4. ELIMINAR UN PACIENTE (SOLO Admin)
 router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
     const { id } = req.params;
     const connection = await pool.getConnection();
@@ -113,6 +132,5 @@ router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
         connection.release();
     }
 });
-
 
 module.exports = router;
