@@ -1,17 +1,36 @@
 // backend/Routes/informes.js
 const express = require('express');
 const router = express.Router();
-
-// Middlewares que sí funcionan
-const authMiddleware = require('../middleware/authMiddleware');
-// Ahora necesitamos la conexión a la BD aquí mismo
+const jwt = require('jsonwebtoken'); // Se añade para manejar el token
 const { pool } = require('../db'); 
+
+// --- CÓDIGO DEL MIDDLEWARE INTEGRADO PARA SOLUCIONAR EL ERROR ---
+// En lugar de importarlo, ponemos el código aquí directamente.
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.header('Authorization');
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ msg: 'No hay token o el formato es incorrecto. Se requiere "Bearer <token>".' });
+    }
+
+    try {
+        const token = authHeader.split(' ')[1];
+        // Asegúrate de tener la variable JWT_SECRET en tu archivo .env
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Añade los datos del usuario (id, rol, etc.) al objeto request
+        next(); // El token es válido, continúa a la siguiente función (adminOnly o el controlador)
+    } catch (error) {
+        res.status(401).json({ msg: 'Token no es válido.' });
+    }
+};
 
 // Middleware para verificar si el usuario es Admin
 const adminOnly = (req, res, next) => {
+    // Este middleware se ejecuta DESPUÉS de authMiddleware, por lo que req.user ya existe.
     if (req.user && req.user.rol === 'admin') {
-        return next();
+        return next(); // Si es admin, continúa
     }
+    // Si no es admin, deniega el acceso.
     return res.status(403).json({ msg: 'Acceso denegado. Se requiere rol de administrador.' });
 };
 
