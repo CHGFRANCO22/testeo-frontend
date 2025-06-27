@@ -55,52 +55,6 @@ const crearTurno = async (req, res) => {
   }
 };
 
-// Obtener turnos por paciente autenticado
-const obtenerTurnosPorPaciente = async (req, res) => {
-  const idPaciente = req.user.id;
-
-  try {
-    const [turnos] = await db.query(
-      `SELECT t.fecha_turno, p.nombre_completo AS profesional, e.nombre AS especialidad
-       FROM turnos t
-       JOIN profesionales prof ON t.id_profesional = prof.id_profesional
-       JOIN persona p ON prof.id_persona = p.id
-       JOIN especialidades e ON t.id_especialidad = e.id_espe
-       WHERE t.id_paciente = ?
-       ORDER BY t.fecha_turno DESC`,
-      [idPaciente]
-    );
-
-    res.status(200).json(turnos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: 'Error al obtener los turnos del paciente' });
-  }
-};
-
-// Obtener historial turnos por ID de paciente (para admin o secretaria)
-const obtenerTurnosPorIdPaciente = async (req, res) => {
-  const idPaciente = req.params.id;
-
-  try {
-    const [turnos] = await db.query(
-      `SELECT t.fecha_turno, p.nombre_completo AS profesional, e.nombre AS especialidad
-       FROM turnos t
-       JOIN profesionales prof ON t.id_profesional = prof.id_profesional
-       JOIN persona p ON prof.id_persona = p.id
-       JOIN especialidades e ON t.id_especialidad = e.id_espe
-       WHERE t.id_paciente = ?
-       ORDER BY t.fecha_turno DESC`,
-      [idPaciente]
-    );
-
-    res.status(200).json(turnos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: 'Error al obtener los turnos del paciente' });
-  }
-};
-
 // Cancelar turno
 const cancelarTurno = async (req, res) => {
   const { id } = req.params;
