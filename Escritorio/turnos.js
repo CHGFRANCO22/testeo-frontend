@@ -86,7 +86,7 @@ async function cargarTurnos() {
 
     const fila = document.createElement('tr');
     fila.innerHTML = `
-        <td>${t.paciente_nombre || 'Sin datos'}</td>
+        <td>${t.paciente_nombre && t.paciente_nombre.trim() !== '' ? t.paciente_nombre : 'Sin datos'}</td>
         <td>${t.profesional}</td>
         <td>${t.especialidad}</td>
         <td>${fechaStr}</td>
