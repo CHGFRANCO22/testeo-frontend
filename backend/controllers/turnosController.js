@@ -9,9 +9,8 @@ function formatDateToLocalString(date) {
 // Crear turno con IDs
 const crearTurno = async (req, res) => {
   try {
-    const id_persona = req.user.id; // Esto viene del token (login del paciente)
+    const id_persona = req.user.id;
 
-    // Buscamos el id_paciente real a partir del id_persona
     const [[paciente]] = await db.query(
       'SELECT id_paciente FROM pacientes WHERE id_persona = ?',
       [id_persona]
@@ -28,7 +27,6 @@ const crearTurno = async (req, res) => {
       return res.status(400).json({ mensaje: 'Faltan datos requeridos' });
     }
 
-    // Verificamos si ya hay 2 turnos en ese horario
     const [rows] = await db.query(
       `SELECT COUNT(*) AS cantidad FROM turnos 
        WHERE id_profesional = ? AND fecha_turno = ? AND (estado IS NULL OR estado = 'confirmado')`,
@@ -39,7 +37,6 @@ const crearTurno = async (req, res) => {
       return res.status(409).json({ mensaje: 'Ese horario ya está completo para este médico' });
     }
 
-    // Insertamos el turno con fecha formateada
     const fechaFormateada = new Date(fecha_turno).toISOString().slice(0, 19).replace('T', ' ');
 
     await db.query(
@@ -52,6 +49,52 @@ const crearTurno = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: 'Error al reservar el turno' });
+  }
+};
+
+// Obtener turnos por paciente autenticado
+const obtenerTurnosPorPaciente = async (req, res) => {
+  const idPaciente = req.user.id;
+
+  try {
+    const [turnos] = await db.query(
+      `SELECT t.fecha_turno, p.nombre_completo AS profesional, e.nombre AS especialidad
+       FROM turnos t
+       JOIN profesionales prof ON t.id_profesional = prof.id_profesional
+       JOIN persona p ON prof.id_persona = p.id
+       JOIN especialidades e ON t.id_especialidad = e.id_espe
+       WHERE t.id_paciente = ?
+       ORDER BY t.fecha_turno DESC`,
+      [idPaciente]
+    );
+
+    res.status(200).json(turnos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al obtener los turnos del paciente' });
+  }
+};
+
+// Obtener historial turnos por ID de paciente (para admin o secretaria)
+const obtenerTurnosPorIdPaciente = async (req, res) => {
+  const idPaciente = req.params.id;
+
+  try {
+    const [turnos] = await db.query(
+      `SELECT t.fecha_turno, p.nombre_completo AS profesional, e.nombre AS especialidad
+       FROM turnos t
+       JOIN profesionales prof ON t.id_profesional = prof.id_profesional
+       JOIN persona p ON prof.id_persona = p.id
+       JOIN especialidades e ON t.id_especialidad = e.id_espe
+       WHERE t.id_paciente = ?
+       ORDER BY t.fecha_turno DESC`,
+      [idPaciente]
+    );
+
+    res.status(200).json(turnos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al obtener los turnos del paciente' });
   }
 };
 
@@ -86,7 +129,6 @@ const obtenerHorariosDisponibles = async (req, res) => {
     const fechaInicio = `${fecha} 00:00:00`;
     const fechaFin = `${fecha} 23:59:59`;
 
-    // Obtener los horarios ya ocupados (solo turnos confirmados o sin estado)
     const [ocupados] = await db.query(
       `SELECT DATE_FORMAT(fecha_turno, '%H:%i') AS hora FROM turnos
        WHERE id_profesional = ? AND fecha_turno BETWEEN ? AND ?
@@ -96,14 +138,12 @@ const obtenerHorariosDisponibles = async (req, res) => {
 
     const horariosOcupados = ocupados.map(row => row.hora);
 
-    // Generar lista de horarios (de 8:00 a 16:30 cada 30 min)
     const horarios = [];
     for (let hora = 8; hora <= 16; hora++) {
       horarios.push(`${hora.toString().padStart(2, '0')}:00`);
       horarios.push(`${hora.toString().padStart(2, '0')}:30`);
     }
 
-    // Filtrar los horarios disponibles (máx 2 turnos por horario)
     const disponibles = [];
 
     for (let hora of horarios) {
@@ -158,23 +198,24 @@ const reprogramarTurno = async (req, res) => {
 // Obtener todos los turnos
 const obtenerTodosLosTurnos = async (req, res) => {
   try {
-    const [turnos] = await db.query(`
-      SELECT 
+    const [turnos] = await db.query(
+      `SELECT 
         t.id AS id,
         per.nombre_completo AS paciente_nombre,
         e.nombre AS especialidad,
         profe.nombre_completo AS profesional,
         t.fecha_turno,
-        COALESCE(t.estado, 'confirmado') AS estado  -- si estado es null lo mostramos como confirmado
+        COALESCE(t.estado, 'confirmado') AS estado
       FROM turnos t
       JOIN pacientes pa ON t.id_paciente = pa.id_paciente
       JOIN persona per ON pa.id_persona = per.id
       JOIN profesionales pr ON t.id_profesional = pr.id_profesional
       JOIN persona profe ON pr.id_persona = profe.id
       JOIN especialidades e ON t.id_especialidad = e.id_espe
-      ORDER BY t.fecha_turno DESC
-    `);
+      ORDER BY t.fecha_turno DESC`
+    );
 
+    console.log("Turnos obtenidos para frontend:", turnos);
     res.status(200).json(turnos);
   } catch (error) {
     console.error('Error al obtener todos los turnos:', error);
@@ -189,5 +230,5 @@ module.exports = {
   cancelarTurno,
   reprogramarTurno,
   obtenerTodosLosTurnos,
-  obtenerHorariosDisponibles 
+  obtenerHorariosDisponibles
 };
