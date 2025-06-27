@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
-
+const informesRoutes = require('./routes/informes');
 const pacientesRoutes = require('./routes/pacientes');
 const authRoutes = require('./routes/auth');
 const turnosRoutes = require('./routes/turnos');
@@ -22,7 +22,7 @@ const escritorioPath = path.join(__dirname, '..', 'Escritorio');
 
 app.use(express.static(frontendPath));
 app.use('/Escritorio', express.static(escritorioPath));
-
+app.use('/api/informes', informesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/turnos', turnosRoutes);
