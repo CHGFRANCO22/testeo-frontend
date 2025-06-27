@@ -1,147 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Gestión de Pacientes</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background-color: #f4f6f9;
-    }
-
-    .navbar {
-      background-color: #3498db;
-      color: white;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .navbar h1 {
-      margin: 0;
-      cursor: pointer;
-    }
-
-    table {
-      width: 90%;
-      margin: 30px auto;
-      border-collapse: collapse;
-      background: white;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #3498db;
-      color: white;
-    }
-
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      background-color: #3498db;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    .btn-red {
-      background-color: #e74c3c;
-    }
-
-    .btn-red:hover {
-      background-color: #c0392b;
-    }
-
-    dialog {
-      border: none;
-      border-radius: 8px;
-      padding: 20px;
-      width: 300px;
-      max-width: 90%;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    dialog::backdrop {
-      background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    form input, form select {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    form button {
-      width: 48%;
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    #btnAgregar {
-      margin: 20px 5%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Salud Total - Gestión de Pacientes</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; color: #333; }
+        .navbar { background-color: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { margin: 0; font-size: 1.4rem; }
+        .back-btn { background-color: #3498db; border: none; color: white; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .container { padding: 20px; }
+        .main-content { background-color: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ecf0f1; }
+        .actions-header h2 { margin: 0; color: #2c3e50;}
+        .btn-add { background-color: #27ae60; color: white; border: none; border-radius: 5px; padding: 10px 15px; font-size: 1rem; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #ecf0f1; color: #2c3e50; font-weight: 600; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        td .btn-edit { background-color: #3498db; }
+        td .btn-delete { background-color: #e74c3c; }
+        td button { color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; margin-right: 5px;}
+        dialog { border: none; border-radius: 8px; padding: 25px; width: 400px; max-width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        dialog::backdrop { background-color: rgba(0,0,0,0.5); }
+        form label { display: block; margin-bottom: 5px; font-weight: 600; color: #555;}
+        form input, form select { width: calc(100% - 20px); margin-bottom: 15px; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1rem; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .form-actions button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #btnGuardar { background-color: #28a745; color: white; }
+        #btnCancelar { background-color: #6c757d; color: white; }
+    </style>
 </head>
 <body>
-  <div class="navbar">
-    <h1 id="volverDashboard">Salud Total - Gestión de Pacientes</h1>
-  </div>
+    <div class="navbar">
+        <h1>Gestión de Pacientes</h1>
+        <button class="back-btn" id="btnVolver">Volver al Panel</button>
+    </div>
 
-  <button id="btnAgregar">Agregar Paciente</button>
+    <div class="container">
+        <div class="main-content">
+            <div class="actions-header">
+                <h2>Listado de Pacientes</h2>
+                <button class="btn-add" id="btnAgregar">Agregar Paciente</button>
+            </div>
+            <table id="tablaPacientes">
+                <thead>
+                    <tr><th>Nombre Completo</th><th>Edad</th><th>DNI</th><th>Email</th><th>Sexo</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                    <!-- Las filas se insertarán aquí con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-  <table id="tablaPacientes">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Edad</th>
-        <th>DNI</th>
-        <th>Email</th>
-        <th>Sexo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <dialog id="formPopup">
+        <form id="formPaciente">
+            <h3 id="formTitulo">Nuevo Paciente</h3>
+            <input type="hidden" id="id_paciente" />
+            <label for="nombre_completo">Nombre Completo</label>
+            <input type="text" id="nombre_completo" required />
+            <label for="edad">Edad</label>
+            <input type="number" id="edad" required />
+            <label for="dni">DNI</label>
+            <input type="text" id="dni" required />
+            <label for="email">Email</label>
+            <input type="email" id="email" required />
+            <label for="sexo">Sexo</label>
+            <select id="sexo" required><option value="" disabled selected>Seleccionar...</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select>
+            <div id="password-fields">
+                <label for="contrasena">Contraseña</label>
+                <input type="password" id="contrasena" />
+                <label for="repetir_contrasena">Repetir Contraseña</label>
+                <input type="password" id="repetir_contrasena" />
+            </div>
+            <div class="form-actions">
+                <button type="button" id="btnCancelar">Cancelar</button>
+                <button type="submit" id="btnGuardar">Guardar</button>
+            </div>
+        </form>
+    </dialog>
 
-  <dialog id="formPopup">
-    <form method="dialog" id="formPaciente">
-      <h3 id="formTitulo">Nuevo Paciente</h3>
-      <input type="hidden" id="id_paciente" />
-      <input type="text" id="nombre_completo" placeholder="Nombre completo" required />
-      <input type="number" id="edad" placeholder="Edad" required />
-      <input type="text" id="dni" placeholder="DNI" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <select id="sexo" required>
-        <option value="">Seleccionar sexo</option>
-        <option value="M">Masculino</option>
-        <option value="F">Femenino</option>
-        <option value="O">Otro</option>
-      </select>
-      <input type="password" id="contrasena" placeholder="Contraseña" required />
-      <input type="password" id="repetir_contrasena" placeholder="Repetir Contraseña" required />
-      <div class="form-actions">
-        <button type="submit">Guardar</button>
-        <button type="button" id="btnCancelar">Cancelar</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script type="module" src="pacientes.js"></script>
+    <script type="module" src="pacientes.js"></script>
 </body>
 </html>

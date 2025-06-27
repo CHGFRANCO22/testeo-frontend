@@ -1,163 +1,157 @@
-const usuario = JSON.parse(localStorage.getItem("usuario"));
+// frontend/pacientes.js
+
 document.addEventListener("DOMContentLoaded", () => {
-  cargarPacientes(usuario.rol);
-
-  document.getElementById("btnAgregar").addEventListener("click", () => {
-    document.getElementById("formTitulo").textContent = "Nuevo Paciente";
-    document.getElementById("formPaciente").reset();
-    document.getElementById("id_paciente").value = "";
-    document.getElementById("formPopup").showModal();
-
-    // Mostrar campos de contraseña en creación
-    document.getElementById("contrasena").style.display = "block";
-    document.getElementById("repetir_contrasena").style.display = "block";
-  });
-
-  document.getElementById("btnCancelar").addEventListener("click", () => {
-    document.getElementById("formPopup").close();
-  });
-
-  document.getElementById("volverDashboard").addEventListener("click", () => {
-    window.electronAPI.navegar("dashboard.html");
-  });
-});
-
-async function cargarPacientes(rol) {
-  try {
+    // --- VARIABLES Y ELEMENTOS DEL DOM ---
+    const API_URL = "http://localhost:3000/api/pacientes";
     const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:3000/api/pacientes", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) throw new Error("Error cargando pacientes");
-    const pacientes = await res.json();
-
     const tbody = document.querySelector("#tablaPacientes tbody");
-    tbody.innerHTML = "";
+    const dialog = document.getElementById("formPopup");
+    const form = document.getElementById("formPaciente");
+    const formTitle = document.getElementById("formTitulo");
+    const passwordFields = document.getElementById("password-fields");
 
-    pacientes.forEach(p => {
-      const tr = document.createElement("tr");
-      const botones = usuario.rol === "admin"
-    ? `
-      <button onclick="editarPaciente(${p.id_paciente}, '${p.nombre_completo}', ${p.edad}, '${p.dni}', '${p.email}', '${p.sexo}')">Editar</button>
-      <button class="btn-red" onclick="eliminarPaciente(${p.id_paciente})">Eliminar</button>
-    `
-    : "-";
+    // --- CARGA INICIAL ---
+    cargarPacientes();
 
-      tr.innerHTML = `
-        <td>${p.nombre_completo}</td>
-        <td>${p.edad}</td>
-        <td>${p.dni}</td>
-        <td>${p.email}</td>
-        <td>${p.sexo}</td>
-        <td>${botones}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (e) {
-    alert("Error cargando pacientes");
-    console.error(e);
-  }
-}
+    // --- MANEJADORES DE EVENTOS ---
+    document.getElementById("btnAgregar").addEventListener("click", abrirFormularioParaCrear);
+    document.getElementById("btnCancelar").addEventListener("click", () => dialog.close());
+    document.getElementById("btnVolver").addEventListener("click", () => window.electronAPI.navegar("dashboard.html"));
+    form.addEventListener("submit", guardarPaciente);
 
-window.editarPaciente = (id, nombre_completo, edad, dni, email, sexo) => {
-  document.getElementById("formTitulo").textContent = "Editar Paciente";
-  document.getElementById("id_paciente").value = id;
-  document.getElementById("nombre_completo").value = nombre_completo;
-  document.getElementById("edad").value = edad;
-  document.getElementById("dni").value = dni;
-  document.getElementById("email").value = email;
-  document.getElementById("sexo").value = sexo;
-  document.getElementById("formPopup").showModal();
+    // --- FUNCIONES ---
 
-  // Ocultar campos de contraseña al editar
-  document.getElementById("contrasena").style.display = "none";
-  document.getElementById("repetir_contrasena").style.display = "none";
-};
+    async function cargarPacientes() {
+        // **LA SOLUCIÓN AL PROBLEMA "SIN DATOS" ESTÁ AQUÍ**
+        // Llamamos a la nueva ruta del backend exclusiva para administradores.
+        try {
+            const res = await fetch(`${API_URL}/admin/todos`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+            const pacientes = await res.json();
+            
+            tbody.innerHTML = ""; // Limpiar tabla
+            if (pacientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay pacientes registrados.</td></tr>';
+                return;
+            }
 
-window.eliminarPaciente = async (id) => {
-  if (!confirm("¿Eliminar este paciente?")) return;
-  const token = localStorage.getItem("token");
-  try {
-    const res = await fetch(`http://localhost:3000/api/pacientes/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+            pacientes.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p.nombre_completo}</td>
+                    <td>${p.edad}</td>
+                    <td>${p.dni}</td>
+                    <td>${p.email}</td>
+                    <td>${p.sexo}</td>
+                    <td>
+                        <button class="btn-edit" data-id="${p.id_paciente}">Editar</button>
+                        <button class="btn-delete" data-id="${p.id_paciente}">Eliminar</button>
+                    </td>
+                `;
+                // Añadir eventos a los botones de forma segura
+                tr.querySelector(".btn-edit").addEventListener("click", () => abrirFormularioParaEditar(p));
+                tr.querySelector(".btn-delete").addEventListener("click", () => eliminarPaciente(p.id_paciente));
 
-    if (!res.ok) throw new Error("Error eliminando paciente");
-    alert("Paciente eliminado correctamente");
-    cargarPacientes(usuario.rol);
-  } catch (e) {
-    alert("Error al eliminar paciente");
-    console.error(e);
-  }
-};
-
-document.getElementById("formPaciente").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const token = localStorage.getItem("token");
-  const nombre_completo = document.getElementById("nombre_completo").value.trim();
-  const edad = parseInt(document.getElementById("edad").value);
-  const dni = document.getElementById("dni").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const sexo = document.getElementById("sexo").value;
-  const id = document.getElementById("id_paciente").value;
-  const contrasena = document.getElementById("contrasena").value;
-  const repetir_contrasena = document.getElementById("repetir_contrasena").value;
-
-  if (!nombre_completo || !edad || !dni || !email || !sexo) {
-    alert("Completa todos los campos");
-    return;
-  }
-
-  if (!id) {
-    // Validar contraseña en creación
-    if (!contrasena || !repetir_contrasena) {
-      alert("Ingresá y repetí la contraseña");
-      return;
-    }
-    if (contrasena !== repetir_contrasena) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
-  }
-
-  const metodo = id ? "PUT" : "POST";
-  const url = id
-    ? `http://localhost:3000/api/pacientes/${id}`
-    : "http://localhost:3000/api/pacientes";
-
-  const body = {
-    nombre_completo,
-    edad,
-    dni,
-    email,
-    sexo,
-    ...(metodo === "POST" && { contrasena }) // solo en creación
-  };
-
-  try {
-    const res = await fetch(url, {
-      method: metodo,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.mensaje || (metodo === "POST" ? "Error al crear paciente" : "Error al actualizar paciente"));
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Error al cargar pacientes.</td></tr>`;
+            console.error(e);
+        }
     }
 
-    alert("Paciente guardado correctamente");
-    document.getElementById("formPopup").close();
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    cargarPacientes(usuario.rol);
-  } catch (err) {
-    alert(metodo === "POST" ? "Error al crear paciente" : "Error al actualizar paciente");
-    console.error(err);
-  }
+    function abrirFormularioParaCrear() {
+        form.reset();
+        form.dataset.id = ""; // Limpiar ID del formulario
+        formTitle.textContent = "Nuevo Paciente";
+        passwordFields.style.display = "block"; // Mostrar campos de contraseña
+        document.getElementById("contrasena").required = true;
+        dialog.showModal();
+    }
+
+    function abrirFormularioParaEditar(paciente) {
+        form.reset();
+        form.dataset.id = paciente.id_paciente; // Guardar ID en el formulario
+        formTitle.textContent = "Editar Paciente";
+        
+        // Llenar el formulario con los datos del paciente
+        document.getElementById("nombre_completo").value = paciente.nombre_completo;
+        document.getElementById("edad").value = paciente.edad;
+        document.getElementById("dni").value = paciente.dni;
+        document.getElementById("email").value = paciente.email;
+        document.getElementById("sexo").value = paciente.sexo;
+
+        passwordFields.style.display = "none"; // Ocultar campos de contraseña
+        document.getElementById("contrasena").required = false;
+        dialog.showModal();
+    }
+
+    async function guardarPaciente(e) {
+        e.preventDefault();
+        const id = form.dataset.id;
+        const metodo = id ? "PUT" : "POST";
+        const url = id ? `${API_URL}/${id}` : API_URL;
+
+        const body = {
+            nombre_completo: document.getElementById("nombre_completo").value,
+            edad: document.getElementById("edad").value,
+            dni: document.getElementById("dni").value,
+            email: document.getElementById("email").value,
+            sexo: document.getElementById("sexo").value,
+        };
+
+        // Si es un nuevo paciente, añadir y validar contraseña
+        if (!id) {
+            const contrasena = document.getElementById("contrasena").value;
+            const repetirContrasena = document.getElementById("repetir_contrasena").value;
+            if (contrasena.length < 4) {
+                alert("La contraseña debe tener al menos 4 caracteres.");
+                return;
+            }
+            if (contrasena !== repetirContrasena) {
+                alert("Las contraseñas no coinciden.");
+                return;
+            }
+            body.contrasena = contrasena;
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.msg || "Error al guardar los datos.");
+            }
+            alert("Paciente guardado correctamente");
+            dialog.close();
+            cargarPacientes();
+        } catch (err) {
+            alert(`Error: ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    async function eliminarPaciente(id) {
+        // En una app real, aquí mostrarías un modal de confirmación.
+        // Por simplicidad, procedemos directamente.
+        try {
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error("No se pudo eliminar el paciente.");
+            alert("Paciente eliminado.");
+            cargarPacientes();
+        } catch (e) {
+            alert(`Error: ${e.message}`);
+            console.error(e);
+        }
+    }
 });
