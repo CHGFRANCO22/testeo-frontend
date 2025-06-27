@@ -24,7 +24,7 @@ const adminOrSecretaria = (req, res, next) => {
 // --- Proteger todas las rutas de esta sección ---
 router.use(authMiddleware, adminOrSecretaria);
 
-// --- NUEVA RUTA DE DISPONIBILIDAD ---
+// --- RUTA DE DISPONIBILIDAD (USA LA BD REAL) ---
 router.get('/disponibilidad', async (req, res) => {
     const { id_profesional, fecha } = req.query;
     if (!id_profesional || !fecha) return res.status(400).json({ msg: 'Faltan parámetros' });
@@ -36,7 +36,7 @@ router.get('/disponibilidad', async (req, res) => {
         );
         
         if (!agenda) {
-            return res.json([]); // Si no hay agenda, no hay horarios.
+            return res.json([]); // Si no hay agenda, no hay horarios disponibles.
         }
 
         const slotsPosibles = [];
@@ -64,6 +64,7 @@ router.get('/disponibilidad', async (req, res) => {
 
 // --- LÓGICA DE TURNOS ---
 
+// OBTENER TODOS LOS TURNOS (CORREGIDO PARA EVITAR UNDEFINED)
 const getAllTurnos = async (req, res) => {
     try {
         const [turnos] = await pool.query(`
@@ -84,10 +85,8 @@ const getAllTurnos = async (req, res) => {
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 };
 
-// **AQUÍ ESTÁ LA CORRECCIÓN**
-// La función se llama ahora 'getHistorialByPacienteId' como antes
+// OBTENER HISTORIAL (CORREGIDO)
 const getHistorialByPacienteId = async (req, res) => {
-    // Pero la ruta ahora usa 'req.params.id' para coincidir con la URL
     try {
         const [turnos] = await pool.query(`
             SELECT t.fecha_turno, prof_persona.nombre_completo AS profesional_nombre, esp.nombre AS especialidad_nombre
@@ -96,7 +95,7 @@ const getHistorialByPacienteId = async (req, res) => {
             LEFT JOIN persona prof_persona ON prof.id_persona = prof_persona.id
             LEFT JOIN especialidades esp ON t.id_especialidad = esp.id_espe
             WHERE t.id_paciente = ? ORDER BY t.fecha_turno DESC
-        `, [req.params.id]); // <-- Cambio clave: de idPaciente a id
+        `, [req.params.id]);
         res.json(turnos);
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 };
@@ -108,12 +107,14 @@ const createTurno = async (req, res) => {
         res.status(201).json({ msg: 'Turno creado' });
     } catch (error) { res.status(500).json({ msg: 'Error al crear turno' }); }
 };
+
 const cancelarTurno = async (req, res) => {
     try {
         await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ?", [req.params.id]);
         res.json({ msg: 'Turno cancelado' });
     } catch (error) { res.status(500).json({ msg: 'Error al cancelar' }); }
 };
+
 const reprogramarTurno = async (req, res) => {
     const { fecha_turno } = req.body;
     try {
@@ -125,9 +126,7 @@ const reprogramarTurno = async (req, res) => {
 
 // --- RUTAS (Ahora usan las funciones definidas en este mismo archivo) ---
 router.get('/', getAllTurnos);
-// **AQUÍ ESTÁ LA CORRECCIÓN**
-// La ruta ahora es '/paciente/:id' para coincidir con la llamada del frontend
-router.get('/paciente/:id', getHistorialByPacienteId); 
+router.get('/paciente/:id', getHistorialByPacienteId);
 router.post('/', createTurno);
 router.put('/cancelar/:id', cancelarTurno);
 router.put('/reprogramar/:id', reprogramarTurno);

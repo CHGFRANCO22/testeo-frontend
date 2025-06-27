@@ -1,173 +1,211 @@
 // frontend/turnos.js
 document.addEventListener("DOMContentLoaded", () => {
-    // --- VARIABLES GLOBALES Y ELEMENTOS DEL DOM ---
     const API_BASE_URL = "http://localhost:3000/api";
     const token = localStorage.getItem("token");
-
     const tablaTurnosBody = document.querySelector("#tablaTurnos tbody");
-    const modalCrearTurno = document.getElementById("modalCrearTurno");
+    let turnosCache = [];
+
+    // --- Elementos del DOM ---
+    const modalCrear = document.getElementById("modalCrearTurno");
+    const formCrear = document.getElementById("formCrearTurno");
     const modalReprogramar = document.getElementById("modalReprogramar");
+    const formReprogramar = document.getElementById("formReprogramar");
     const modalHistorial = document.getElementById("modalHistorial");
 
-    // --- CARGA INICIAL ---
+    // --- Carga Inicial ---
     cargarTurnos();
     cargarSelectsParaCrearTurno();
 
-    // --- MANEJADORES DE EVENTOS PRINCIPALES ---
-    document.getElementById("btnNuevoTurno").addEventListener("click", () => modalCrearTurno.showModal());
+    // --- Manejadores de Eventos ---
+    document.getElementById("btnNuevoTurno").addEventListener("click", () => modalCrear.showModal());
     document.getElementById("btnVolver").addEventListener("click", () => window.electronAPI.navegar("dashboard.html"));
-    document.getElementById("formCrearTurno").addEventListener("submit", guardarNuevoTurno);
-    document.getElementById("formReprogramar").addEventListener("submit", guardarReprogramacion);
+    formCrear.addEventListener("submit", guardarNuevoTurno);
+    formReprogramar.addEventListener("submit", guardarReprogramacion);
+    
+    // Asigna el evento de cierre a TODOS los botones de "cerrar" o "cancelar"
+    document.querySelectorAll('.btn-cerrar, dialog form [type="button"]').forEach(btn => {
+        btn.addEventListener('click', () => btn.closest('dialog').close());
+    });
 
-    // Cerrar modales
-    document.getElementById("btnCancelar").addEventListener("click", () => modalCrearTurno.close());
-    document.getElementById("btnCancelarRepro").addEventListener("click", () => modalReprogramar.close());
-    document.getElementById("cerrarHistorial").addEventListener("click", () => modalHistorial.close());
-
-    // --- FUNCIONES PRINCIPALES ---
-
-    async function cargarTurnos() {
-        try {
-            const turnos = await apiFetch('/turnos');
-            tablaTurnosBody.innerHTML = "";
-            if (turnos.length === 0) {
-                tablaTurnosBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay turnos para mostrar.</td></tr>';
+    // --- Lógica de Disponibilidad Dinámica ---
+    const setupAvailabilityChecker = (form) => {
+        const profesionalSelect = form.querySelector('select[id*="profesional"]');
+        const fechaInput = form.querySelector('input[type="date"]');
+        const horaSelect = form.querySelector('select[id*="hora"]');
+        
+        const hoy = new Date().toISOString().split('T')[0];
+        fechaInput.setAttribute('min', hoy);
+        
+        const updateHorarios = async () => {
+            const id_profesional = profesionalSelect.value;
+            const fecha = fechaInput.value;
+            horaSelect.innerHTML = '<option value="">Cargando...</option>';
+            if (!id_profesional || !fecha) {
+                horaSelect.innerHTML = '<option value="">Seleccione profesional y fecha</option>';
                 return;
             }
+            try {
+                // Llama a la nueva ruta de disponibilidad del backend
+                const horarios = await apiFetch(`/turnos/disponibilidad?id_profesional=${id_profesional}&fecha=${fecha}`);
+                horaSelect.innerHTML = horarios.length > 0
+                    ? horarios.map(h => `<option value="${h}">${h}</option>`).join('')
+                    : '<option value="" disabled>No hay horarios disponibles</option>';
+            } catch (error) {
+                horaSelect.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        };
+        profesionalSelect.addEventListener('change', updateHorarios);
+        fechaInput.addEventListener('change', updateHorarios);
+    };
 
-            turnos.forEach(turno => {
-                const tr = document.createElement('tr');
-                const fecha = new Date(turno.fecha_turno);
-                
-                tr.innerHTML = `
-                    <td>${turno.paciente_nombre}</td>
-                    <td>${turno.profesional}</td>
-                    <td>${turno.especialidad}</td>
-                    <td>${fecha.toLocaleString('es-AR')}</td>
-                    <td><span class="status-${turno.estado}">${turno.estado.toUpperCase()}</span></td>
-                    <td>
-                        <button class="btn-historial" data-paciente-id="${turno.id_paciente}">Historial</button>
-                        ${turno.estado !== 'cancelado' ? `
-                            <button class="btn-reprogramar" data-turno-id="${turno.id}">Reprogramar</button>
-                            <button class="btn-cancelar" data-turno-id="${turno.id}">Cancelar</button>
-                        ` : ''}
-                    </td>
-                `;
-                tablaTurnosBody.appendChild(tr);
-            });
-            // Asignar eventos después de crear los botones
-            asignarEventosBotones();
-
+    setupAvailabilityChecker(formCrear);
+    setupAvailabilityChecker(formReprogramar);
+    
+    // --- Funciones Principales ---
+    async function cargarTurnos() {
+        try {
+            turnosCache = await apiFetch('/turnos');
+            renderizarTabla(turnosCache);
         } catch (error) {
-            tablaTurnosBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Error al cargar turnos.</td></tr>`;
-            console.error(error);
+            tablaTurnosBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Error al cargar turnos: ${error.message}</td></tr>`;
         }
     }
 
-    function asignarEventosBotones() {
-        document.querySelectorAll('.btn-historial').forEach(btn => btn.addEventListener('click', e => mostrarHistorial(e.target.dataset.pacienteId)));
-        document.querySelectorAll('.btn-reprogramar').forEach(btn => btn.addEventListener('click', e => abrirModalReprogramar(e.target.dataset.turnoId)));
-        document.querySelectorAll('.btn-cancelar').forEach(btn => btn.addEventListener('click', e => cancelarTurno(e.target.dataset.turnoId)));
+    function renderizarTabla(turnos) {
+        tablaTurnosBody.innerHTML = "";
+        if (!turnos || turnos.length === 0) {
+            tablaTurnosBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay turnos para mostrar.</td></tr>';
+            return;
+        }
+        turnos.forEach(turno => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${turno.paciente_nombre || 'N/A'}</td><td>${turno.profesional_nombre || 'N/A'}</td><td>${turno.especialidad_nombre || 'N/A'}</td>
+                <td>${new Date(turno.fecha_turno).toLocaleString('es-AR')}</td>
+                <td><span class="status-${turno.estado}">${turno.estado.toUpperCase()}</span></td>
+                <td>
+                    <button class="btn-historial" data-id="${turno.id_paciente}">Historial</button>
+                    ${turno.estado !== 'cancelado' ? `<button class="btn-reprogramar" data-id="${turno.id}">Reprogramar</button><button class="btn-cancelar" data-id="${turno.id}">Cancelar</button>` : ''}
+                </td>`;
+            tr.querySelector('.btn-historial').addEventListener('click', (e) => mostrarHistorial(e.target.dataset.id));
+            if(turno.estado !== 'cancelado') {
+                tr.querySelector('.btn-reprogramar').addEventListener('click', (e) => abrirModalReprogramar(e.target.dataset.id));
+                tr.querySelector('.btn-cancelar').addEventListener('click', (e) => cancelarTurno(e.target.dataset.id));
+            }
+            tablaTurnosBody.appendChild(tr);
+        });
     }
 
     async function mostrarHistorial(idPaciente) {
-        const tablaHistorialBody = document.querySelector("#tablaHistorial tbody");
+        if (!idPaciente) return;
         try {
             const historial = await apiFetch(`/turnos/paciente/${idPaciente}`);
-            tablaHistorialBody.innerHTML = "";
-            if (historial.length === 0) {
-                 tablaHistorialBody.innerHTML = '<tr><td colspan="3">Este paciente no tiene historial.</td></tr>';
-            } else {
-                historial.forEach(t => {
-                    tablaHistorialBody.innerHTML += `<tr><td>${new Date(t.fecha_turno).toLocaleDateString('es-AR')}</td><td>${t.profesional}</td><td>${t.especialidad}</td></tr>`;
-                });
-            }
+            const tablaBody = document.querySelector("#tablaHistorial tbody");
+            tablaBody.innerHTML = !historial || historial.length === 0
+                ? '<tr><td colspan="3" style="text-align:center;">Este paciente no tiene historial.</td></tr>'
+                : historial.map(t => `<tr><td>${new Date(t.fecha_turno).toLocaleDateString('es-AR')}</td><td>${t.profesional_nombre}</td><td>${t.especialidad_nombre}</td></tr>`).join('');
             modalHistorial.showModal();
-        } catch (error) {
-            alert("Error al obtener el historial.");
-            console.error(error);
-        }
-    }
-    
-    function abrirModalReprogramar(idTurno) {
-        document.getElementById("id_turno_repro").value = idTurno;
-        document.getElementById("formReprogramar").reset(); // Limpia fecha anterior
-        modalReprogramar.showModal();
+        } catch (error) { alert(`Error al obtener el historial: ${error.message}`); }
     }
 
+    function abrirModalReprogramar(idTurno) {
+        const turno = turnosCache.find(t => t.id == idTurno);
+        if (!turno) return;
+        document.getElementById("id_turno_repro").value = idTurno;
+        document.getElementById("id_profesional_repro").value = turno.id_profesional;
+        formReprogramar.reset();
+        modalReprogramar.showModal();
+    }
+    
     async function guardarReprogramacion(e) {
         e.preventDefault();
         const idTurno = document.getElementById("id_turno_repro").value;
-        const nuevaFecha = document.getElementById("fecha_repro").value;
+        const fecha = document.getElementById("fecha_repro").value;
+        const hora = document.getElementById("hora_repro").value;
+        if (!fecha || !hora) return alert("Seleccione fecha y hora.");
         try {
-            await apiFetch(`/turnos/reprogramar/${idTurno}`, 'PUT', { fecha_turno: nuevaFecha });
+            await apiFetch(`/turnos/reprogramar/${idTurno}`, 'PUT', { fecha_turno: `${fecha}T${hora}:00` });
             alert("Turno reprogramado con éxito.");
             modalReprogramar.close();
             cargarTurnos();
-        } catch(error) {
-            alert("Error al reprogramar el turno.");
-        }
+        } catch(error) { alert(`Error al reprogramar: ${error.message}`); }
     }
 
     async function cancelarTurno(idTurno) {
+        if (!confirm("¿Seguro que deseas cancelar este turno?")) return;
         try {
             await apiFetch(`/turnos/cancelar/${idTurno}`, 'PUT');
             alert("Turno cancelado con éxito.");
             cargarTurnos();
-        } catch (error) {
-            alert("Error al cancelar el turno.");
-        }
+        } catch (error) { alert(`Error al cancelar: ${error.message}`); }
     }
     
     async function guardarNuevoTurno(e) {
         e.preventDefault();
+        const fecha = document.getElementById("fecha").value;
+        const hora = document.getElementById("hora").value;
+        if (!fecha || !hora) return alert("Seleccione una fecha y un horario disponible.");
         const body = {
             id_paciente: document.getElementById("paciente").value,
             id_especialidad: document.getElementById("especialidad").value,
             id_profesional: document.getElementById("profesional").value,
-            fecha_turno: document.getElementById("fecha").value,
+            fecha_turno: `${fecha}T${hora}:00`,
         };
         try {
             await apiFetch('/turnos', 'POST', body);
             alert("Turno creado con éxito.");
-            modalCrearTurno.close();
-            document.getElementById("formCrearTurno").reset();
+            modalCrear.close();
             cargarTurnos();
-        } catch(error) {
-            alert("Error al crear el turno.");
-        }
+        } catch(error) { alert(`Error al crear el turno: ${error.message}`); }
     }
-
+    
     async function cargarSelectsParaCrearTurno() {
-        const selectPaciente = document.getElementById('paciente');
-        const selectEspecialidad = document.getElementById('especialidad');
-        
-        const pacientes = await apiFetch('/pacientes/admin/todos');
-        selectPaciente.innerHTML = '<option value="">Seleccionar...</option>';
-        pacientes.forEach(p => selectPaciente.innerHTML += `<option value="${p.id_paciente}">${p.nombre_completo}</option>`);
-
-        // Aquí deberías tener una ruta para obtener especialidades y profesionales
-        // const especialidades = await apiFetch('/especialidades');
-        // Lógica similar para llenar los otros selects...
+        try {
+            const selPaciente = document.getElementById('paciente');
+            const selEspecialidad = document.getElementById('especialidad');
+            const selProfesional = document.getElementById('profesional');
+            
+            const [pacientes, especialidades] = await Promise.all([
+                apiFetch('/pacientes/admin/todos'),
+                apiFetch('/especialidades'),
+            ]);
+            
+            selPaciente.innerHTML = '<option value="">Seleccionar...</option>' + pacientes.map(p => `<option value="${p.id_paciente}">${p.nombre_completo}</option>`).join('');
+            selEspecialidad.innerHTML = '<option value="">Seleccionar...</option>' + especialidades.map(e => `<option value="${e.id_espe}">${e.nombre}</option>`).join('');
+            
+            selEspecialidad.addEventListener('change', async () => {
+                const idEspecialidad = selEspecialidad.value;
+                selProfesional.innerHTML = '<option value="">Cargando...</option>';
+                if (!idEspecialidad) {
+                    selProfesional.innerHTML = '<option value="">Seleccione especialidad</option>';
+                    return;
+                }
+                const profesionales = await apiFetch(`/profesionales/por-especialidad/${idEspecialidad}`);
+                selProfesional.innerHTML = '<option value="">Seleccionar...</option>' + profesionales.map(p => `<option value="${p.id_profesional}">${p.nombre_completo}</option>`).join('');
+            });
+        } catch (error) { console.error("Error cargando selects para el formulario:", error); }
     }
 
-    // --- FUNCIÓN UTILITARIA ---
     async function apiFetch(endpoint, method = 'GET', body = null) {
-        const url = `${API_BASE_URL}${endpoint}`;
-        const options = {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            }
-        };
-        if (body) {
-            options.body = JSON.stringify(body);
+        let url;
+        // Construye la URL de forma inteligente, decidiendo a qué "sección" de la API llamar
+        if (endpoint.startsWith('/especialidades') || endpoint.startsWith('/profesionales')) {
+             url = `${API_BASE_URL}${endpoint}`;
+        } else if (endpoint.startsWith('/pacientes')) {
+            url = `${API_BASE_URL}${endpoint}`;
         }
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.msg || `Error en la petición a ${endpoint}`);
+        else {
+             url = `${API_BASE_URL}/turnos${endpoint === '/' ? '' : endpoint}`;
+        }
+            
+        const response = await fetch(url, {
+            method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: body ? JSON.stringify(body) : null
+        });
+        if (!response.ok) throw new Error((await response.json()).msg || 'Error en la petición');
+        const contentType = response.headers.get("content-type");
+        if (response.status === 201 || response.status === 204 || !contentType || !contentType.includes("application/json")) {
+            return {};
         }
         return response.json();
     }
