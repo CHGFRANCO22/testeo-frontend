@@ -3,12 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
-const {
-    getTurnosPorProfesional,
-    getEstadoTurnos,
-    getEspecialidadesDemandadas,
-    getHorariosDemanda
-} = require('../controllers/informesController');
+
+// Importamos el objeto completo del controlador
+const informesController = require('../controllers/informesController');
 
 // Middleware para verificar si el usuario es Admin
 const adminOnly = (req, res, next) => {
@@ -24,19 +21,19 @@ const adminOnly = (req, res, next) => {
 
 // @route   GET /api/informes/turnos-por-profesional?fecha_inicio=YYYY-MM-DD&fecha_fin=YYYY-MM-DD
 // @desc    Informe de turnos atendidos por profesional en un rango de fechas.
-// Se aplican los middlewares uno después del otro antes de llegar al controlador.
-router.get('/turnos-por-profesional', authMiddleware, adminOnly, getTurnosPorProfesional);
+// Ahora accedemos a la función directamente desde el objeto del controlador importado.
+router.get('/turnos-por-profesional', authMiddleware, adminOnly, informesController.getTurnosPorProfesional);
 
 // @route   GET /api/informes/estado-turnos
 // @desc    Informe de turnos cancelados y reprogramados por especialidad.
-router.get('/estado-turnos', authMiddleware, adminOnly, getEstadoTurnos);
+router.get('/estado-turnos', authMiddleware, adminOnly, informesController.getEstadoTurnos);
 
 // @route   GET /api/informes/especialidades-demandadas
 // @desc    Informe de las especialidades con más turnos solicitados.
-router.get('/especialidades-demandadas', authMiddleware, adminOnly, getEspecialidadesDemandadas);
+router.get('/especialidades-demandadas', authMiddleware, adminOnly, informesController.getEspecialidadesDemandadas);
 
 // @route   GET /api/informes/horarios-demanda
 // @desc    Informe de las horas del día con más turnos.
-router.get('/horarios-demanda', authMiddleware, adminOnly, getHorariosDemanda);
+router.get('/horarios-demanda', authMiddleware, adminOnly, informesController.getHorariosDemanda);
 
 module.exports = router;
