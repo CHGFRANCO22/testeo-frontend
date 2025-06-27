@@ -1,179 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Gestión de Turnos</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background-color: #f4f6f9;
-    }
-
-    .navbar {
-      background-color: #3498db;
-      color: white;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .navbar h1 {
-      margin: 0;
-      cursor: pointer;
-    }
-
-    table {
-      width: 90%;
-      margin: 30px auto;
-      border-collapse: collapse;
-      background: white;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #3498db;
-      color: white;
-    }
-
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      background-color: #3498db;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    .btn-red {
-      background-color: #e74c3c;
-    }
-
-    .btn-red:hover {
-      background-color: #c0392b;
-    }
-
-    #btnNuevo {
-      margin: 20px 5%;
-    }
-
-    dialog {
-      border: none;
-      border-radius: 8px;
-      padding: 20px;
-      width: 320px;
-      max-width: 90%;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    dialog::backdrop {
-      background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    form input, form select {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    form button {
-      width: 48%;
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Salud Total - Gestión de Turnos</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; color: #333; }
+        .navbar { background-color: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { margin: 0; font-size: 1.4rem; }
+        .back-btn { background-color: #3498db; border: none; color: white; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .container { padding: 20px; }
+        .main-content { background-color: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ecf0f1; }
+        .actions-header h2 { margin: 0; color: #2c3e50;}
+        .btn-add { background-color: #27ae60; color: white; border: none; border-radius: 5px; padding: 10px 15px; font-size: 1rem; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: middle; }
+        th { background-color: #ecf0f1; color: #2c3e50; font-weight: 600; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        td button { color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; margin-right: 5px; font-size: 0.9rem;}
+        .btn-historial { background-color: #95a5a6; }
+        .btn-reprogramar { background-color: #f39c12; }
+        .btn-cancelar { background-color: #e74c3c; }
+        .status-confirmado { color: #27ae60; font-weight: bold; }
+        .status-cancelado { color: #e74c3c; font-weight: bold; text-decoration: line-through; }
+        .status-reprogramado { color: #f39c12; font-weight: bold; }
+        dialog { border: none; border-radius: 8px; padding: 25px; width: 400px; max-width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        dialog::backdrop { background-color: rgba(0,0,0,0.5); }
+        form label { display: block; margin-bottom: 5px; font-weight: 600; color: #555;}
+        form input, form select { width: calc(100% - 20px); margin-bottom: 15px; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1rem; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .form-actions button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #btnGuardar, #btnGuardarRepro { background-color: #28a745; color: white; }
+        #btnCancelar, #btnCancelarRepro { background-color: #6c757d; color: white; }
+        #modalHistorial table { margin-top: 15px; }
+    </style>
 </head>
 <body>
-  <div class="navbar">
-    <h1 id="volverDashboard">Salud Total - Gestión de Turnos</h1>
-  </div>
-
-  <button id="btnNuevo">Nuevo Turno</button>
-
-  <table id="tablaTurnos">
-    <thead>
-      <tr>
-        <th>Paciente</th>
-        <th>Profesional</th>
-        <th>Especialidad</th>
-        <th>Fecha</th>
-        <th>Hora</th>
-        <th>Acciones</th>
-        <th>Estado</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <dialog id="formPopup">
-    <form method="dialog" id="formTurno">
-      <h3>Nuevo Turno</h3>
-      <select id="paciente" required>
-        <option value="">Seleccionar paciente</option>
-      </select>
-      <select id="especialidad" required>
-        <option value="">Seleccionar especialidad</option>
-      </select>
-      <select id="profesional" required>
-        <option value="">Seleccionar profesional</option>
-      </select>
-      <input type="date" id="fecha" required />
-      <select id="hora" required>
-        <option value="">Seleccionar horario</option>
-      </select>
-      <div class="form-actions">
-        <button type="submit">Guardar</button>
-        <button type="button" id="btnCancelar">Cancelar</button>
-      </div>
-    </form>
-  </dialog>
-  <dialog id="formReprogramar">
-  <form method="dialog" id="formRepro">
-    <h3>Reprogramar Turno</h3>
-    <input type="hidden" id="reproIdTurno" />
-    <input type="date" id="reproFecha" required />
-    <select id="reproHora" required>
-      <option value="">Seleccionar horario</option>
-    </select>
-    <div class="form-actions">
-      <button type="submit">Reprogramar</button>
-      <button type="button" id="btnCerrarRepro">Cancelar</button>
+    <div class="navbar">
+        <h1>Gestión de Turnos</h1>
+        <button class="back-btn" id="btnVolver">Volver al Panel</button>
     </div>
-  </form>
-</dialog>
 
+    <div class="container">
+        <div class="main-content">
+            <div class="actions-header">
+                <h2>Listado de Turnos</h2>
+                <button class="btn-add" id="btnNuevoTurno">Nuevo Turno</button>
+            </div>
+            <table id="tablaTurnos">
+                <thead><tr><th>Paciente</th><th>Profesional</th><th>Especialidad</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody><!-- Filas aquí --></tbody>
+            </table>
+        </div>
+    </div>
 
+    <!-- Modal para Crear Turno -->
+    <dialog id="modalCrearTurno">
+        <form id="formCrearTurno">
+            <h3>Nuevo Turno</h3>
+            <label for="paciente">Paciente</label><select id="paciente" required></select>
+            <label for="especialidad">Especialidad</label><select id="especialidad" required></select>
+            <label for="profesional">Profesional</label><select id="profesional" required></select>
+            <label for="fecha">Fecha</label><input type="datetime-local" id="fecha" required />
+            <div class="form-actions">
+                <button type="button" id="btnCancelar">Cancelar</button>
+                <button type="submit" id="btnGuardar">Guardar</button>
+            </div>
+        </form>
+    </dialog>
+    
+    <!-- Modal para Reprogramar Turno -->
+    <dialog id="modalReprogramar">
+        <form id="formReprogramar">
+            <h3>Reprogramar Turno</h3>
+            <input type="hidden" id="id_turno_repro" />
+            <label for="fecha_repro">Nueva Fecha y Hora</label>
+            <input type="datetime-local" id="fecha_repro" required />
+            <div class="form-actions">
+                <button type="button" id="btnCancelarRepro">Cancelar</button>
+                <button type="submit" id="btnGuardarRepro">Reprogramar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modal para Historial de Turnos -->
     <dialog id="modalHistorial">
-    <h3>Historial de Turnos del Paciente</h3>
-    <table id="tablaHistorial" style="width: 100%; margin: 10px 0;">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Profesional</th>
-          <th>Especialidad</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button id="cerrarHistorial">Cerrar</button>
-  </dialog>
+        <h3>Historial del Paciente</h3>
+        <table id="tablaHistorial">
+            <thead><tr><th>Fecha</th><th>Profesional</th><th>Especialidad</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <div class="form-actions">
+            <button id="cerrarHistorial">Cerrar</button>
+        </div>
+    </dialog>
 
-  <script type="module" src="turnos.js"></script>
+    <script type="module" src="turnos.js"></script>
 </body>
 </html>
-
