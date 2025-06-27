@@ -142,21 +142,39 @@
       </div>
     </form>
   </dialog>
-  <dialog id="formReprogramar">
-  <form method="dialog" id="formRepro">
-    <h3>Reprogramar Turno</h3>
-    <input type="hidden" id="reproIdTurno" />
-    <input type="date" id="reproFecha" required />
-    <select id="reproHora" required>
-      <option value="">Seleccionar horario</option>
-    </select>
-    <div class="form-actions">
-      <button type="submit">Reprogramar</button>
-      <button type="button" id="btnCerrarRepro">Cancelar</button>
-    </div>
-  </form>
-</dialog>
 
+  <dialog id="formReprogramar">
+    <form method="dialog" id="formRepro">
+      <h3>Reprogramar Turno</h3>
+      <input type="hidden" id="reproIdTurno" />
+      <input type="date" id="reproFecha" required />
+      <select id="reproHora" required>
+        <option value="">Seleccionar horario</option>
+      </select>
+      <div class="form-actions">
+        <button type="submit">Reprogramar</button>
+        <button type="button" id="btnCerrarRepro">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="modalHistorial">
+    <h3>Historial de Turnos</h3>
+    <table id="tablaHistorial">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Profesional</th>
+          <th>Especialidad</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div style="text-align:right; margin-top:10px;">
+      <button onclick="document.getElementById('modalHistorial').close()">Cerrar</button>
+    </div>
+  </dialog>
 
   <script type="module" src="turnos.js"></script>
 </body>

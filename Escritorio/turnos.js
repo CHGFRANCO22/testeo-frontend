@@ -20,6 +20,12 @@ const btnCerrarRepro = document.getElementById('btnCerrarRepro');
 const tablaTurnosBody = document.querySelector('#tablaTurnos tbody');
 const API_URL = 'http://localhost:3000/api';
 
+const modalHistorial = document.getElementById('modalHistorial');
+const tablaHistorial = document.getElementById('tablaHistorial');
+const cerrarHistorial = document.getElementById('cerrarHistorial');
+
+cerrarHistorial.addEventListener('click', () => modalHistorial.close());
+
 btnNuevo.addEventListener('click', () => dialog.showModal());
 btnCancelar.addEventListener('click', () => dialog.close());
 btnCerrarRepro.addEventListener('click', () => dialogRepro.close());
@@ -84,17 +90,19 @@ async function cargarTurnos() {
       ? `<button class="btn-blue" data-id="${t.id}" data-accion="reprogramar">Reprogramar</button>`
       : '';
 
-    tablaTurnosBody.innerHTML += `
-      <tr>
-        <td>${t.paciente_nombre || 'Sin datos'}</td>
-        <td>${t.profesional}</td>
-        <td>${t.especialidad}</td>
-        <td>${fechaStr}</td>
-        <td>${horaStr}</td>
-        <td>${botonCancelar} ${botonReprogramar}</td>
-        <td>${estadoDisplay}</td>
-      </tr>
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${t.paciente_nombre || 'Sin datos'}</td>
+      <td>${t.profesional}</td>
+      <td>${t.especialidad}</td>
+      <td>${fechaStr}</td>
+      <td>${horaStr}</td>
+      <td>${botonCancelar} ${botonReprogramar}</td>
+      <td>${estadoDisplay}</td>
     `;
+    tablaTurnosBody.appendChild(fila);
+
+    agregarHistorialPacienteBoton(t.id_paciente, fila.children[0]);
   });
 
   document.querySelectorAll('button[data-accion="cancelar"]').forEach(btn => {
@@ -124,6 +132,34 @@ async function cargarTurnos() {
       dialogRepro.showModal();
     });
   });
+}
+
+function agregarHistorialPacienteBoton(idPaciente, celda) {
+  const btn = document.createElement('button');
+  btn.textContent = 'Historial';
+  btn.addEventListener('click', async () => {
+    try {
+      const resp = await fetch(`${API_URL}/turnos/paciente/${idPaciente}`, {
+        headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+      });
+      const historial = await resp.json();
+      tablaHistorial.innerHTML = '';
+      historial.forEach(t => {
+        const fecha = new Date(t.fecha_turno);
+        const fechaStr = fecha.toLocaleDateString();
+        const fila = `<tr>
+          <td>${fechaStr}</td>
+          <td>${t.profesional}</td>
+          <td>${t.especialidad}</td>
+        </tr>`;
+        tablaHistorial.innerHTML += fila;
+      });
+      modalHistorial.showModal();
+    } catch (error) {
+      alert('Error al obtener historial');
+    }
+  });
+  celda.appendChild(btn);
 }
 
 formTurno.addEventListener('submit', async (e) => {
@@ -173,7 +209,6 @@ formTurno.addEventListener('submit', async (e) => {
   }
 });
 
-// Reprogramar - al cambiar la fecha, cargar horarios
 inputFechaRepro.addEventListener('change', async () => {
   const idTurno = inputIdRepro.value;
   const fecha = inputFechaRepro.value;
