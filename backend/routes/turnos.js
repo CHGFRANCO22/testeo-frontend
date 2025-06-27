@@ -18,24 +18,25 @@ const adminOrSecretaria = (req, res, next) => {
     return res.status(403).json({ msg: 'Acceso denegado.' });
 };
 
-// Proteger todas las rutas de esta sección
-router.use(authMiddleware, adminOrSecretaria);
+// --- LA LÍNEA QUE CAUSABA EL ERROR HA SIDO ELIMINADA ---
+// Ya no usamos router.use() para aplicar los middlewares de forma global aquí.
 
-// --- RUTAS PARA LA GESTIÓN DE TURNOS ---
+// --- DEFINICIÓN DE RUTAS CON MIDDLEWARES APLICADOS INDIVIDUALMENTE ---
 
 // Ruta principal para obtener TODOS los turnos para la tabla
-router.get('/', getAllTurnos);
+// Se aplican los middlewares uno por uno antes de llegar a la función final.
+router.get('/', authMiddleware, adminOrSecretaria, getAllTurnos);
 
 // Ruta para obtener el HISTORIAL de un paciente específico
-router.get('/historial/:idPaciente', getHistorialByPacienteId);
+router.get('/historial/:idPaciente', authMiddleware, adminOrSecretaria, getHistorialByPacienteId);
 
 // Ruta para CREAR un nuevo turno
-router.post('/', createTurno);
+router.post('/', authMiddleware, adminOrSecretaria, createTurno);
 
 // Ruta para CANCELAR un turno
-router.put('/cancelar/:id', cancelarTurno);
+router.put('/cancelar/:id', authMiddleware, adminOrSecretaria, cancelarTurno);
 
 // Ruta para REPROGRAMAR un turno
-router.put('/reprogramar/:id', reprogramarTurno);
+router.put('/reprogramar/:id', authMiddleware, adminOrSecretaria, reprogramarTurno);
 
 module.exports = router;
