@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken'); // Se añade para manejar el token
-const { pool } = require('../db'); 
+const pool = require('../db'); 
 
 // --- CÓDIGO DEL MIDDLEWARE INTEGRADO PARA SOLUCIONAR EL ERROR ---
 // En lugar de importarlo, ponemos el código aquí directamente.
