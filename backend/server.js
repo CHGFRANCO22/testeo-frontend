@@ -9,7 +9,7 @@ const turnosRoutes = require('./routes/turnos');
 const contactoRoutes = require('./routes/contacto');
 const especialidadesRoutes = require('./routes/especialidades');
 const profesionalesRoutes = require('./routes/profesionales');
-
+const agendaRoutes = require('./routes/agenda');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -19,7 +19,7 @@ app.use(express.json());
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 const escritorioPath = path.join(__dirname, '..', 'Escritorio');
 
-
+const agendaRoutes = require('./routes/agenda');
 app.use(express.static(frontendPath));
 app.use('/Escritorio', express.static(escritorioPath));
 app.use('/api/informes', informesRoutes);

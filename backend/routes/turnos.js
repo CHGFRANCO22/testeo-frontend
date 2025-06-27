@@ -1,47 +1,65 @@
 // backend/Routes/turnos.js
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken'); // Necesario para el middleware de autenticación
-const pool = require('../db');     // Traemos la conexión a la BD directamente
+const jwt = require('jsonwebtoken');
+const pool = require('../db');
 
-// =============================================================================
-// == INICIO: CÓDIGO DE MIDDLEWARES INTEGRADO PARA ELIMINAR ERRORES ==
-// Al poner el código aquí, evitamos los problemas con require()
-
+// --- MIDDLEWARES (Integrados para evitar errores) ---
 const authMiddleware = (req, res, next) => {
     const authHeader = req.header('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ msg: 'No hay token, autorización denegada' });
-    }
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ msg: 'No hay token' });
     try {
-        const token = authHeader.split(' ')[1];
-        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
         next();
     } catch (error) {
-        res.status(401).json({ msg: 'Token no es válido' });
+        res.status(401).json({ msg: 'Token no válido' });
     }
 };
 
 const adminOrSecretaria = (req, res, next) => {
-    if (req.user && (req.user.rol === 'admin' || req.user.rol === 'secretaria')) {
-        return next();
-    }
+    if (req.user && (req.user.rol === 'admin' || req.user.rol === 'secretaria')) return next();
     return res.status(403).json({ msg: 'Acceso denegado.' });
 };
-// == FIN: CÓDIGO DE MIDDLEWARES INTEGRADO ==
-// =============================================================================
+
+// --- Proteger todas las rutas de esta sección ---
+router.use(authMiddleware, adminOrSecretaria);
+
+// --- NUEVA RUTA DE DISPONIBILIDAD ---
+router.get('/disponibilidad', async (req, res) => {
+    const { id_profesional, fecha } = req.query;
+    if (!id_profesional || !fecha) return res.status(400).json({ msg: 'Faltan parámetros' });
+    
+    try {
+        // En un sistema real, esto vendría de la tabla `agenda_medicos`.
+        // Por ahora, asumimos un horario fijo de 8:00 a 17:00 para simplificar.
+        const horarioInicio = 8;
+        const horarioFin = 17;
+        const slotsPosibles = [];
+        for (let i = horarioInicio; i < horarioFin; i++) {
+            slotsPosibles.push(`${String(i).padStart(2, '0')}:00`);
+            slotsPosibles.push(`${String(i).padStart(2, '0')}:30`);
+        }
+
+        const [turnosOcupados] = await pool.query(
+            `SELECT TIME_FORMAT(fecha_turno, '%H:%i') AS hora FROM turnos WHERE id_profesional = ? AND DATE(fecha_turno) = ? AND estado != 'cancelado'`,
+            [id_profesional, fecha]
+        );
+        const horasOcupadas = new Set(turnosOcupados.map(t => t.hora));
+        const disponibles = slotsPosibles.filter(slot => !horasOcupadas.has(slot));
+        res.json(disponibles);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al calcular disponibilidad' });
+    }
+});
 
 
-// =============================================================================
-// == INICIO: CÓDIGO DEL CONTROLADOR INTEGRADO ==
-// Ponemos la lógica de las consultas aquí para evitar errores de importación
+// --- LÓGICA DE TURNOS CORREGIDA ---
 
-// OBTENER TODOS LOS TURNOS (PARA LA TABLA PRINCIPAL)
 const getAllTurnos = async (req, res) => {
     try {
         const [turnos] = await pool.query(`
             SELECT 
-                t.id, t.fecha_turno, t.estado, t.id_paciente,
+                t.id, t.fecha_turno, t.estado, t.id_paciente, t.id_profesional,
                 pac_persona.nombre_completo AS paciente_nombre,
                 prof_persona.nombre_completo AS profesional_nombre,
                 esp.nombre AS especialidad_nombre
@@ -54,15 +72,10 @@ const getAllTurnos = async (req, res) => {
             ORDER BY t.fecha_turno DESC
         `);
         res.json(turnos);
-    } catch (error) {
-        console.error("Error al obtener todos los turnos:", error);
-        res.status(500).json({ msg: 'Error del servidor.' });
-    }
+    } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 };
 
-// OBTENER HISTORIAL DE UN PACIENTE ESPECÍFICO
 const getHistorialByPacienteId = async (req, res) => {
-    const { idPaciente } = req.params;
     try {
         const [turnos] = await pool.query(`
             SELECT t.fecha_turno, prof_persona.nombre_completo AS profesional_nombre, esp.nombre AS especialidad_nombre
@@ -70,63 +83,39 @@ const getHistorialByPacienteId = async (req, res) => {
             LEFT JOIN profesionales prof ON t.id_profesional = prof.id_profesional
             LEFT JOIN persona prof_persona ON prof.id_persona = prof_persona.id
             LEFT JOIN especialidades esp ON t.id_especialidad = esp.id_espe
-            WHERE t.id_paciente = ?
-            ORDER BY t.fecha_turno DESC
-        `, [idPaciente]);
+            WHERE t.id_paciente = ? ORDER BY t.fecha_turno DESC
+        `, [req.params.idPaciente]);
         res.json(turnos);
-    } catch (error) {
-        console.error("Error al obtener historial del paciente:", error);
-        res.status(500).json({ msg: 'Error del servidor.' });
-    }
+    } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 };
 
-// CREAR UN NUEVO TURNO
 const createTurno = async (req, res) => {
     const { id_paciente, id_profesional, id_especialidad, fecha_turno } = req.body;
     try {
-        await pool.query(
-            'INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno, estado) VALUES (?, ?, ?, ?, ?)',
-            [id_paciente, id_profesional, id_especialidad, fecha_turno, 'confirmado']
-        );
-        res.status(201).json({ msg: 'Turno creado exitosamente' });
-    } catch (error) {
-        console.error("Error al crear turno:", error);
-        res.status(500).json({ msg: 'Error del servidor.' });
-    }
+        await pool.query('INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno, estado) VALUES (?, ?, ?, ?, ?)', [id_paciente, id_profesional, id_especialidad, fecha_turno, 'confirmado']);
+        res.status(201).json({ msg: 'Turno creado' });
+    } catch (error) { res.status(500).json({ msg: 'Error al crear turno' }); }
 };
-
-// CANCELAR UN TURNO
 const cancelarTurno = async (req, res) => {
-    const { id } = req.params;
     try {
-        await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ?", [id]);
-        res.json({ msg: 'Turno cancelado correctamente.' });
-    } catch (error) {
-        res.status(500).json({ msg: 'Error del servidor.' });
-    }
+        await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ?", [req.params.id]);
+        res.json({ msg: 'Turno cancelado' });
+    } catch (error) { res.status(500).json({ msg: 'Error al cancelar' }); }
 };
-
-// REPROGRAMAR UN TURNO
 const reprogramarTurno = async (req, res) => {
-    const { id } = req.params;
     const { fecha_turno } = req.body;
     try {
-        await pool.query("UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?", [fecha_turno, id]);
-        res.json({ msg: 'Turno reprogramado correctamente.' });
-    } catch (error) {
-        res.status(500).json({ msg: 'Error del servidor.' });
-    }
+        await pool.query("UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?", [fecha_turno, req.params.id]);
+        res.json({ msg: 'Turno reprogramado' });
+    } catch (error) { res.status(500).json({ msg: 'Error al reprogramar' }); }
 };
-// == FIN: CÓDIGO DEL CONTROLADOR INTEGRADO ==
-// =============================================================================
 
 
 // --- RUTAS (Ahora usan las funciones definidas en este mismo archivo) ---
-
-router.get('/', authMiddleware, adminOrSecretaria, getAllTurnos);
-router.get('/historial/:idPaciente', authMiddleware, adminOrSecretaria, getHistorialByPacienteId);
-router.post('/', authMiddleware, adminOrSecretaria, createTurno);
-router.put('/cancelar/:id', authMiddleware, adminOrSecretaria, cancelarTurno);
-router.put('/reprogramar/:id', authMiddleware, adminOrSecretaria, reprogramarTurno);
+router.get('/', getAllTurnos);
+router.get('/historial/:idPaciente', getHistorialByPacienteId);
+router.post('/', createTurno);
+router.put('/cancelar/:id', cancelarTurno);
+router.put('/reprogramar/:id', reprogramarTurno);
 
 module.exports = router;
