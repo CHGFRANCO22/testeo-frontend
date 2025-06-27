@@ -12,6 +12,7 @@ const {
 
 // Middleware para verificar si el usuario es Admin
 const adminOnly = (req, res, next) => {
+    // Se asume que authMiddleware ya se ejecutó y añadió req.user
     if (req.user && req.user.rol === 'admin') {
         next();
     } else {
@@ -19,23 +20,23 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-// Aplicar middleware de autenticación y de rol de admin a todas las rutas de informes
-router.use(authMiddleware, adminOnly);
+// --- Definición de Rutas Protegidas ---
 
 // @route   GET /api/informes/turnos-por-profesional?fecha_inicio=YYYY-MM-DD&fecha_fin=YYYY-MM-DD
 // @desc    Informe de turnos atendidos por profesional en un rango de fechas.
-router.get('/turnos-por-profesional', getTurnosPorProfesional);
+// Se aplican los middlewares uno después del otro antes de llegar al controlador.
+router.get('/turnos-por-profesional', authMiddleware, adminOnly, getTurnosPorProfesional);
 
 // @route   GET /api/informes/estado-turnos
 // @desc    Informe de turnos cancelados y reprogramados por especialidad.
-router.get('/estado-turnos', getEstadoTurnos);
+router.get('/estado-turnos', authMiddleware, adminOnly, getEstadoTurnos);
 
 // @route   GET /api/informes/especialidades-demandadas
 // @desc    Informe de las especialidades con más turnos solicitados.
-router.get('/especialidades-demandadas', getEspecialidadesDemandadas);
+router.get('/especialidades-demandadas', authMiddleware, adminOnly, getEspecialidadesDemandadas);
 
 // @route   GET /api/informes/horarios-demanda
 // @desc    Informe de las horas del día con más turnos.
-router.get('/horarios-demanda', getHorariosDemanda);
+router.get('/horarios-demanda', authMiddleware, adminOnly, getHorariosDemanda);
 
 module.exports = router;
