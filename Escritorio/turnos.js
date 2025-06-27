@@ -310,6 +310,7 @@ function agregarHistorialPacienteBoton(idPaciente, celda) {
           <td>${t.profesional}</td>
           <td>${t.especialidad}</td>
         </tr>`;
+        tablaHistorialBody.innerHTML += fila;
       });
       document.getElementById('modalHistorial').showModal();
     } catch (error) {
