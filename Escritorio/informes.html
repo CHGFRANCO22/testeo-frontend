@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Salud Total - Informes de Gestión</title>
-    <!-- Incluimos la librería Chart.js para los gráficos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Ya no se necesita Chart.js -->
     <style>
         body {
             margin: 0;
@@ -20,10 +19,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .navbar h1 {
-            margin: 0;
-            font-size: 1.4rem;
-        }
+        .navbar h1 { margin: 0; font-size: 1.4rem; }
         .back-btn {
             background-color: #3498db;
             border: none;
@@ -33,9 +29,7 @@
             cursor: pointer;
             font-weight: bold;
         }
-        .container {
-            padding: 20px;
-        }
+        .container { padding: 20px; }
         .report-section {
             background-color: white;
             border-radius: 8px;
@@ -49,20 +43,9 @@
             border-bottom: 2px solid #ecf0f1;
             padding-bottom: 10px;
         }
-        .filters {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .filters label {
-            font-weight: 600;
-        }
-        .filters input[type="date"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+        .filters { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+        .filters label { font-weight: 600; }
+        .filters input[type="date"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .btn-generate {
             padding: 10px 15px;
             font-size: 1rem;
@@ -72,10 +55,27 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .chart-container {
-            position: relative;
-            height: 300px; /* Altura estándar para los gráficos */
+        /* Contenedor para la tabla */
+        .table-container {
+            margin-top: 20px;
+        }
+        /* Estilos para la tabla generada */
+        table {
             width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -96,20 +96,17 @@
                 <input type="date" id="fecha_fin">
                 <button class="btn-generate" id="btnGenerarTurnosProfesional">Generar</button>
             </div>
-            <div class="chart-container">
-                <canvas id="chartTurnosProfesional"></canvas>
-            </div>
+            <!-- Div donde se insertará la tabla -->
+            <div class="table-container" id="tablaTurnosProfesional"></div>
         </div>
 
         <!-- Sección 2: Estado de Turnos -->
         <div class="report-section">
-            <h2>Estado de Turnos por Especialidad (Cancelados/Reprogramados)</h2>
+            <h2>Estado de Turnos por Especialidad</h2>
             <div class="filters">
                  <button class="btn-generate" id="btnGenerarEstadoTurnos">Generar</button>
             </div>
-            <div class="chart-container">
-                <canvas id="chartEstadoTurnos"></canvas>
-            </div>
+            <div class="table-container" id="tablaEstadoTurnos"></div>
         </div>
 
         <!-- Sección 3: Especialidades más demandadas -->
@@ -118,9 +115,7 @@
              <div class="filters">
                 <button class="btn-generate" id="btnGenerarEspecialidades">Generar</button>
             </div>
-            <div class="chart-container">
-                <canvas id="chartEspecialidades"></canvas>
-            </div>
+            <div class="table-container" id="tablaEspecialidades"></div>
         </div>
 
         <!-- Sección 4: Horarios de mayor demanda -->
@@ -129,9 +124,7 @@
              <div class="filters">
                 <button class="btn-generate" id="btnGenerarHorarios">Generar</button>
             </div>
-            <div class="chart-container">
-                <canvas id="chartHorarios"></canvas>
-            </div>
+            <div class="table-container" id="tablaHorarios"></div>
         </div>
 
     </div>
