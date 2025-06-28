@@ -37,8 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         agendasFiltradas.forEach(agenda => {
             const tr = document.createElement('tr');
-            // Usamos timeZone UTC para que la fecha no se desfase un día
+            // CORRECCIÓN: Se usa new Date() con la fecha YYYY-MM-DD y se añade timeZone 'UTC'
+            // para evitar que la fecha se muestre como el día anterior.
             const fechaFormateada = new Date(agenda.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' });
+            
             tr.innerHTML = `
                 <td>${agenda.profesional_nombre}</td><td>${fechaFormateada}</td>
                 <td>${agenda.hora_inicio}</td><td>${agenda.hora_fin}</td>
@@ -81,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formTitulo.textContent = "Editar Horario";
         form.querySelector("#agenda_id").value = agenda.id;
         form.querySelector("#profesional").value = agenda.id_profesional;
+        // CORRECCIÓN: El input de tipo "date" espera el formato YYYY-MM-DD, que ahora es el que envía el backend.
         form.querySelector("#fecha").value = agenda.fecha;
         form.querySelector("#hora_inicio").value = agenda.hora_inicio;
         form.querySelector("#hora_fin").value = agenda.hora_fin;
@@ -123,17 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. Ejecución Inicial y Event Listeners ---
 
-    // Configurar fecha mínima para el input de fecha
     const hoy = new Date().toISOString().split('T')[0];
     document.getElementById('fecha').setAttribute('min', hoy);
 
-    // Asignar eventos a los botones y formularios
     form.addEventListener('submit', guardarAgenda);
     document.getElementById("btnVolver").addEventListener("click", () => window.electronAPI.navegar("dashboard.html"));
     document.getElementById("btnLimpiarForm").addEventListener("click", limpiarFormulario);
     filtroInput.addEventListener('input', () => renderizarAgendas(agendasCache));
 
-    // Llamar a las funciones de carga inicial
     cargarAgendas();
     cargarProfesionales();
 });
