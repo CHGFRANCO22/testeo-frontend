@@ -22,36 +22,25 @@ const adminOrSecretaria = (req, res, next) => {
 };
 
 
-// --- RUTAS PARA PACIENTES ---
+// --- RUTAS PARA PACIENTES (No requieren rol de admin/secretaria) ---
 
 // Ruta para que un paciente vea SUS PROPIOS turnos.
 router.get('/mios', authMiddleware, async (req, res) => {
     try {
         const idPaciente = req.user.id;
-        // Agregamos un log para ver qué ID de paciente estamos buscando
         console.log(`[BACKEND] Buscando turnos para el paciente con ID: ${idPaciente}`);
-
-        // **AQUÍ ESTÁ LA CONSULTA SQL CORREGIDA Y REVISADA**
         const [turnos] = await pool.query(`
-            SELECT 
-                t.id, 
-                t.fecha_turno, 
-                t.estado,
-                prof_persona.nombre_completo AS profesional_nombre,
-                esp.nombre AS especialidad_nombre
+            SELECT t.id, t.fecha_turno, t.estado,
+                   prof_persona.nombre_completo AS profesional_nombre,
+                   esp.nombre AS especialidad_nombre
             FROM turnos AS t
             LEFT JOIN profesionales AS prof ON t.id_profesional = prof.id_profesional
             LEFT JOIN persona AS prof_persona ON prof.id_persona = prof_persona.id
             LEFT JOIN especialidades AS esp ON t.id_especialidad = esp.id_espe
-            WHERE t.id_paciente = ?
-            ORDER BY t.fecha_turno DESC
+            WHERE t.id_paciente = ? ORDER BY t.fecha_turno DESC
         `, [idPaciente]);
-
-        // Agregamos un log para ver qué datos estamos enviando al frontend
         console.log('[BACKEND] Datos de turnos encontrados:', turnos);
-        
         res.json(turnos);
-
     } catch (error) {
         console.error('[BACKEND] Error en la ruta /mios:', error);
         res.status(500).json({ msg: 'Error al obtener mis turnos' });
@@ -73,9 +62,15 @@ router.post('/', authMiddleware, async (req, res) => {
 // Ruta para que un usuario cancele su propio turno
 router.put('/cancelar/:id', authMiddleware, async (req, res) => {
     const idTurno = req.params.id;
-    const { id: idUsuario } = req.user;
+    const { id: idUsuario, rol: rolUsuario } = req.user;
     try {
-        const [result] = await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ? AND id_paciente = ?", [idTurno, idUsuario]);
+        let query = "UPDATE turnos SET estado = 'cancelado' WHERE id = ?";
+        const params = [idTurno];
+        if (rolUsuario === 'paciente') {
+            query += " AND id_paciente = ?";
+            params.push(idUsuario);
+        }
+        const [result] = await pool.query(query, params);
         if (result.affectedRows === 0) {
             return res.status(404).json({ msg: 'Turno no encontrado o no tienes permiso para cancelarlo.' });
         }
@@ -88,11 +83,33 @@ router.put('/cancelar/:id', authMiddleware, async (req, res) => {
 
 // --- RUTAS EXCLUSIVAS PARA ADMIN/SECRETARIA ---
 
-// Proteger el resto de las rutas para que solo el personal pueda acceder
-router.use(adminOrSecretaria);
+// **CORRECCIÓN**: La ruta de disponibilidad se mueve aquí para ser protegida correctamente.
+router.get('/disponibilidad', authMiddleware, adminOrSecretaria, async (req, res) => {
+    const { id_profesional, fecha } = req.query;
+    if (!id_profesional || !fecha) return res.status(400).json({ msg: 'Faltan parámetros' });
+    try {
+        const [[agenda]] = await pool.query(`SELECT hora_inicio, hora_fin FROM agenda_medicos WHERE id_profesional = ? AND fecha = ?`, [id_profesional, fecha]);
+        if (!agenda) return res.json([]);
+        const slotsPosibles = [];
+        let [horaInicio] = agenda.hora_inicio.split(':').map(Number);
+        let [horaFin] = agenda.hora_fin.split(':').map(Number);
+        for (let i = horaInicio; i < horaFin; i++) {
+            slotsPosibles.push(`${String(i).padStart(2, '0')}:00`);
+            slotsPosibles.push(`${String(i).padStart(2, '0')}:30`);
+        }
+        const [turnosOcupados] = await pool.query(`SELECT TIME_FORMAT(fecha_turno, '%H:%i') AS hora FROM turnos WHERE id_profesional = ? AND DATE(fecha_turno) = ? AND estado != 'cancelado'`, [id_profesional, fecha]);
+        const horasOcupadas = new Set(turnosOcupados.map(t => t.hora));
+        const disponibles = slotsPosibles.filter(slot => !horasOcupadas.has(slot));
+        res.json(disponibles);
+    } catch (error) {
+        console.error("Error al calcular disponibilidad:", error);
+        res.status(500).json({ msg: 'Error al calcular disponibilidad' });
+    }
+});
+
 
 // Ruta para obtener TODOS los turnos para la tabla de gestión
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, adminOrSecretaria, async (req, res) => {
     try {
         const [turnos] = await pool.query(`
             SELECT t.id, t.fecha_turno, t.estado, t.id_paciente, t.id_profesional,
@@ -110,7 +127,7 @@ router.get('/', async (req, res) => {
 });
 
 // Ruta para ver el historial de CUALQUIER paciente (vista admin)
-router.get('/paciente/:id', async (req, res) => {
+router.get('/paciente/:id', authMiddleware, adminOrSecretaria, async (req, res) => {
     try {
         const [turnos] = await pool.query(`
             SELECT t.fecha_turno, prof_persona.nombre_completo AS profesional_nombre, esp.nombre AS especialidad_nombre
@@ -125,7 +142,7 @@ router.get('/paciente/:id', async (req, res) => {
 });
 
 // Ruta para reprogramar CUALQUIER turno (vista admin)
-router.put('/reprogramar/:id', async (req, res) => {
+router.put('/reprogramar/:id', authMiddleware, adminOrSecretaria, async (req, res) => {
     const { fecha_turno } = req.body;
     try {
         await pool.query("UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?", [fecha_turno, req.params.id]);
