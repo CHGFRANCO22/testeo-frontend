@@ -29,7 +29,10 @@ router.use(authMiddleware, adminOrSecretaria);
 router.get('/', async (req, res) => {
     try {
         const [agendas] = await pool.query(`
-            SELECT a.id, p.nombre_completo as profesional_nombre, DATE_FORMAT(a.fecha, '%Y-%m-%d') as fecha, TIME_FORMAT(a.hora_inicio, '%H:%i') as hora_inicio, TIME_FORMAT(a.hora_fin, '%H:%i') as hora_fin
+            SELECT a.id, p.nombre_completo as profesional_nombre, 
+                   DATE_FORMAT(a.fecha, '%d/%m/%Y') as fecha_formateada, 
+                   TIME_FORMAT(a.hora_inicio, '%H:%i') as hora_inicio, 
+                   TIME_FORMAT(a.hora_fin, '%H:%i') as hora_fin
             FROM agenda_medicos a
             JOIN profesionales prof ON a.id_profesional = prof.id_profesional
             JOIN persona p ON prof.id_persona = p.id
@@ -48,7 +51,6 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ msg: 'Todos los campos son requeridos' });
     }
     try {
-        // Evitar duplicados
         const [[existe]] = await pool.query('SELECT id FROM agenda_medicos WHERE id_profesional = ? AND fecha = ?', [id_profesional, fecha]);
         if (existe) {
             return res.status(409).json({ msg: 'Ya existe una agenda para este profesional en esta fecha.' });
@@ -65,12 +67,8 @@ router.post('/', async (req, res) => {
 
 // ELIMINAR UN HORARIO DE LA AGENDA
 router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
     try {
-        const [result] = await pool.query('DELETE FROM agenda_medicos WHERE id = ?', [id]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ msg: 'Agenda no encontrada.' });
-        }
+        await pool.query('DELETE FROM agenda_medicos WHERE id = ?', [req.params.id]);
         res.json({ msg: 'Agenda eliminada con éxito' });
     } catch (error) {
         res.status(500).json({ msg: 'Error al eliminar la agenda' });

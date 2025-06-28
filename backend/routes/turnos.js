@@ -15,13 +15,10 @@ const authMiddleware = (req, res, next) => {
         res.status(401).json({ msg: 'Token no válido' });
     }
 };
-
 const adminOrSecretaria = (req, res, next) => {
     if (req.user && (req.user.rol === 'admin' || req.user.rol === 'secretaria')) return next();
     return res.status(403).json({ msg: 'Acceso denegado.' });
 };
-
-// --- Proteger todas las rutas de esta sección ---
 router.use(authMiddleware, adminOrSecretaria);
 
 // --- RUTA DE DISPONIBILIDAD (USA LA BD REAL) ---
@@ -34,10 +31,7 @@ router.get('/disponibilidad', async (req, res) => {
             `SELECT hora_inicio, hora_fin FROM agenda_medicos WHERE id_profesional = ? AND fecha = ?`,
             [id_profesional, fecha]
         );
-        
-        if (!agenda) {
-            return res.json([]); // Si no hay agenda, no hay horarios disponibles.
-        }
+        if (!agenda) return res.json([]);
 
         const slotsPosibles = [];
         let [horaInicio] = agenda.hora_inicio.split(':').map(Number);
@@ -56,15 +50,11 @@ router.get('/disponibilidad', async (req, res) => {
         const disponibles = slotsPosibles.filter(slot => !horasOcupadas.has(slot));
         res.json(disponibles);
     } catch (error) {
-        console.error("Error al calcular disponibilidad:", error);
         res.status(500).json({ msg: 'Error al calcular disponibilidad' });
     }
 });
 
-
 // --- LÓGICA DE TURNOS ---
-
-// OBTENER TODOS LOS TURNOS (CORREGIDO PARA EVITAR UNDEFINED)
 const getAllTurnos = async (req, res) => {
     try {
         const [turnos] = await pool.query(`
@@ -84,8 +74,6 @@ const getAllTurnos = async (req, res) => {
         res.json(turnos);
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 };
-
-// OBTENER HISTORIAL (CORREGIDO)
 const getHistorialByPacienteId = async (req, res) => {
     try {
         const [turnos] = await pool.query(`
@@ -99,7 +87,6 @@ const getHistorialByPacienteId = async (req, res) => {
         res.json(turnos);
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 };
-
 const createTurno = async (req, res) => {
     const { id_paciente, id_profesional, id_especialidad, fecha_turno } = req.body;
     try {
@@ -107,14 +94,12 @@ const createTurno = async (req, res) => {
         res.status(201).json({ msg: 'Turno creado' });
     } catch (error) { res.status(500).json({ msg: 'Error al crear turno' }); }
 };
-
 const cancelarTurno = async (req, res) => {
     try {
         await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ?", [req.params.id]);
         res.json({ msg: 'Turno cancelado' });
     } catch (error) { res.status(500).json({ msg: 'Error al cancelar' }); }
 };
-
 const reprogramarTurno = async (req, res) => {
     const { fecha_turno } = req.body;
     try {
@@ -123,10 +108,9 @@ const reprogramarTurno = async (req, res) => {
     } catch (error) { res.status(500).json({ msg: 'Error al reprogramar' }); }
 };
 
-
-// --- RUTAS (Ahora usan las funciones definidas en este mismo archivo) ---
+// --- RUTAS ---
 router.get('/', getAllTurnos);
-router.get('/paciente/:id', getHistorialByPacienteId);
+router.get('/paciente/:id', getHistorialByPacienteId); 
 router.post('/', createTurno);
 router.put('/cancelar/:id', cancelarTurno);
 router.put('/reprogramar/:id', reprogramarTurno);

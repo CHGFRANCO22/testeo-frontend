@@ -5,24 +5,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const tablaTurnosBody = document.querySelector("#tablaTurnos tbody");
     let turnosCache = [];
 
+    // --- Elementos del DOM ---
     const modalCrear = document.getElementById("modalCrearTurno");
     const formCrear = document.getElementById("formCrearTurno");
     const modalReprogramar = document.getElementById("modalReprogramar");
     const formReprogramar = document.getElementById("formReprogramar");
     const modalHistorial = document.getElementById("modalHistorial");
 
+    // --- Carga Inicial ---
     cargarTurnos();
     cargarSelectsParaCrearTurno();
 
+    // --- Manejadores de Eventos ---
     document.getElementById("btnNuevoTurno").addEventListener("click", () => modalCrear.showModal());
     document.getElementById("btnVolver").addEventListener("click", () => window.electronAPI.navegar("dashboard.html"));
     formCrear.addEventListener("submit", guardarNuevoTurno);
     formReprogramar.addEventListener("submit", guardarReprogramacion);
     
+    // Asigna el evento de cierre a TODOS los botones de "cerrar" o "cancelar"
     document.querySelectorAll('.btn-cerrar, dialog form [type="button"]').forEach(btn => {
         btn.addEventListener('click', () => btn.closest('dialog').close());
     });
 
+    // --- Lógica de Disponibilidad Dinámica ---
     const setupAvailabilityChecker = (form) => {
         const profesionalSelect = form.querySelector('select[id*="profesional"]');
         const fechaInput = form.querySelector('input[type="date"]');
@@ -40,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             try {
+                // Llama a la nueva ruta de disponibilidad del backend
                 const horarios = await apiFetch(`/turnos/disponibilidad?id_profesional=${id_profesional}&fecha=${fecha}`);
                 horaSelect.innerHTML = horarios.length > 0
                     ? horarios.map(h => `<option value="${h}">${h}</option>`).join('')
@@ -55,9 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAvailabilityChecker(formCrear);
     setupAvailabilityChecker(formReprogramar);
     
+    // --- Funciones Principales ---
     async function cargarTurnos() {
         try {
-            // Se llama a la ruta '/turnos'
             turnosCache = await apiFetch('/turnos');
             renderizarTabla(turnosCache);
         } catch (error) {
@@ -136,13 +142,14 @@ document.addEventListener("DOMContentLoaded", () => {
     
     async function guardarNuevoTurno(e) {
         e.preventDefault();
-        const fecha = document.getElementById("fecha").value;
-        const hora = document.getElementById("hora").value;
+        const fecha = formCrear.querySelector("#fecha").value;
+        const hora = formCrear.querySelector("#hora").value;
         if (!fecha || !hora) return alert("Seleccione una fecha y un horario disponible.");
+        
         const body = {
-            id_paciente: document.getElementById("paciente").value,
-            id_especialidad: document.getElementById("especialidad").value,
-            id_profesional: document.getElementById("profesional").value,
+            id_paciente: formCrear.querySelector("#paciente").value,
+            id_especialidad: formCrear.querySelector("#especialidad").value,
+            id_profesional: formCrear.querySelector("#profesional").value,
             fecha_turno: `${fecha}T${hora}:00`,
         };
         try {
@@ -180,24 +187,16 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) { console.error("Error cargando selects para el formulario:", error); }
     }
 
-    // --- FUNCIÓN UTILITARIA CORREGIDA ---
     async function apiFetch(endpoint, method = 'GET', body = null) {
-        // **AQUÍ ESTÁ LA CORRECCIÓN**
-        // La lógica anterior construía mal la URL. Esta es la forma correcta.
         const url = `${API_BASE_URL}${endpoint}`;
             
         const response = await fetch(url, {
             method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: body ? JSON.stringify(body) : null
         });
-        if (!response.ok) {
-            // Intenta leer el mensaje de error del backend, si no, usa un mensaje genérico
-            const errorData = await response.json().catch(() => ({ msg: 'Error desconocido en la respuesta del servidor' }));
-            throw new Error(errorData.msg || 'Error en la petición');
-        }
+        if (!response.ok) throw new Error((await response.json()).msg || 'Error en la petición');
         const contentType = response.headers.get("content-type");
-        // Si la respuesta es exitosa pero no tiene contenido (ej: DELETE), no intentes leerla como JSON
-        if (response.status === 204 || !contentType || !contentType.includes("application/json")) {
+        if (response.status === 201 || response.status === 204 || !contentType || !contentType.includes("application/json")) {
             return {};
         }
         return response.json();
