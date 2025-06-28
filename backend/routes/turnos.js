@@ -22,60 +22,77 @@ const adminOrSecretaria = (req, res, next) => {
 };
 
 
-// --- RUTAS PARA PACIENTES Y PERSONAL ---
+// --- RUTAS PARA PACIENTES ---
 
-// Un paciente logueado puede ver SUS PROPIOS turnos.
+// Ruta para que un paciente vea SUS PROPIOS turnos.
 router.get('/mios', authMiddleware, async (req, res) => {
     try {
         const idPaciente = req.user.id;
+        // Agregamos un log para ver qué ID de paciente estamos buscando
+        console.log(`[BACKEND] Buscando turnos para el paciente con ID: ${idPaciente}`);
+
+        // **AQUÍ ESTÁ LA CONSULTA SQL CORREGIDA Y REVISADA**
         const [turnos] = await pool.query(`
-            SELECT t.id, t.fecha_turno, t.estado, prof_persona.nombre_completo AS profesional_nombre, esp.nombre AS especialidad_nombre
-            FROM turnos t
-            LEFT JOIN profesionales prof ON t.id_profesional = prof.id_profesional
-            LEFT JOIN persona prof_persona ON prof.id_persona = prof_persona.id
-            LEFT JOIN especialidades esp ON t.id_especialidad = esp.id_espe
-            WHERE t.id_paciente = ? ORDER BY t.fecha_turno DESC
+            SELECT 
+                t.id, 
+                t.fecha_turno, 
+                t.estado,
+                prof_persona.nombre_completo AS profesional_nombre,
+                esp.nombre AS especialidad_nombre
+            FROM turnos AS t
+            LEFT JOIN profesionales AS prof ON t.id_profesional = prof.id_profesional
+            LEFT JOIN persona AS prof_persona ON prof.id_persona = prof_persona.id
+            LEFT JOIN especialidades AS esp ON t.id_especialidad = esp.id_espe
+            WHERE t.id_paciente = ?
+            ORDER BY t.fecha_turno DESC
         `, [idPaciente]);
+
+        // Agregamos un log para ver qué datos estamos enviando al frontend
+        console.log('[BACKEND] Datos de turnos encontrados:', turnos);
+        
         res.json(turnos);
-    } catch (error) { res.status(500).json({ msg: 'Error al obtener mis turnos' }); }
+
+    } catch (error) {
+        console.error('[BACKEND] Error en la ruta /mios:', error);
+        res.status(500).json({ msg: 'Error al obtener mis turnos' });
+    }
 });
 
-// **CORRECCIÓN**: Cualquier usuario logueado puede crear un turno.
+// Ruta para que cualquier usuario logueado cree un turno para sí mismo
 router.post('/', authMiddleware, async (req, res) => {
     const { id_profesional, id_especialidad, fecha_turno } = req.body;
-    // Para seguridad, el ID del paciente se toma SIEMPRE del token, no del body.
     const id_paciente = req.user.id; 
     try {
         await pool.query('INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno, estado) VALUES (?, ?, ?, ?, ?)', [id_paciente, id_profesional, id_especialidad, fecha_turno, 'confirmado']);
         res.status(201).json({ msg: 'Turno creado con éxito.' });
-    } catch (error) { res.status(500).json({ msg: 'Error al crear turno.' }); }
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al crear turno.' });
+    }
 });
 
-// **CORRECCIÓN**: Un paciente puede cancelar sus propios turnos. Un admin puede cancelar cualquiera.
+// Ruta para que un usuario cancele su propio turno
 router.put('/cancelar/:id', authMiddleware, async (req, res) => {
     const idTurno = req.params.id;
-    const { id: idUsuario, rol: rolUsuario } = req.user;
+    const { id: idUsuario } = req.user;
     try {
-        let query = "UPDATE turnos SET estado = 'cancelado' WHERE id = ?";
-        const params = [idTurno];
-        // Si el usuario es un paciente, añadimos una condición extra para que solo pueda cancelar sus turnos.
-        if (rolUsuario === 'paciente') {
-            query += " AND id_paciente = ?";
-            params.push(idUsuario);
-        }
-        const [result] = await pool.query(query, params);
+        const [result] = await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ? AND id_paciente = ?", [idTurno, idUsuario]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ msg: 'Turno no encontrado o no tienes permiso para cancelarlo.' });
         }
         res.json({ msg: 'Turno cancelado correctamente.' });
-    } catch (error) { res.status(500).json({ msg: 'Error al cancelar el turno.' });}
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al cancelar el turno.' });
+    }
 });
 
 
 // --- RUTAS EXCLUSIVAS PARA ADMIN/SECRETARIA ---
 
-// OBTENER TODOS LOS TURNOS (PARA LA TABLA DE GESTIÓN)
-router.get('/', authMiddleware, adminOrSecretaria, async (req, res) => {
+// Proteger el resto de las rutas para que solo el personal pueda acceder
+router.use(adminOrSecretaria);
+
+// Ruta para obtener TODOS los turnos para la tabla de gestión
+router.get('/', async (req, res) => {
     try {
         const [turnos] = await pool.query(`
             SELECT t.id, t.fecha_turno, t.estado, t.id_paciente, t.id_profesional,
@@ -92,8 +109,8 @@ router.get('/', authMiddleware, adminOrSecretaria, async (req, res) => {
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 });
 
-// OBTENER HISTORIAL DE UN PACIENTE ESPECÍFICO (VISTA ADMIN)
-router.get('/paciente/:id', authMiddleware, adminOrSecretaria, async (req, res) => {
+// Ruta para ver el historial de CUALQUIER paciente (vista admin)
+router.get('/paciente/:id', async (req, res) => {
     try {
         const [turnos] = await pool.query(`
             SELECT t.fecha_turno, prof_persona.nombre_completo AS profesional_nombre, esp.nombre AS especialidad_nombre
@@ -107,8 +124,8 @@ router.get('/paciente/:id', authMiddleware, adminOrSecretaria, async (req, res) 
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
 });
 
-// REPROGRAMAR UN TURNO (SOLO ADMIN/SECRETARIA)
-router.put('/reprogramar/:id', authMiddleware, adminOrSecretaria, async (req, res) => {
+// Ruta para reprogramar CUALQUIER turno (vista admin)
+router.put('/reprogramar/:id', async (req, res) => {
     const { fecha_turno } = req.body;
     try {
         await pool.query("UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?", [fecha_turno, req.params.id]);
