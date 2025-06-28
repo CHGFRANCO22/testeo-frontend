@@ -27,74 +27,29 @@
         dialog { border: none; border-radius: 8px; padding: 25px; width: 400px; max-width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         dialog::backdrop { background-color: rgba(0,0,0,0.5); }
         form label { display: block; margin-bottom: 5px; font-weight: 600; color: #555;}
-        form input, form select { width: calc(100% - 20px); margin-bottom: 15px; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1rem; }
+        form input, form select { width: calc(100% - 22px); margin-bottom: 15px; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1rem; }
         .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .form-actions button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #btnGuardar, #btnGuardarRepro { background-color: #28a745; color: white; }
-        #btnCancelar, #btnCancelarRepro { background-color: #6c757d; color: white; }
+        .btn-guardar { background-color: #28a745; color: white; }
+        .btn-cerrar { background-color: #6c757d; color: white; }
         #modalHistorial table { margin-top: 15px; }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <h1>Gestión de Turnos</h1>
-        <button class="back-btn" id="btnVolver">Volver al Panel</button>
-    </div>
-
+    <div class="navbar"><h1>Gestión de Turnos</h1><button class="back-btn" id="btnVolver">Volver al Panel</button></div>
     <div class="container">
         <div class="main-content">
-            <div class="actions-header">
-                <h2>Listado de Turnos</h2>
-                <button class="btn-add" id="btnNuevoTurno">Nuevo Turno</button>
-            </div>
+            <div class="actions-header"><h2>Listado de Turnos</h2><button class="btn-add" id="btnNuevoTurno">Nuevo Turno</button></div>
             <table id="tablaTurnos">
                 <thead><tr><th>Paciente</th><th>Profesional</th><th>Especialidad</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody><!-- Filas aquí --></tbody>
+                <tbody><!-- Las filas se llenarán con JS --></tbody>
             </table>
         </div>
     </div>
-
-    <!-- Modal para Crear Turno -->
-    <dialog id="modalCrearTurno">
-        <form id="formCrearTurno">
-            <h3>Nuevo Turno</h3>
-            <label for="paciente">Paciente</label><select id="paciente" required></select>
-            <label for="especialidad">Especialidad</label><select id="especialidad" required></select>
-            <label for="profesional">Profesional</label><select id="profesional" required></select>
-            <label for="fecha">Fecha</label><input type="datetime-local" id="fecha" required />
-            <div class="form-actions">
-                <button type="button" id="btnCancelar">Cancelar</button>
-                <button type="submit" id="btnGuardar">Guardar</button>
-            </div>
-        </form>
-    </dialog>
-    
-    <!-- Modal para Reprogramar Turno -->
-    <dialog id="modalReprogramar">
-        <form id="formReprogramar">
-            <h3>Reprogramar Turno</h3>
-            <input type="hidden" id="id_turno_repro" />
-            <label for="fecha_repro">Nueva Fecha y Hora</label>
-            <input type="datetime-local" id="fecha_repro" required />
-            <div class="form-actions">
-                <button type="button" id="btnCancelarRepro">Cancelar</button>
-                <button type="submit" id="btnGuardarRepro">Reprogramar</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- Modal para Historial de Turnos -->
-    <dialog id="modalHistorial">
-        <h3>Historial del Paciente</h3>
-        <table id="tablaHistorial">
-            <thead><tr><th>Fecha</th><th>Profesional</th><th>Especialidad</th></tr></thead>
-            <tbody></tbody>
-        </table>
-        <div class="form-actions">
-            <button id="cerrarHistorial">Cerrar</button>
-        </div>
-    </dialog>
-
+    <!-- Modales -->
+    <dialog id="modalCrearTurno"><form id="formCrearTurno"><h3>Nuevo Turno</h3><label for="paciente">Paciente</label><select id="paciente" name="id_paciente" required></select><label for="especialidad">Especialidad</label><select id="especialidad" name="id_especialidad" required></select><label for="profesional">Profesional</label><select id="profesional" name="id_profesional" required></select><label for="fecha">Fecha del Turno</label><input type="date" id="fecha" name="fecha" required /><label for="hora">Horario Disponible</label><select id="hora" name="hora" required></select><div class="form-actions"><button type="button" class="btn-cerrar">Cancelar</button><button type="submit" class="btn-guardar">Guardar</button></div></form></dialog>
+    <dialog id="modalReprogramar"><form id="formReprogramar"><h3>Reprogramar Turno</h3><input type="hidden" id="id_turno_repro" name="id_turno" /><!-- CORRECCIÓN: Añadido el campo oculto que faltaba --><input type="hidden" id="id_profesional_repro" name="id_profesional" /><label for="fecha_repro">Nueva Fecha</label><input type="date" id="fecha_repro" name="fecha" required /><label for="hora_repro">Nuevo Horario</label><select id="hora_repro" name="hora" required></select><div class="form-actions"><button type="button" class="btn-cerrar">Cancelar</button><button type="submit" class="btn-guardar">Reprogramar</button></div></form></dialog>
+    <dialog id="modalHistorial"><h3>Historial del Paciente</h3><table id="tablaHistorial"><thead><tr><th>Fecha</th><th>Profesional</th><th>Especialidad</th></tr></thead><tbody></tbody></table><div class="form-actions"><button class="btn-cerrar">Cerrar</button></div></dialog>
     <script type="module" src="turnos.js"></script>
 </body>
 </html>

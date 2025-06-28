@@ -5,29 +5,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const tablaTurnosBody = document.querySelector("#tablaTurnos tbody");
     let turnosCache = [];
 
-    // --- Elementos del DOM ---
     const modalCrear = document.getElementById("modalCrearTurno");
     const formCrear = document.getElementById("formCrearTurno");
     const modalReprogramar = document.getElementById("modalReprogramar");
     const formReprogramar = document.getElementById("formReprogramar");
     const modalHistorial = document.getElementById("modalHistorial");
 
-    // --- Carga Inicial ---
     cargarTurnos();
     cargarSelectsParaCrearTurno();
 
-    // --- Manejadores de Eventos ---
     document.getElementById("btnNuevoTurno").addEventListener("click", () => modalCrear.showModal());
     document.getElementById("btnVolver").addEventListener("click", () => window.electronAPI.navegar("dashboard.html"));
     formCrear.addEventListener("submit", guardarNuevoTurno);
     formReprogramar.addEventListener("submit", guardarReprogramacion);
     
-    // Asigna el evento de cierre a TODOS los botones de "cerrar" o "cancelar"
     document.querySelectorAll('.btn-cerrar, dialog form [type="button"]').forEach(btn => {
         btn.addEventListener('click', () => btn.closest('dialog').close());
     });
 
-    // --- Lógica de Disponibilidad Dinámica ---
     const setupAvailabilityChecker = (form) => {
         const profesionalSelect = form.querySelector('select[id*="profesional"]');
         const fechaInput = form.querySelector('input[type="date"]');
@@ -45,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             try {
-                // Llama a la nueva ruta de disponibilidad del backend
                 const horarios = await apiFetch(`/turnos/disponibilidad?id_profesional=${id_profesional}&fecha=${fecha}`);
                 horaSelect.innerHTML = horarios.length > 0
                     ? horarios.map(h => `<option value="${h}">${h}</option>`).join('')
@@ -61,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAvailabilityChecker(formCrear);
     setupAvailabilityChecker(formReprogramar);
     
-    // --- Funciones Principales ---
     async function cargarTurnos() {
         try {
             turnosCache = await apiFetch('/turnos');
@@ -108,20 +101,28 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) { alert(`Error al obtener el historial: ${error.message}`); }
     }
 
+    // CORRECCIÓN: Se asegura de que el elemento exista antes de asignarle valor
     function abrirModalReprogramar(idTurno) {
         const turno = turnosCache.find(t => t.id == idTurno);
         if (!turno) return;
-        document.getElementById("id_turno_repro").value = idTurno;
-        document.getElementById("id_profesional_repro").value = turno.id_profesional;
+
+        const idTurnoInput = formReprogramar.querySelector("#id_turno_repro");
+        const idProfesionalInput = formReprogramar.querySelector("#id_profesional_repro");
+        
+        if (idTurnoInput) idTurnoInput.value = idTurno;
+        if (idProfesionalInput) idProfesionalInput.value = turno.id_profesional;
+
         formReprogramar.reset();
         modalReprogramar.showModal();
     }
     
     async function guardarReprogramacion(e) {
         e.preventDefault();
-        const idTurno = document.getElementById("id_turno_repro").value;
-        const fecha = document.getElementById("fecha_repro").value;
-        const hora = document.getElementById("hora_repro").value;
+        const formData = new FormData(formReprogramar);
+        const idTurno = formData.get('id_turno');
+        const fecha = formData.get('fecha');
+        const hora = formData.get('hora');
+
         if (!fecha || !hora) return alert("Seleccione fecha y hora.");
         try {
             await apiFetch(`/turnos/reprogramar/${idTurno}`, 'PUT', { fecha_turno: `${fecha}T${hora}:00` });
@@ -140,16 +141,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) { alert(`Error al cancelar: ${error.message}`); }
     }
     
+    // CORRECCIÓN: Se usa FormData para obtener los valores de forma segura
     async function guardarNuevoTurno(e) {
         e.preventDefault();
-        const fecha = formCrear.querySelector("#fecha").value;
-        const hora = formCrear.querySelector("#hora").value;
+        const formData = new FormData(formCrear);
+        const fecha = formData.get('fecha');
+        const hora = formData.get('hora');
+
         if (!fecha || !hora) return alert("Seleccione una fecha y un horario disponible.");
         
         const body = {
-            id_paciente: formCrear.querySelector("#paciente").value,
-            id_especialidad: formCrear.querySelector("#especialidad").value,
-            id_profesional: formCrear.querySelector("#profesional").value,
+            id_paciente: formData.get('id_paciente'),
+            id_especialidad: formData.get('id_especialidad'),
+            id_profesional: formData.get('id_profesional'),
             fecha_turno: `${fecha}T${hora}:00`,
         };
         try {
@@ -189,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function apiFetch(endpoint, method = 'GET', body = null) {
         const url = `${API_BASE_URL}${endpoint}`;
-            
         const response = await fetch(url, {
             method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: body ? JSON.stringify(body) : null
