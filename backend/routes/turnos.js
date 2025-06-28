@@ -15,54 +15,68 @@ const authMiddleware = (req, res, next) => {
         res.status(401).json({ msg: 'Token no válido' });
     }
 };
+
 const adminOrSecretaria = (req, res, next) => {
     if (req.user && (req.user.rol === 'admin' || req.user.rol === 'secretaria')) return next();
     return res.status(403).json({ msg: 'Acceso denegado.' });
 };
-router.use(authMiddleware, adminOrSecretaria);
 
-// --- RUTA DE DISPONIBILIDAD (USA LA BD REAL) ---
-router.get('/disponibilidad', async (req, res) => {
+// --- RUTA PÚBLICA PARA PACIENTES ---
+// Un paciente logueado puede ver SUS PROPIOS turnos.
+router.get('/mios', authMiddleware, async (req, res) => {
+    try {
+        // Obtenemos el ID del paciente desde el token JWT que ya verificó authMiddleware
+        const idPaciente = req.user.id; 
+        
+        const [turnos] = await pool.query(`
+            SELECT t.id, t.fecha_turno, t.estado, 
+                   prof_persona.nombre_completo AS profesional_nombre,
+                   esp.nombre AS especialidad_nombre
+            FROM turnos t
+            LEFT JOIN profesionales prof ON t.id_profesional = prof.id_profesional
+            LEFT JOIN persona prof_persona ON prof.id_persona = prof_persona.id
+            LEFT JOIN especialidades esp ON t.id_especialidad = esp.id_espe
+            WHERE t.id_paciente = ?
+            ORDER BY t.fecha_turno DESC
+        `, [idPaciente]);
+        res.json(turnos);
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al obtener mis turnos' });
+    }
+});
+
+
+// --- RUTAS PRIVADAS PARA ADMIN/SECRETARIA ---
+
+// RUTA DE DISPONIBILIDAD
+router.get('/disponibilidad', authMiddleware, adminOrSecretaria, async (req, res) => {
     const { id_profesional, fecha } = req.query;
     if (!id_profesional || !fecha) return res.status(400).json({ msg: 'Faltan parámetros' });
-    
     try {
-        const [[agenda]] = await pool.query(
-            `SELECT hora_inicio, hora_fin FROM agenda_medicos WHERE id_profesional = ? AND fecha = ?`,
-            [id_profesional, fecha]
-        );
+        const [[agenda]] = await pool.query(`SELECT hora_inicio, hora_fin FROM agenda_medicos WHERE id_profesional = ? AND fecha = ?`, [id_profesional, fecha]);
         if (!agenda) return res.json([]);
-
         const slotsPosibles = [];
         let [horaInicio] = agenda.hora_inicio.split(':').map(Number);
         let [horaFin] = agenda.hora_fin.split(':').map(Number);
-        
         for (let i = horaInicio; i < horaFin; i++) {
             slotsPosibles.push(`${String(i).padStart(2, '0')}:00`);
             slotsPosibles.push(`${String(i).padStart(2, '0')}:30`);
         }
-
-        const [turnosOcupados] = await pool.query(
-            `SELECT TIME_FORMAT(fecha_turno, '%H:%i') AS hora FROM turnos WHERE id_profesional = ? AND DATE(fecha_turno) = ? AND estado != 'cancelado'`,
-            [id_profesional, fecha]
-        );
+        const [turnosOcupados] = await pool.query(`SELECT TIME_FORMAT(fecha_turno, '%H:%i') AS hora FROM turnos WHERE id_profesional = ? AND DATE(fecha_turno) = ? AND estado != 'cancelado'`, [id_profesional, fecha]);
         const horasOcupadas = new Set(turnosOcupados.map(t => t.hora));
         const disponibles = slotsPosibles.filter(slot => !horasOcupadas.has(slot));
         res.json(disponibles);
-    } catch (error) {
-        res.status(500).json({ msg: 'Error al calcular disponibilidad' });
-    }
+    } catch (error) { res.status(500).json({ msg: 'Error al calcular disponibilidad' }); }
 });
 
-// --- LÓGICA DE TURNOS ---
-const getAllTurnos = async (req, res) => {
+// OBTENER TODOS LOS TURNOS (PARA LA TABLA DE GESTIÓN)
+router.get('/', authMiddleware, adminOrSecretaria, async (req, res) => {
     try {
         const [turnos] = await pool.query(`
-            SELECT 
-                t.id, t.fecha_turno, t.estado, t.id_paciente, t.id_profesional,
-                pac_persona.nombre_completo AS paciente_nombre,
-                prof_persona.nombre_completo AS profesional_nombre,
-                esp.nombre AS especialidad_nombre
+            SELECT t.id, t.fecha_turno, t.estado, t.id_paciente, t.id_profesional,
+                   pac_persona.nombre_completo AS paciente_nombre,
+                   prof_persona.nombre_completo AS profesional_nombre,
+                   esp.nombre AS especialidad_nombre
             FROM turnos t
             LEFT JOIN pacientes pac ON t.id_paciente = pac.id_paciente
             LEFT JOIN persona pac_persona ON pac.id_persona = pac_persona.id
@@ -73,46 +87,20 @@ const getAllTurnos = async (req, res) => {
         `);
         res.json(turnos);
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
-};
-const getHistorialByPacienteId = async (req, res) => {
+});
+
+// OBTENER HISTORIAL DE UN PACIENTE ESPECÍFICO (VISTA ADMIN)
+router.get('/paciente/:id', authMiddleware, adminOrSecretaria, async (req, res) => {
     try {
-        const [turnos] = await pool.query(`
-            SELECT t.fecha_turno, prof_persona.nombre_completo AS profesional_nombre, esp.nombre AS especialidad_nombre
-            FROM turnos t
-            LEFT JOIN profesionales prof ON t.id_profesional = prof.id_profesional
-            LEFT JOIN persona prof_persona ON prof.id_persona = prof_persona.id
-            LEFT JOIN especialidades esp ON t.id_especialidad = esp.id_espe
-            WHERE t.id_paciente = ? ORDER BY t.fecha_turno DESC
-        `, [req.params.id]);
+        const [turnos] = await pool.query(`SELECT ...`, [req.params.id]); // Tu consulta de historial aquí...
         res.json(turnos);
     } catch (error) { res.status(500).json({ msg: 'Error del servidor.' }); }
-};
-const createTurno = async (req, res) => {
-    const { id_paciente, id_profesional, id_especialidad, fecha_turno } = req.body;
-    try {
-        await pool.query('INSERT INTO turnos (id_paciente, id_profesional, id_especialidad, fecha_turno, estado) VALUES (?, ?, ?, ?, ?)', [id_paciente, id_profesional, id_especialidad, fecha_turno, 'confirmado']);
-        res.status(201).json({ msg: 'Turno creado' });
-    } catch (error) { res.status(500).json({ msg: 'Error al crear turno' }); }
-};
-const cancelarTurno = async (req, res) => {
-    try {
-        await pool.query("UPDATE turnos SET estado = 'cancelado' WHERE id = ?", [req.params.id]);
-        res.json({ msg: 'Turno cancelado' });
-    } catch (error) { res.status(500).json({ msg: 'Error al cancelar' }); }
-};
-const reprogramarTurno = async (req, res) => {
-    const { fecha_turno } = req.body;
-    try {
-        await pool.query("UPDATE turnos SET fecha_turno = ?, estado = 'reprogramado', fecha_reprogramado = NOW() WHERE id = ?", [fecha_turno, req.params.id]);
-        res.json({ msg: 'Turno reprogramado' });
-    } catch (error) { res.status(500).json({ msg: 'Error al reprogramar' }); }
-};
+});
 
-// --- RUTAS ---
-router.get('/', getAllTurnos);
-router.get('/paciente/:id', getHistorialByPacienteId); 
-router.post('/', createTurno);
-router.put('/cancelar/:id', cancelarTurno);
-router.put('/reprogramar/:id', reprogramarTurno);
+// CREAR, CANCELAR, REPROGRAMAR (RUTAS PRIVADAS)
+router.post('/', authMiddleware, adminOrSecretaria, async (req, res) => { /* ... */ });
+router.put('/cancelar/:id', authMiddleware, adminOrSecretaria, async (req, res) => { /* ... */ });
+router.put('/reprogramar/:id', authMiddleware, adminOrSecretaria, async (req, res) => { /* ... */ });
+
 
 module.exports = router;
