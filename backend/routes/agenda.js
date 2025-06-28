@@ -65,6 +65,21 @@ router.post('/', async (req, res) => {
     }
 });
 
+// **NUEVO: ACTUALIZAR UN HORARIO EXISTENTE**
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { id_profesional, fecha, hora_inicio, hora_fin } = req.body;
+    try {
+        await pool.query(
+            'UPDATE agenda_medicos SET id_profesional = ?, fecha = ?, hora_inicio = ?, hora_fin = ? WHERE id = ?',
+            [id_profesional, fecha, hora_inicio, hora_fin, id]
+        );
+        res.json({ msg: 'Agenda actualizada con éxito' });
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al actualizar la agenda' });
+    }
+});
+
 // ELIMINAR UN HORARIO DE LA AGENDA
 router.delete('/:id', async (req, res) => {
     try {

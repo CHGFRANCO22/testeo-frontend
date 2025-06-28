@@ -1,31 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-R">
     <title>Salud Total - Gestión de Agenda</title>
     <style>
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; color: #333; }
         .navbar { background-color: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
         .navbar h1 { margin: 0; font-size: 1.4rem; }
         .back-btn { background-color: #3498db; border: none; color: white; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .container { padding: 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .container { padding: 20px; display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: start; }
         .form-section, .list-section { background-color: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; }
         input, select { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; }
         .btn-add { background-color: #27ae60; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .btn-limpiar { background-color: #95a5a6; color: white; width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 0.9rem; cursor: pointer; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background-color: #ecf0f1; }
-        .btn-delete { background-color: #e74c3c; color: white; border: none; border-radius: 4px; padding: 5px 8px; cursor: pointer; }
+        td button { border: none; border-radius: 4px; padding: 5px 8px; cursor: pointer; margin-right: 5px; color: white; }
+        .btn-edit { background-color: #f39c12; }
+        .btn-delete { background-color: #e74c3c; }
+        .filter-container { margin-bottom: 15px; }
     </style>
 </head>
 <body>
     <div class="navbar"><h1>Gestión de Agendas</h1><button class="back-btn" id="btnVolver">Volver</button></div>
     <div class="container">
         <div class="form-section">
-            <h2>Crear Nuevo Horario</h2>
+            <!-- Título dinámico -->
+            <h2 id="formTitulo">Crear Nuevo Horario</h2>
             <form id="formAgenda">
+                <!-- Campo oculto para guardar el ID al editar -->
+                <input type="hidden" id="agenda_id">
                 <label for="profesional">Profesional</label>
                 <select id="profesional" required></select>
                 <label for="fecha">Fecha</label>
@@ -34,12 +41,21 @@
                 <input type="time" id="hora_inicio" step="1800" required>
                 <label for="hora_fin">Hora Fin</label>
                 <input type="time" id="hora_fin" step="1800" required>
-                <button type="submit" class="btn-add">Agregar Horario</button>
+                <!-- Botón principal para Guardar/Actualizar -->
+                <button type="submit" class="btn-add" id="btnGuardar">Guardar</button>
+                <!-- Botón secundario para limpiar el formulario -->
+                <button type="button" class="btn-limpiar" id="btnLimpiarForm">Limpiar / Cancelar Edición</button>
             </form>
         </div>
         <div class="list-section">
             <h2>Horarios Programados</h2>
+            <!-- Filtro de búsqueda -->
+            <div class="filter-container">
+                <label for="filtroProfesional">Filtrar por Profesional:</label>
+                <input type="text" id="filtroProfesional" placeholder="Escriba un nombre...">
+            </div>
             <table id="tablaAgendas">
+                <!-- Se añade una columna para el botón de editar -->
                 <thead><tr><th>Profesional</th><th>Fecha</th><th>Inicio</th><th>Fin</th><th>Acciones</th></tr></thead>
                 <tbody></tbody>
             </table>
